@@ -1,0 +1,102 @@
+{
+    "project": "Personal Portfolio Phase 3",
+    "version": "1.0.0",
+    "specifications": [
+        {
+            "feature": "Overlay Menu",
+            "test_cases": [
+                {
+                    "id": "menu-toggle-open",
+                    "action": "Click [data-testid='global-menu-trigger']",
+                    "expected_results": [
+                        {
+                            "selector": "[data-testid='global-overlay-menu']",
+                            "property": "classList",
+                            "contains": "is-active"
+                        },
+                        {
+                            "selector": "[data-testid='global-menu-trigger']",
+                            "property": "getAttribute('aria-expanded')",
+                            "value": "true"
+                        },
+                        {
+                            "selector": "[data-testid='global-overlay-menu']",
+                            "property": "visibility",
+                            "value": "visible"
+                        }
+                    ]
+                },
+                {
+                    "id": "menu-toggle-close",
+                    "action": "Click [data-testid='global-menu-trigger'] when menu is open",
+                    "expected_results": [
+                        {
+                            "selector": "[data-testid='global-overlay-menu']",
+                            "property": "classList",
+                            "not_contains": "is-active"
+                        },
+                        {
+                            "selector": "[data-testid='global-menu-trigger']",
+                            "property": "getAttribute('aria-expanded')",
+                            "value": "false"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "feature": "Theme Toggle",
+            "test_cases": [
+                {
+                    "id": "theme-switch-light",
+                    "action": "Click [data-testid='theme-toggle']",
+                    "expected_results": [
+                        {
+                            "selector": "html",
+                            "property": "classList",
+                            "contains": "light-mode"
+                        },
+                        {
+                            "logic": "localStorage.getItem('theme')",
+                            "value": "light"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "feature": "Achievements Stagger Animation",
+            "test_cases": [
+                {
+                    "id": "scroll-trigger-achievements",
+                    "action": "Scroll to [data-testid='achievements-section-container']",
+                    "expected_results": [
+                        {
+                            "selector": ".char",
+                            "property": "style.transform",
+                            "exists": true,
+                            "note": "GSAP should inject inline transform/opacity styles"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "feature": "Project Hover Reveal",
+            "test_cases": [
+                {
+                    "id": "project-hover-mouse-move",
+                    "action": "MouseMove over [data-testid='project-card-container-1']",
+                    "expected_results": [
+                        {
+                            "selector": "[data-testid='project-card-reveal-container-1']",
+                            "property": "style.transform",
+                            "exists": true,
+                            "note": "Reveal container should track mouse movement via GSAP"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

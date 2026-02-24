@@ -1,1 +1,188 @@
-<h1>Michael Muchane - Portfolio Under Construction</h1>
+<!DOCTYPE html>
+<html lang="en" data-testid="html-root">
+
+<head data-testid="document-head">
+    <meta charset="UTF-8" data-testid="meta-charset">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" data-testid="meta-viewport">
+    <title data-testid="page-title">[Your Name] | Portfolio</title>
+    <meta name="description" content="[Short Bio] - Portfolio of [Your Name]" data-testid="meta-description">
+    <link rel="stylesheet" href="style.css" data-testid="main-stylesheet">
+</head>
+
+<body class="site-body" data-testid="site-body">
+
+    <!-- OVERLAY MENU (Hidden by default) -->
+    <div class="overlay-menu is-hidden" data-testid="global-overlay-menu">
+        <nav class="overlay-menu__nav" data-testid="overlay-navigation">
+            <ul class="overlay-menu__list" data-testid="overlay-menu-list">
+                <li class="overlay-menu__item" data-testid="overlay-item-home"><a href="#hero"
+                        class="overlay-menu__link" data-testid="overlay-link-home">Home</a></li>
+                <li class="overlay-menu__item" data-testid="overlay-item-work"><a href="#work"
+                        class="overlay-menu__link" data-testid="overlay-link-work">Work</a></li>
+                <li class="overlay-menu__item" data-testid="overlay-item-projects"><a href="#projects"
+                        class="overlay-menu__link" data-testid="overlay-link-projects">Projects</a></li>
+                <li class="overlay-menu__item" data-testid="overlay-item-contact"><a href="#contact"
+                        class="overlay-menu__link" data-testid="overlay-link-contact">Contact</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- HEADER SECTION -->
+    <header class="header" data-testid="global-header">
+        <div class="header__container" data-testid="header-container">
+            <div class="header__logo" data-testid="header-logo-container">
+                <a href="/" class="header__logo-link" data-testid="header-logo-link">
+                    <span class="header__logo-text" data-testid="header-logo-text">[Your Name]</span>
+                </a>
+            </div>
+            <nav class="header__nav" data-testid="header-navigation-wrapper">
+                <button class="header__theme-toggle" data-testid="theme-toggle" aria-label="Toggle Theme">
+                    <span class="header__theme-toggle-text">Mode</span>
+                </button>
+                <button class="header__menu-trigger" data-testid="global-menu-trigger" aria-label="Open Menu" aria-expanded="false">
+                    <span class="header__menu-trigger-box" data-testid="menu-trigger-box">
+                        <span class="header__menu-trigger-inner" data-testid="menu-trigger-line"></span>
+                    </span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content" data-testid="main-content-area">
+
+        <!-- HERO SECTION -->
+        <section id="hero" class="hero-section" data-testid="hero-section-container">
+            <div class="hero-section__wrapper" data-testid="hero-wrapper">
+                <h1 class="hero-section__headline" data-testid="hero-headline-h1">
+                    <span class="hero-section__name-wrapper" data-testid="hero-name-animation-wrapper">
+                        <span class="hero-section__name-char" data-testid="hero-name-char-1">[</span>
+                        <span class="hero-section__name-char" data-testid="hero-name-char-2">Y</span>
+                        <span class="hero-section__name-char" data-testid="hero-name-char-3">o</span>
+                        <span class="hero-section__name-char" data-testid="hero-name-char-4">u</span>
+                        <span class="hero-section__name-char" data-testid="hero-name-char-5">r</span>
+                        <span class="hero-section__name-char" data-testid="hero-name-char-6"> </span>
+                        <span class="hero-section__name-char" data-testid="hero-name-char-7">N</span>
+                        <span class="hero-section__name-char" data-testid="hero-name-char-8">a</span>
+                        <span class="hero-section__name-char" data-testid="hero-name-char-9">m</span>
+                        <span class="hero-section__name-char" data-testid="hero-name-char-10">e</span>
+                        <span class="hero-section__name-char" data-testid="hero-name-char-11">]</span>
+                    </span>
+                </h1>
+                <p class="hero-section__bio" data-testid="hero-bio-container">
+                    <span class="hero-section__bio-text" data-testid="hero-bio-text-content">[Short Bio: Senior Frontend
+                        Architect & QA Lead]</span>
+                </p>
+                <div class="hero-section__scroll-indicator" data-testid="hero-scroll-indicator-wrapper">
+                    <button class="hero-section__scroll-btn" data-testid="hero-scroll-trigger-button"
+                        aria-label="Scroll Down">
+                        <span class="hero-section__scroll-arrow" data-testid="hero-scroll-arrow-icon">↓</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SELECTED WORK SECTION -->
+        <section id="work" class="work-section" data-testid="work-section-container">
+            <div class="work-section__header" data-testid="work-header-container">
+                <h2 class="work-section__title" data-testid="work-section-title-h2">Selected Work</h2>
+            </div>
+            <ul class="work-section__list" data-testid="work-roles-list">
+                <li class="work-section__item" data-testid="work-item-wrapper-1">
+                    <div class="work-role" data-testid="work-role-card-1">
+                        <h3 class="work-role__title" data-testid="work-role-title-h3-1">[Role Title]</h3>
+                        <p class="work-role__company" data-testid="work-role-company-name-1">[Company Name]</p>
+                        <span class="work-role__duration" data-testid="work-role-duration-text-1">[Duration]</span>
+                    </div>
+                </li>
+            </ul>
+        </section>
+
+        <!-- PROJECTS SECTION -->
+        <section id="projects" class="projects-section" data-testid="projects-section-container">
+            <div class="projects-section__header" data-testid="projects-header-container">
+                <h2 class="projects-section__title" data-testid="projects-section-title-h2">Projects</h2>
+            </div>
+            <div class="projects-section__grid" data-testid="projects-grid-container">
+                <article class="project-card" data-testid="project-card-container-1">
+                    <div class="project-card__inner" data-testid="project-card-inner-box-1">
+                        <div class="project-card__content" data-testid="project-card-text-content-1">
+                            <h3 class="project-card__title" data-testid="project-card-title-h3-1">[Project Name]</h3>
+                            <p class="project-card__description" data-testid="project-card-description-text-1">[Brief
+                                project overview and tech stack]</p>
+                        </div>
+                        <div class="project-card__reveal" data-testid="project-card-reveal-container-1">
+                            <div class="project-card__image-wrapper" data-testid="project-card-image-placeholder-1">
+                            </div>
+                        </div>
+                        <a href="#" class="project-card__link" data-testid="project-link-anchor-1"
+                            aria-label="View Project [Project Name]"></a>
+                    </div>
+                </article>
+                <article class="project-card" data-testid="project-card-container-2">
+                    <div class="project-card__inner" data-testid="project-card-inner-box-2">
+                        <div class="project-card__content" data-testid="project-card-text-content-2">
+                            <h3 class="project-card__title" data-testid="project-card-title-h3-2">[Project Name]</h3>
+                            <p class="project-card__description" data-testid="project-card-description-text-2">[Brief
+                                project overview and tech stack]</p>
+                        </div>
+                        <div class="project-card__reveal" data-testid="project-card-reveal-container-2">
+                            <div class="project-card__image-wrapper" data-testid="project-card-image-placeholder-2">
+                            </div>
+                        </div>
+                        <a href="#" class="project-card__link" data-testid="project-link-anchor-2"
+                            aria-label="View Project [Project Name]"></a>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <!-- ACHIEVEMENTS SECTION -->
+        <section class="achievements-section" data-testid="achievements-section-container">
+            <div class="achievements-section__header" data-testid="achievements-header-container">
+                <h2 class="achievements-section__title" data-testid="achievements-section-title-h2">Achievements</h2>
+            </div>
+            <ul class="achievements-section__list" data-testid="achievements-items-list">
+                <li class="achievements-section__item" data-testid="achievement-item-wrapper-1">
+                    <div class="achievement-box" data-testid="achievement-perspective-box-1"
+                        data-perspective-wrap="true">
+                        <span class="achievement-box__text" data-testid="achievement-description-text-1">[Achievement
+                            Description or Award]</span>
+                    </div>
+                </li>
+            </ul>
+        </section>
+
+    </main>
+
+    <!-- FOOTER SECTION -->
+    <footer id="contact" class="footer" data-testid="global-footer-container">
+        <div class="footer__container" data-testid="footer-content-wrapper">
+            <div class="footer__contact" data-testid="footer-contact-info-container">
+                <h2 class="footer__title" data-testid="footer-contact-title-h2">Get in Touch</h2>
+                <a href="mailto:[Your Email]" class="footer__email" data-testid="footer-email-mailto-link">[Your
+                    Email]</a>
+            </div>
+            <div class="footer__socials" data-testid="footer-social-links-container">
+                <ul class="footer__socials-list" data-testid="footer-socials-ul-list">
+                    <li class="footer__socials-item" data-testid="social-item-li-linkedin">
+                        <a href="#" class="footer__socials-link" data-testid="social-link-anchor-linkedin">LinkedIn</a>
+                    </li>
+                    <li class="footer__socials-item" data-testid="social-item-li-github">
+                        <a href="#" class="footer__socials-link" data-testid="social-link-anchor-github">GitHub</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="footer__bottom" data-testid="footer-bottom-bar">
+                <p class="footer__copyright" data-testid="footer-copyright-text-content">&copy; 2024 [Your Name]. All
+                    rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- SCRIPTS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js" data-testid="gsap-cdn-script"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js" data-testid="gsap-scrolltrigger-script"></script>
+    <script src="script.js" data-testid="main-script-js"></script>
+</body>
+
+</html>

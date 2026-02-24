@@ -1,0 +1,46 @@
+{
+  "project": "Neo-Brutalist Portfolio",
+  "phase": 2,
+  "definition_of_done": "Automated Verification Spec",
+  "css_verification": {
+    "variables": {
+      "--bg-color": "#0a0a0a",
+      "--text-color": "#ededed",
+      "--accent-color": "#3b82f6",
+      "--border-color": "#333333",
+      "--card-bg": "#111111",
+      "--header-height": "80px"
+    },
+    "states": {
+      "hover_contrast_requirement": "High",
+      "hidden_utility_class": ".is-hidden"
+    }
+  },
+  "required_data_test_ids": [
+    "html-root",
+    "document-head",
+    "page-title",
+    "main-stylesheet",
+    "site-body",
+    "global-overlay-menu",
+    "overlay-navigation",
+    "global-header",
+    "header-container",
+    "global-menu-trigger",
+    "main-content-area",
+    "hero-section-container",
+    "hero-headline-h1",
+    "hero-scroll-trigger-button",
+    "work-section-container",
+    "work-roles-list",
+    "projects-section-container",
+    "projects-grid-container",
+    "project-card-container-1",
+    "project-card-reveal-container-1",
+    "project-link-anchor-1",
+    "achievements-section-container",
+    "achievement-perspective-box-1",
+    "global-footer-container",
+    "footer-email-mailto-link"
+  ]
+}
