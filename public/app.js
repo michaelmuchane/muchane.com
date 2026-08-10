@@ -76,6 +76,8 @@
 
     var pageCache = new Map();
     var inflight = false;
+    var navGen = 0;        // bumped whenever a transition is superseded by popstate
+    var activeAnims = [];  // WAAPI animations owned by the current transition only
     // Tracks the path currently rendered in #stage. Kept separate from
     // location.pathname because popstate fires AFTER the browser has
     // already updated location — by then location.pathname is the target,
@@ -122,7 +124,7 @@
         stage.dataset.depth = String(data.depth);
         document.title = data.title;
         if (push) {
-            history.pushState({ via: 'zoom', depth: data.depth }, '', url);
+            history.pushState({ via: 'zoom', depth: data.depth, from: currentPath }, '', url);
         }
         stage.focus({ preventScroll: true });
         currentPath = url;
@@ -177,105 +179,115 @@
         if (push === undefined) push = true;
         if (inflight) return;
         inflight = true;
+        var gen = ++navGen;
 
-        var data;
         try {
-            data = await loadPage(url);
-        } catch (e) {
-            inflight = false;
-            location.href = url;
-            return;
-        }
+            var data;
+            try {
+                data = await loadPage(url);
+            } catch (e) {
+                if (gen === navGen) location.href = url;
+                return;
+            }
+            if (gen !== navGen) return;
 
-        if (REDUCED.matches) {
+            if (REDUCED.matches) {
+                finalizeIn(url, data, push);
+                return;
+            }
+
+            var origin = centerOrigin(originEl, stage);
+
+            var outLayer = document.createElement('div');
+            outLayer.className = 'zoom-layer zoom-layer--out';
+            outLayer.style.transformOrigin = origin;
+            while (stage.firstChild) outLayer.appendChild(stage.firstChild);
+
+            var inLayer = document.createElement('div');
+            inLayer.className = 'zoom-layer zoom-layer--in';
+            inLayer.style.transformOrigin = origin;
+            inLayer.style.opacity = '0';
+            inLayer.innerHTML = data.mainHTML;
+
+            stage.classList.add('is-zooming');
+            stage.appendChild(outLayer);
+            stage.appendChild(inLayer);
+
+            activeAnims = buildAnimations(outLayer, inLayer, 'in');
+            await Promise.allSettled(activeAnims.map(function (a) { return a.finished; }));
+            if (gen !== navGen) return;
+            activeAnims = [];
+
             finalizeIn(url, data, push);
-            inflight = false;
-            return;
+        } finally {
+            if (gen === navGen) inflight = false;
         }
-
-        var origin = centerOrigin(originEl, stage);
-
-        var outLayer = document.createElement('div');
-        outLayer.className = 'zoom-layer zoom-layer--out';
-        outLayer.style.transformOrigin = origin;
-        while (stage.firstChild) outLayer.appendChild(stage.firstChild);
-
-        var inLayer = document.createElement('div');
-        inLayer.className = 'zoom-layer zoom-layer--in';
-        inLayer.style.transformOrigin = origin;
-        inLayer.style.opacity = '0';
-        inLayer.innerHTML = data.mainHTML;
-
-        stage.classList.add('is-zooming');
-        stage.appendChild(outLayer);
-        stage.appendChild(inLayer);
-
-        var anims = buildAnimations(outLayer, inLayer, 'in');
-        await Promise.allSettled(anims.map(function (a) { return a.finished; }));
-
-        finalizeIn(url, data, push);
-        inflight = false;
     }
 
     async function zoomOut(url, push) {
         if (push === undefined) push = true;
         if (inflight) return;
         inflight = true;
+        var gen = ++navGen;
 
-        var data;
         try {
-            data = await loadPage(url);
-        } catch (e) {
-            inflight = false;
-            location.href = url;
-            return;
-        }
+            var data;
+            try {
+                data = await loadPage(url);
+            } catch (e) {
+                if (gen === navGen) location.href = url;
+                return;
+            }
+            if (gen !== navGen) return;
 
-        if (REDUCED.matches) {
+            if (REDUCED.matches) {
+                finalizeOut(url, data, push);
+                return;
+            }
+
+            var outLayer = document.createElement('div');
+            outLayer.className = 'zoom-layer zoom-layer--out';
+            while (stage.firstChild) outLayer.appendChild(stage.firstChild);
+
+            var inLayer = document.createElement('div');
+            inLayer.className = 'zoom-layer zoom-layer--in';
+            inLayer.style.visibility = 'hidden';
+            inLayer.style.height = '100vh';
+            inLayer.style.overflow = 'hidden';
+            inLayer.innerHTML = data.mainHTML;
+
+            stage.classList.add('is-zooming');
+            stage.appendChild(outLayer);
+            stage.appendChild(inLayer);
+
+            // Origin lookup is scoped to the incoming LAYER, never `document` —
+            // the overlay menu (in <header>, before <main> in DOM order) links
+            // to the same five L1 routes, and a document-scoped query would
+            // match that hidden offscreen menu link instead of the real node.
+            var originNode = inLayer.querySelector('[href="' + currentPath + '"]');
+
+            if (data.depth === 0 && originNode) {
+                var layerRect = inLayer.getBoundingClientRect();
+                var nodeRect = originNode.getBoundingClientRect();
+                var nodeTopInLayer = nodeRect.top - layerRect.top + inLayer.scrollTop;
+                inLayer.scrollTop = Math.max(0, nodeTopInLayer - inLayer.clientHeight / 2 + nodeRect.height / 2);
+            }
+
+            var origin = originNode ? centerOrigin(originNode, inLayer) : '50% 50%';
+            outLayer.style.transformOrigin = origin;
+            inLayer.style.transformOrigin = origin;
+            inLayer.style.visibility = '';
+            inLayer.style.opacity = '0';
+
+            activeAnims = buildAnimations(outLayer, inLayer, 'out');
+            await Promise.allSettled(activeAnims.map(function (a) { return a.finished; }));
+            if (gen !== navGen) return;
+            activeAnims = [];
+
             finalizeOut(url, data, push);
-            inflight = false;
-            return;
+        } finally {
+            if (gen === navGen) inflight = false;
         }
-
-        var outLayer = document.createElement('div');
-        outLayer.className = 'zoom-layer zoom-layer--out';
-        while (stage.firstChild) outLayer.appendChild(stage.firstChild);
-
-        var inLayer = document.createElement('div');
-        inLayer.className = 'zoom-layer zoom-layer--in';
-        inLayer.style.visibility = 'hidden';
-        inLayer.style.height = '100vh';
-        inLayer.style.overflow = 'hidden';
-        inLayer.innerHTML = data.mainHTML;
-
-        stage.classList.add('is-zooming');
-        stage.appendChild(outLayer);
-        stage.appendChild(inLayer);
-
-        // Origin lookup is scoped to the incoming LAYER, never `document` —
-        // the overlay menu (in <header>, before <main> in DOM order) links
-        // to the same five L1 routes, and a document-scoped query would
-        // match that hidden offscreen menu link instead of the real node.
-        var originNode = inLayer.querySelector('[href="' + currentPath + '"]');
-
-        if (data.depth === 0 && originNode) {
-            var layerRect = inLayer.getBoundingClientRect();
-            var nodeRect = originNode.getBoundingClientRect();
-            var nodeTopInLayer = nodeRect.top - layerRect.top + inLayer.scrollTop;
-            inLayer.scrollTop = Math.max(0, nodeTopInLayer - inLayer.clientHeight / 2 + nodeRect.height / 2);
-        }
-
-        var origin = originNode ? centerOrigin(originNode, inLayer) : '50% 50%';
-        outLayer.style.transformOrigin = origin;
-        inLayer.style.transformOrigin = origin;
-        inLayer.style.visibility = '';
-        inLayer.style.opacity = '0';
-
-        var anims = buildAnimations(outLayer, inLayer, 'out');
-        await Promise.allSettled(anims.map(function (a) { return a.finished; }));
-
-        finalizeOut(url, data, push);
-        inflight = false;
     }
 
     /* CLICK WIRING */
@@ -289,9 +301,15 @@
         if (link.dataset.zoom === 'in') {
             zoomIn(href, link);
         } else if (link.dataset.zoom === 'out') {
-            if (history.state && history.state.via === 'zoom') {
+            if (inflight) return;
+            if (history.state && history.state.via === 'zoom' && history.state.from === href) {
                 // One history entry per zoom level: back() lets popstate
                 // animate and keeps the stack from growing on every click.
+                // `from` must match this link's target — swapStage stamps it
+                // on EVERY push (zoom-in and zoom-out alike), so without this
+                // check a deep-load-then-zoom-out page's up-link would take
+                // the back() shortcut into the child it just left instead of
+                // its real parent.
                 history.back();
             } else {
                 zoomOut(href);
@@ -308,15 +326,23 @@
         var currentDepth = Number(stage.dataset.depth || '0');
 
         if (inflight) {
-            // Click-storm / rapid-popstate escape hatch: cancel whatever is
-            // running and hard-swap straight to the URL the browser already
-            // committed to, rather than layering a second transition.
-            document.getAnimations().forEach(function (a) { a.cancel(); });
-            inflight = false;
+            // Click-storm / rapid-popstate escape hatch: invalidate the
+            // in-flight transition (bump navGen) so it can never finalize —
+            // and therefore never pushState — behind the URL the browser
+            // already committed to. Only the current transition's own
+            // animations are cancelled, never every animation in the
+            // document (that would also abort in-flight reveal-heading /
+            // menu transitions elsewhere on the page).
+            var gen = ++navGen;
+            activeAnims.forEach(function (a) { a.cancel(); });
+            activeAnims = [];
             loadPage(target).then(function (data) {
+                if (gen !== navGen) return;
                 swapStage(target, data, false);
                 window.scrollTo(0, 0);
+                inflight = false;
             }).catch(function () {
+                inflight = false;
                 location.href = target;
             });
             return;
