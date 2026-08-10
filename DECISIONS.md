@@ -19,8 +19,14 @@ repo root, outside `public/` — never served.
   engine. The menu jumps between top-level sections, not zoom levels — using the
   engine's fetch/animate path for a menu jump has no defined animation (no "origin
   node" on the target page from the menu's perspective) and isn't asked for.
-- **Local preview** stays `npx serve public --single`; production `try_files` rewrite is
-  out of scope this pass (confirmed in the plan) and doesn't exist yet on the VPS.
+- **Local preview drops `--single`.** `npx serve public --single` was found (during Phase
+  C browser testing) to rewrite EVERY path to `public/index.html`, including real
+  existing route files — the Phase B "all 10 routes return 200" check had been
+  status-only and was vacuous (every route silently served the L0 page's title/content).
+  Confirmed by comparing response bodies. Since every route is a real file, `--single`
+  buys nothing locally; preview is `npx serve public -l 4173` (no flag) from here on,
+  including the Phase E Playwright `webServer` command. Production `try_files` rewrite
+  is unaffected — still out of scope this pass, doesn't exist yet on the VPS.
 - **Accepted tradeoff — shell duplication:** the page shell (header, theme toggle,
   overlay menu, footer, FOUC-guard inline script) is duplicated verbatim across all 10
   HTML files. There is no build step to keep them in sync, so a shell change (e.g. a
@@ -32,3 +38,16 @@ repo root, outside `public/` — never served.
   duplication cost. The mitigation is a Phase E Playwright spec case that asserts the
   full shell testid set is present on every route (`specs/structure.json`), catching
   drift automatically instead of relying on manual review.
+
+## Phase C — zoom engine
+
+- **Zoom-out scroll anchoring** resolved the plan's one open motion detail: the
+  transform-origin driving the zoom-out animation is computed from a temporary
+  clipped overlay layer (100vh, `overflow:hidden`, internally scrolled to centre the
+  origin node) so the origin point is always on-screen during the animation. The FINAL
+  resting `window.scrollTo` position, applied after the real DOM swap, is instead
+  measured from the live post-swap DOM (find the departing page's node by `href`,
+  centre it in the viewport) — this avoids translating coordinates between the
+  temporary layer's clipped space and the real document's scroll space, which don't
+  correspond 1:1.
+
