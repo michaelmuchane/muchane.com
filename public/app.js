@@ -145,7 +145,7 @@
                                 { transform: 'translateY(50px) rotateX(-90deg)', opacity: 0 },
                                 { transform: 'translateY(0) rotateX(0deg)', opacity: 1 },
                             ],
-                            { duration: 800, easing: 'cubic-bezier(0.215, 0.61, 0.355, 1)', delay: idx * 20, fill: 'forwards' }
+                            { duration: 800, easing: 'cubic-bezier(0.165, 0.84, 0.44, 1)', delay: idx * 20, fill: 'forwards' }
                         );
                     });
                     obs.unobserve(entry.target);
@@ -171,9 +171,14 @@
                 var rect = node.getBoundingClientRect();
                 var dx = (e.clientX - (rect.left + rect.width / 2)) * 0.1;
                 var dy = (e.clientY - (rect.top + rect.height / 2)) * 0.1;
+                // 0.3s tracking ease vs 0.5s spring-back on leave — matches the
+                // retired GSAP version's two durations (both power2.out), not a
+                // single uniform duration for both directions.
+                inner.style.transitionDuration = '0.3s';
                 inner.style.transform = 'translate(' + dx + 'px, ' + dy + 'px)';
             });
             node.addEventListener('mouseleave', function () {
+                inner.style.transitionDuration = '0.5s';
                 inner.style.transform = '';
             });
         });

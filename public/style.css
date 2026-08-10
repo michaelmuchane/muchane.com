@@ -286,7 +286,7 @@ main {
     background: var(--card-bg);
     border: 1px solid var(--border-color);
     padding: 16px 20px;
-    transition: background 0.2s ease-out, border-color 0.2s ease-out, transform 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+    transition: background 0.2s ease-out, border-color 0.2s ease-out, transform 0.3s cubic-bezier(0.215, 0.61, 0.355, 1);
 }
 
 .node:hover .node__inner {
