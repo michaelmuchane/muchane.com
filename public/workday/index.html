@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en" data-testid="html-root">
+
+<head data-testid="document-head">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>try{if(localStorage.getItem('theme')==='light')document.documentElement.classList.add('light-mode')}catch(e){}</script>
+    <title>Workday — Michael Muchane</title>
+    <meta name="description" content="Workday is an enterprise SaaS provider of finance, HR, and student information systems for large organizations, including the Workday Student suite for higher education.">
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+
+    <div class="overlay-menu" data-testid="overlay-menu">
+        <button class="overlay-menu__close" data-testid="overlay-menu-close" aria-label="Close menu">✕</button>
+        <nav aria-label="Site sections">
+            <ul>
+                <li><a href="/" data-testid="menu-link-home">Home</a></li>
+                <li><a href="/two-sided-data-platform" data-testid="menu-link-two-sided-data-platform">Two-Sided Data Platform</a></li>
+                <li><a href="/muchane-cloud" data-testid="menu-link-muchane-cloud">Muchane Cloud</a></li>
+                <li><a href="/workday" data-testid="menu-link-workday">Workday</a></li>
+                <li><a href="/education" data-testid="menu-link-education">Education</a></li>
+                <li><a href="/contact" data-testid="menu-link-contact">Contact</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <header class="header" data-testid="site-header">
+        <a href="/" class="header__logo" data-testid="header-logo">Michael Muchane</a>
+        <div class="header__controls">
+            <button data-testid="theme-toggle" aria-label="Toggle light and dark theme">Mode</button>
+            <button data-testid="menu-trigger" aria-label="Open menu" aria-expanded="false">Menu</button>
+        </div>
+    </header>
+
+    <main id="stage" data-depth="1" tabindex="-1" data-testid="stage">
+        <div class="page">
+            <a class="up-link" data-zoom="out" href="/" data-testid="up-link">← Constellation</a>
+            <h1 data-testid="page-heading">Workday</h1>
+            <p class="page__meta" data-testid="page-meta">Pleasanton, CA &middot; 2019 – 2025</p>
+
+        <div class="children" data-testid="children">
+            <a class="child-card" href="/workday/senior-product-quality-engineer" data-zoom="in" data-testid="child-link-senior-product-quality-engineer">
+                <span class="node__title">Senior Product Quality Engineer</span>
+                    <span class="node__meta">&#8217;22 – &#8217;25</span>
+            </a>
+            <a class="child-card" href="/workday/product-management-rotation" data-zoom="in" data-testid="child-link-product-management-rotation">
+                <span class="node__title">Product Management Rotation</span>
+                    <span class="node__meta">&#8217;21 – &#8217;23</span>
+            </a>
+            <a class="child-card" href="/workday/product-quality-engineer" data-zoom="in" data-testid="child-link-product-quality-engineer">
+                <span class="node__title">Product Quality Engineer</span>
+                    <span class="node__meta">&#8217;19 – &#8217;22</span>
+            </a>
+        </div>
+        </div>
+    </main>
+
+    <footer class="footer" data-testid="site-footer">
+        <a href="mailto:michaelmuchane@gmail.com" data-testid="footer-email">michaelmuchane@gmail.com</a>
+        <a href="https://github.com/michaelmuchane" data-testid="footer-github">github.com/michaelmuchane</a>
+        <a href="https://www.linkedin.com/in/michael-muchane/" data-testid="footer-linkedin">www.linkedin.com/in/michael-muchane/</a>
+    </footer>
+
+    <script src="/app.js"></script>
+</body>
+
+</html>

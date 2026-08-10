@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en" data-testid="html-root">
+
+<head data-testid="document-head">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>try{if(localStorage.getItem('theme')==='light')document.documentElement.classList.add('light-mode')}catch(e){}</script>
+    <title>Senior Product Quality Engineer — Workday — Michael Muchane</title>
+    <meta name="description" content="Owned quality strategy and delivery for Workday Student's cloud applications, including release leadership for the product's largest UX initiative and the REST API program supporting 3M+ student records.">
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+
+    <div class="overlay-menu" data-testid="overlay-menu">
+        <button class="overlay-menu__close" data-testid="overlay-menu-close" aria-label="Close menu">✕</button>
+        <nav aria-label="Site sections">
+            <ul>
+                <li><a href="/" data-testid="menu-link-home">Home</a></li>
+                <li><a href="/two-sided-data-platform" data-testid="menu-link-two-sided-data-platform">Two-Sided Data Platform</a></li>
+                <li><a href="/muchane-cloud" data-testid="menu-link-muchane-cloud">Muchane Cloud</a></li>
+                <li><a href="/workday" data-testid="menu-link-workday">Workday</a></li>
+                <li><a href="/education" data-testid="menu-link-education">Education</a></li>
+                <li><a href="/contact" data-testid="menu-link-contact">Contact</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <header class="header" data-testid="site-header">
+        <a href="/" class="header__logo" data-testid="header-logo">Michael Muchane</a>
+        <div class="header__controls">
+            <button data-testid="theme-toggle" aria-label="Toggle light and dark theme">Mode</button>
+            <button data-testid="menu-trigger" aria-label="Open menu" aria-expanded="false">Menu</button>
+        </div>
+    </header>
+
+    <main id="stage" data-depth="2" tabindex="-1" data-testid="stage">
+        <div class="page">
+            <a class="up-link" data-zoom="out" href="/workday" data-testid="up-link">← Workday</a>
+            <h1 data-testid="page-heading">Senior Product Quality Engineer</h1>
+            <p class="page__meta" data-testid="page-meta">Workday &middot; &#8217;22 – &#8217;25</p>
+
+        </div>
+    </main>
+
+    <footer class="footer" data-testid="site-footer">
+        <a href="mailto:michaelmuchane@gmail.com" data-testid="footer-email">michaelmuchane@gmail.com</a>
+        <a href="https://github.com/michaelmuchane" data-testid="footer-github">github.com/michaelmuchane</a>
+        <a href="https://www.linkedin.com/in/michael-muchane/" data-testid="footer-linkedin">www.linkedin.com/in/michael-muchane/</a>
+    </footer>
+
+    <script src="/app.js"></script>
+</body>
+
+</html>

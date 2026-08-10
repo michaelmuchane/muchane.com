@@ -42,7 +42,50 @@
         </section>
 
         <section class="constellation-section" data-testid="constellation-section">
-            <!-- Constellation nodes + connecting SVG land in Phase B. -->
+            <div class="constellation" data-testid="constellation">
+                <svg class="constellation__svg" viewBox="0 0 100 62" preserveAspectRatio="none" aria-hidden="true" data-testid="constellation-svg">
+                    <polyline points="12,18 32,52 54,26 72,64 90,38"></polyline>
+                </svg>
+
+                <a class="node" href="/two-sided-data-platform" data-zoom="in" style="--x:12%; --y:18%" data-testid="node-two-sided-data-platform">
+                    <div class="node__inner">
+                        <span class="node__title">Two-Sided Data Platform</span>
+                        <span class="node__meta">2025 – Present</span>
+                    </div>
+                </a>
+
+                <a class="node" href="/muchane-cloud" data-zoom="in" style="--x:32%; --y:52%" data-testid="node-muchane-cloud">
+                    <div class="node__inner">
+                        <span class="node__title">Muchane Cloud</span>
+                        <span class="node__meta">2025 – Present</span>
+                    </div>
+                </a>
+
+                <a class="node" href="/workday" data-zoom="in" style="--x:54%; --y:26%" data-testid="node-workday">
+                    <div class="node__inner">
+                        <span class="node__title">Workday</span>
+                        <span class="node__meta">2019 – 2025</span>
+                        <span class="node__company">Workday is an enterprise SaaS provider of finance, HR, and student information systems for large organizations, including the Workday Student suite for higher education.</span>
+                        <ul class="node__strip" data-testid="workday-recognition-strip">
+                            <li>Subject matter expert, Recruiting and Admissions</li>
+                            <li>Security Advocate for Workday Student</li>
+                            <li>19 peer and manager recognitions logged, 2019 to 2024</li>
+                        </ul>
+                    </div>
+                </a>
+
+                <a class="node" href="/education" data-zoom="in" style="--x:72%; --y:64%" data-testid="node-education">
+                    <div class="node__inner">
+                        <span class="node__title">Education</span>
+                    </div>
+                </a>
+
+                <a class="node" href="/contact" data-zoom="in" style="--x:90%; --y:38%" data-testid="node-contact">
+                    <div class="node__inner">
+                        <span class="node__title">Contact</span>
+                    </div>
+                </a>
+            </div>
         </section>
 
     </main>
