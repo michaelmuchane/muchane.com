@@ -51,3 +51,27 @@ repo root, outside `public/` — never served.
   temporary layer's clipped space and the real document's scroll space, which don't
   correspond 1:1.
 
+## Phase D — content transcription
+
+- **Recognition placement:** the content doc's "at L2 depth inside the Workday node"
+  refers to CONTENT depth (pitch/narrative/receipts), not zoom depth — Workday's zoom
+  children are fixed at exactly 3 roles. Recognition (all four subsections) and both
+  pull quotes render as page-body sections on `/workday` itself, not as a 4th child
+  route. See plan Assumptions for the fallback if this reading is overridden.
+- **Char-split reveal scope** follows the plan literally: only the three zoom-depth-2
+  pages' `Receipts` `<h2>`s (multimodal app, Senior PQE, PM Rotation) and the four
+  Workday Recognition `<h3>`s get `.reveal-heading`. TSDP's own `Receipts` `<h2>`
+  (zoom-depth 1) stays a plain heading — intentional per the plan's exact wording, not
+  an oversight.
+- **Meta lines and Education institution lines are composed, not verbatim quotes.**
+  Lines like "Technical Product Manager · Raleigh, NC · 2025 – Present" join separate
+  doc fields (role/company header, location, date range) with a middot — a structural
+  formatting choice, not prose transcription. Education's two institution lines
+  similarly compress the doc's multi-line institution blocks into one line each, per
+  the doc's own "SITE TREATMENT: two institution lines at L1" instruction. Verified
+  automatically: extracted every `<p>/<li>/<h2>/<h3>/<cite>` text node ≥15 chars across
+  all 8 content-bearing pages and confirmed each is either a verbatim substring of the
+  content doc or one of these known composed/sanctioned exceptions (8 total, all
+  accounted for — see hand-back notes).
+
+

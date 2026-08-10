@@ -112,11 +112,72 @@
         return (o.left + o.width / 2 - s.left) + 'px ' + (o.top + o.height / 2 - s.top) + 'px';
     }
 
-    // Populated during content transcription: currently no-ops. Called
-    // after every stage swap (initial load included via the bottom-of-file
-    // call) so fetched pages get the same enhancements as a hard load.
-    function bindRevealHeadings(root) {}
-    function bindParallaxNodes(root) {}
+    // Salvaged pattern 1 — char-split reveal (ported from the retired GSAP
+    // ScrollTrigger version: rotateX -90, 0.02s stagger). One-shot per
+    // heading (unobserve after firing, no reverse-on-scroll-up). Skipped
+    // entirely under reduced motion — the heading renders as plain text.
+    function bindRevealHeadings(root) {
+        var headings = root.querySelectorAll('.reveal-heading:not([data-revealed])');
+        headings.forEach(function (h) {
+            h.dataset.revealed = 'true';
+            if (REDUCED.matches) return;
+
+            var text = h.textContent;
+            h.setAttribute('aria-label', text);
+            h.innerHTML = '';
+            var chars = [];
+            for (var i = 0; i < text.length; i++) {
+                var span = document.createElement('span');
+                span.className = 'char';
+                span.setAttribute('aria-hidden', 'true');
+                span.textContent = text[i] === ' ' ? '\u00A0' : text[i];
+                span.style.opacity = '0';
+                h.appendChild(span);
+                chars.push(span);
+            }
+
+            var observer = new IntersectionObserver(function (entries, obs) {
+                entries.forEach(function (entry) {
+                    if (!entry.isIntersecting) return;
+                    chars.forEach(function (span, idx) {
+                        span.animate(
+                            [
+                                { transform: 'translateY(50px) rotateX(-90deg)', opacity: 0 },
+                                { transform: 'translateY(0) rotateX(0deg)', opacity: 1 },
+                            ],
+                            { duration: 800, easing: 'cubic-bezier(0.215, 0.61, 0.355, 1)', delay: idx * 20, fill: 'forwards' }
+                        );
+                    });
+                    obs.unobserve(entry.target);
+                });
+            }, { threshold: 0.2 });
+            observer.observe(h);
+        });
+    }
+
+    // Salvaged pattern 2 — parallax hover (ported from the retired GSAP
+    // mousemove version: 0.1 follow factor). Mouse-only, skipped under
+    // reduced motion, applied to .node__inner (a CHILD of the <a class="node">)
+    // so the zoom-origin rect measured off the <a> itself stays stable.
+    function bindParallaxNodes(root) {
+        if (!matchMedia('(hover: hover)').matches) return;
+        var inners = root.querySelectorAll('.constellation .node__inner');
+        inners.forEach(function (inner) {
+            if (inner.dataset.parallaxBound === 'true') return;
+            inner.dataset.parallaxBound = 'true';
+            var node = inner.parentElement;
+            node.addEventListener('mousemove', function (e) {
+                if (REDUCED.matches) return;
+                var rect = node.getBoundingClientRect();
+                var dx = (e.clientX - (rect.left + rect.width / 2)) * 0.1;
+                var dy = (e.clientY - (rect.top + rect.height / 2)) * 0.1;
+                inner.style.transform = 'translate(' + dx + 'px, ' + dy + 'px)';
+            });
+            node.addEventListener('mouseleave', function () {
+                inner.style.transform = '';
+            });
+        });
+    }
 
     function swapStage(url, data, push) {
         stage.classList.remove('is-zooming');

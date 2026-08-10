@@ -286,6 +286,7 @@ main {
     background: var(--card-bg);
     border: 1px solid var(--border-color);
     padding: 16px 20px;
+    transition: background 0.2s ease-out, border-color 0.2s ease-out, transform 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
 }
 
 .node:hover .node__inner {
@@ -389,6 +390,27 @@ details[open] summary {
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
     font-size: 0.8rem;
     color: var(--meta-color);
+}
+
+.contact-list {
+    list-style: none;
+    margin: 24px 0;
+}
+
+.contact-list li {
+    margin: 14px 0;
+}
+
+.contact-list a {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 1.05rem;
+    text-decoration: none;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.contact-list a:hover {
+    color: var(--accent-color);
+    border-color: var(--accent-color);
 }
 
 .todo-block {
