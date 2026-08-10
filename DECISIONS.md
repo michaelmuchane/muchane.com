@@ -74,4 +74,51 @@ repo root, outside `public/` — never served.
   content doc or one of these known composed/sanctioned exceptions (8 total, all
   accounted for — see hand-back notes).
 
+## Post-Phase-D — visual/motion fixes (pixel-level, caught after Phase D preview)
 
+Neither the gate greps nor the manual click-through smoke render pixels, so three
+parameter-fidelity bugs shipped in the Phase D commit and were only found by measuring
+the live DOM:
+- **Constellation line/node misalignment:** the SVG used `viewBox="0 0 100 62"` with
+  `preserveAspectRatio="none"`, but node positions are plain percentages of container
+  height. 62 (not 100) as the viewBox height meant every polyline endpoint rendered at
+  `(y/62)*100%` instead of `y%` — roughly 11 percentage points below the node it was
+  meant to meet. Fixed to `viewBox="0 0 100 100"` so x/y percentages map 1:1 to node
+  `left`/`top` regardless of the container's actual aspect ratio. Verified by measuring
+  live `getBoundingClientRect()` on all 5 polyline endpoints vs their node centres: 0px
+  delta on all 5, not eyeballed.
+- **Parallax hover lag:** `.node__inner` had one uniform `0.5s` transform transition for
+  both the mousemove-follow and the mouseleave spring-back, so fast cursor movement
+  visibly lagged rather than tracked. Split via inline `transitionDuration` set right
+  before each transform write: `0.3s` while tracking, `0.5s` on leave — restoring the
+  retired GSAP source's two durations (both were `power2.out`; only the duration
+  differed) instead of collapsing them to one value.
+- **Char-reveal easing mislabel:** the plan's own parenthetical called
+  `cubic-bezier(0.215, 0.61, 0.355, 1)` "power3.out"; it is actually the standard
+  `power2.out`/`easeOutCubic` approximation. The retired `script.js` achievements
+  reveal really used `power3.out` (quart). Corrected to `cubic-bezier(0.165, 0.84, 0.44,
+  1)`, the true `power3.out`/`easeOutQuart` equivalent.
+
+## Node face equalization (override of the original "visible without clicking in" instruction)
+
+Michael, the author of the original instruction that the Workday node face carry a
+company line + three-line recognition strip visible without clicking in, reviewed the
+built result and is overriding that instruction now that its effect is visible: the
+Workday node visually dominated its four siblings (title+meta only), breaking the
+equal-weight read of the constellation. Per his direction: the company line and
+three-line strip move off the L0 node face — now title + monospace meta only, matching
+all four siblings — onto `/workday`'s page body, placed directly after the
+`recognition-heading` and before its four fuller `<h3>` subsections (content unchanged,
+relocated verbatim, not reworded). `.node__company`/`.node__strip` (node-face-only
+rules) are removed from `style.css`; the relocated list uses a new `.recognition-strip`
+page-content rule. Verified visually: screenshot of the L0 constellation shows all 5
+node cards reading as comparable size/weight (title + one meta line each).
+
+## Phase E — deferred
+
+A visual-design pass on the built structure is coming before the spec-runner rebuild,
+and that pass will change markup (this session's own node-equalization edit is a first
+instance of exactly that). Writing `specs/structure.json`/`behavior.json` against
+today's DOM now would mean rewriting them again once the design pass lands. Phase E
+(Playwright install, config, `specs/*.json` rewrite, dynamic runner) stays parked until
+that pass is done — sequencing intentionally preserved here, not dropped.

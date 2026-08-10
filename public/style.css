@@ -308,28 +308,6 @@ main {
     margin-top: 6px;
 }
 
-.node__company {
-    display: block;
-    font-size: 0.8rem;
-    color: var(--meta-color);
-    margin-top: 10px;
-    max-width: 34ch;
-}
-
-.node__strip {
-    list-style: none;
-    margin-top: 10px;
-    border-top: 1px solid var(--border-color);
-    padding-top: 10px;
-}
-
-.node__strip li {
-    font-family: 'JetBrains Mono', 'Fira Code', monospace;
-    font-size: 0.68rem;
-    color: var(--meta-color);
-    margin: 4px 0;
-}
-
 /* CHILD CARDS */
 .children {
     display: grid;
@@ -390,6 +368,20 @@ details[open] summary {
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
     font-size: 0.8rem;
     color: var(--meta-color);
+}
+
+.recognition-strip {
+    list-style: none;
+    margin: 20px 0 32px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-color);
+}
+
+.recognition-strip li {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.8rem;
+    color: var(--meta-color);
+    margin: 6px 0;
 }
 
 .contact-list {
