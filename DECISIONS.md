@@ -105,12 +105,13 @@ Michael, the author of the original instruction that the Workday node face carry
 company line + three-line recognition strip visible without clicking in, reviewed the
 built result and is overriding that instruction now that its effect is visible: the
 Workday node visually dominated its four siblings (title+meta only), breaking the
-equal-weight read of the constellation. Per his direction: the company line and
-three-line strip move off the L0 node face — now title + monospace meta only, matching
-all four siblings — onto `/workday`'s page body, placed directly after the
-`recognition-heading` and before its four fuller `<h3>` subsections (content unchanged,
-relocated verbatim, not reworded). `.node__company`/`.node__strip` (node-face-only
-rules) are removed from `style.css`; the relocated list uses a new `.recognition-strip`
+equal-weight read of the constellation. Per his direction: the three-line strip
+relocated to `/workday`, placed directly after the `recognition-heading` and before its
+four fuller `<h3>` subsections (content unchanged, relocated verbatim, not reworded).
+The company line was already present on `/workday`'s page body independently from
+Phase D (`.company-line`) — it needed no move, only removal from the node face.
+`.node__company`/`.node__strip` (node-face-only rules) are removed from `style.css`;
+the relocated list uses a new `.recognition-strip`
 page-content rule. Verified visually: screenshot of the L0 constellation shows all 5
 node cards reading as comparable size/weight (title + one meta line each).
 
