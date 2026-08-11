@@ -4,3 +4,4 @@ test-results/
 playwright-report/
 .omp/
 PHASE-E-HANDOFF.md
+.artifacts/

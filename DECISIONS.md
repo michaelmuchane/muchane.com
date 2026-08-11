@@ -421,3 +421,98 @@ animated case (0.9/0.95), `display`/`visibility` show it's actually rendered wit
 area, and two 1s-apart snapshots are position-identical (no drift). All four checks passed
 for all 8 satellites.
 
+
+## Constellation pass 3 — pills, purple accent, muchane-cloud satellites, recomposition, sub-node fix
+
+**Pill shape — deliberate exception to the sharp-corner language, Michael-approved.**
+`.node__satellite` gets `border-radius: 999px` (fully rounded ends), `padding: 3px 10px`,
+a 1px `--border-color` border, and `--card-bg` fill, on top of the existing dim/small mono
+text treatment. This is the first rounded element anywhere on the site; every other border
+is a sharp 1px rule. Reasoning, per Michael's explicit direction: roundness is what reads
+as an orbital body annotating a star rather than a smaller card — logged here so a future
+pass doesn't "fix" it back to square on a design-consistency sweep. Subordination to the
+parent card is enforced three ways, not just roundness: meta-sized (`0.72rem`) dim text
+against the card's `1.3rem` title, whole-element `opacity: 0.9`/`0.95` (dark/light)
+dimming border and fill together, and a ~24px-tall pill against a ~90px-tall card.
+
+**Satellite labels abbreviated**, all testids unchanged: workday "Senior Product Quality
+Engineer"/"Product Management Rotation"/"Product Quality Engineer" → "Senior PQE"/"PM
+Rotation"/"PQE"; education "Boston University"/"Wake Forest University" → "BU"/"Wake
+Forest" (kept as the mismatched-length pair specified — each is the institution's actual
+colloquial short name, and the width spread is no worse than workday's own "PQE" vs "PM
+Rotation"); contact unchanged (already short). Two new satellites added to
+`node-muchane-cloud` — `satellite-muchane-cloud-1` "iapply", `satellite-muchane-cloud-2`
+"muchane.com" — same `<span>`-in-`<a>`, no-`href`, `aria-hidden="true"` grammar as every
+other satellite (see "Satellites + accent pass" above). **PRM was explicitly cut, not
+shipped and hidden**: it does not exist (no app, no route, no deployed service), and a
+"coming soon" satellite on a public portfolio is the same category of unbacked forward
+claim as the `/muchane-cloud` TODO block itself — Michael's call, made before
+implementation started.
+
+**Orbit amplitude raised ±4px/±3px → ±9px/±6px, period stretched 22s → 36s.**
+Abbreviation shrank the widest pill from ~193px ("Product Management Rotation") to ~98px
+("PM Rotation"/"Wake Forest"/"muchane.com"), freeing enough clearance budget to make the
+drift actually read as orbiting instead of the previous barely-perceptible wobble. The
+diameter (18px/12px) is now comparable to the pill's own rendered height, so it reads as a
+body moving through local space. Period stretched in proportion to hold average travel
+speed near the prior value (~1.2px/s vs ~0.9px/s before) — same imperceptible-unless-
+watched order of motion, not a livelier animation.
+
+**Accent color: blue → purple.** `--accent-color` dark `#3b82f6` → `#B07FFF` (iapply's
+exact dark-UI value, reused as instructed). Light counterpart derived, not reused
+verbatim: `#2563eb` → `#7C3AED` (Tailwind violet-600), chosen as the structural analog of
+the outgoing light accent (`#2563eb` is Tailwind blue-600) — same relationship between the
+two theme values is preserved, not just the same hue family. `#B07FFF` directly on
+`#f5f5f5` was not used; it was never contrast-checked because the family-analog approach
+made a purpose-built pick clearly preferable to reusing a value tuned for a dark UI.
+Contrast measured live via `getComputedStyle` + WCAG relative-luminance math, both themes,
+composited where opacity < 1: `.page h2` text+border and `.up-link` text, dark 6.91:1 /
+light 5.23:1 (both far above 4.5:1 — accent-on-page-bg is the shared pairing behind
+`.page h2`, `.up-link`, overlay-menu link hover, footer link hover, and contact-list link
+hover, all bound to the same token). Node hover/focus border (non-text, ≥3:1 floor):
+accent vs `--card-bg` dark 6.59:1 / light 5.70:1, vs `--hover-bg` dark 6.07:1 / light
+4.91:1. Pill text-on-fill (opacity-composited): dark 6.28:1 / light 6.80:1. Global
+`:focus-visible` outline screenshot-verified visible against both card and page
+backgrounds in both themes (purple ring, unmistakable). Rejected candidates: `#8B5CF6`
+(violet-500, 3.88:1 on `#f5f5f5` — fails outright); `#6D28D9` (violet-700, 6.52:1 — passes
+but sits darker than the `#B07FFF`-relative brightness this pass targeted).
+
+**L0 recomposition**: `.node__inner` padding `18px 24px → 22px 28px`, `.node__title`
+`1.15rem → 1.3rem`, `.node` `max-width: 300px → 360px` (keeps "Two-Sided Data Platform" on
+one line at the larger size). Coordinates adjusted from the prior pass's
+`(11,22) (30,60) (52,28) (73,68) (91,42)` to `(10,20) (29,63) (52,26) (73,70) (91,42)` —
+a small outward spread giving the now-two-satellite Muchane Cloud cluster (previously bare)
+more room without materially moving any other node. Verified programmatically at
+1280/1440/1920: x strictly increasing, all y distinct, zero polyline segment crossings,
+polyline endpoints within 0.02px of node centres (well under the 2px bar), zero pill/card
+or pill/pill overlaps at any of the 3 widths **and** at 3 sampled orbit phases (0s/12s/24s
+of the 36s cycle) — 9 combinations checked, zero overlaps in any. Subjective read on the
+built render: five clusters read as distinct and intentional, no barren dead zones at any
+edge, no crowding or near-misses between clusters — the pass achieves both "avoid barren"
+and "avoid crowded" simultaneously without a second iteration.
+
+**`/workday` sub-node height fix — mixed retitle, not full abbreviation.** Root cause
+(confirmed by measurement, not guessed): the three sub-nodes are absolutely positioned
+inside a 640px container; a node at `--x:82%` gets only 640×0.18=115px of shrink-to-fit
+width before border/padding, not the full `max-width:240px` — "Senior Product Quality
+Engineer" broke one or two words per line inside that 83px content box, quadrupling that
+card's height relative to its siblings. Fix applied in two parts. First, per Michael's
+explicit override on the original all-abbreviated plan: "Product Quality Engineer" ships
+spelled out (not "PQE") and "PM Rotation"/"Senior PQE" ship shortened — the sub-node cards
+are primary navigation on the page a reader has just landed on, not passing signage like
+the L0 satellites, and a bare "PQE" card expands nowhere above it on the page (the h1 is
+just "Workday"). Second, live measurement showed "Senior PQE" itself still clipped the
+83px box at `--x:82%` by under 1px (81.66px needed vs 81.2px available) — applied the
+plan's pre-decided fallback, moving that node to `--x:80%` (128px available, 94px content
+box) and updating the polyline in lockstep (`16,66 50,24 82,60` → `16,66 50,24 80,60`).
+Result: all three cards render at an identical 74.64px height (ratio 1.00, comfortably
+inside the ≤1.15 bar), polyline endpoints within 0.01px of node centres. Role names in
+page body content, `.node__meta` year ranges, and every L2 page `<h1>` are untouched —
+only the three sub-node `.node__title` spans changed.
+
+**Deploy blocker, unchanged status, now doubled exposure**: `/muchane-cloud` is still the
+inherited `todo-block` placeholder (no real content). This pass adds two working L0
+satellites ("iapply", "muchane.com") that point at that node, so the homepage now
+advertises the page twice as prominently as before. Do not deploy until `/muchane-cloud`
+has real content — flagged again here, not resolved by this pass, which was explicitly
+scoped to leave page content untouched.
