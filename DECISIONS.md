@@ -123,3 +123,40 @@ instance of exactly that). Writing `specs/structure.json`/`behavior.json` agains
 today's DOM now would mean rewriting them again once the design pass lands. Phase E
 (Playwright install, config, `specs/*.json` rewrite, dynamic runner) stays parked until
 that pass is done — sequencing intentionally preserved here, not dropped.
+
+## Starfield backdrop
+
+Canvas 2D starfield (`public/starfield.js`) added behind all 10 routes: fixed
+`#starfield` canvas, three parallax depth layers, theme-reactive, reduced-motion-static.
+Purely additive — zoom engine, routing, history, content, and every pre-existing
+`data-testid` untouched. One new testid (`starfield`) added.
+
+- **Theme hook:** `MutationObserver` on `document.documentElement` watching the `class`
+  attribute, rather than a callback wired through `app.js`. Reasoning: keeps `app.js`
+  byte-identical (this pass is purely additive, not a shared-state refactor), needs no
+  cross-page plumbing duplicated across the 10 HTML files, and fires synchronously right
+  after the existing theme-toggle handler's `classList.toggle('light-mode')` — no
+  polling, no missed frame.
+- **Load order:** `<script src="/starfield.js" defer>` sits in `<head>`, after
+  `<link rel="stylesheet">`. `defer` means the fetch overlaps head/body parsing but
+  execution waits for a fully parsed DOM, and — critically — runs after the inline
+  FOUC-guard script earlier in `<head>` (which adds `light-mode` synchronously before
+  paint). Reading `documentElement.classList` at init is therefore FOUC-safe: the first
+  `draw()` always picks the theme-correct sprite, no flash of the wrong one.
+- **Dark-sprite gradient stops** were unspecified beyond "tighter core, minimal halo,
+  dark specks" — chosen this pass as an inverted-cast dark radial
+  (`rgba(22,26,34,*)`, stops at 0/0.20/0.45/0.70/1) against the light sprite's near-white
+  cool cast. Retunable like every other visual constant; not treated as final.
+- **Zoom-transition observation** (canvas intentionally does NOT scale during a zoom —
+  per instruction, not a bug): watched a full L0→L1 zoom (`/` → `/two-sided-data-platform`)
+  with before/mid-transition/after screenshots. The starfield speckle positions are
+  pixel-stable across all three frames while the content card scales up to fill the
+  viewport — the backdrop reads as a steady, distant layer against the rushing
+  foreground, which is the depth cue the fixed positioning was chosen for. No visual
+  conflict observed; the star density is subtle enough that it doesn't fight the
+  scaling content for attention mid-transition. No unilateral change made to this
+  behavior.
+- **Measured FPS** (headless Chromium, dark theme, `/`, 2s sample): 60.1 fps at normal
+  speed; 53.3 fps under a 4× CPU-throttle emulation (`Emulation.setCPUThrottlingRate`).
+  Flagged, not remediated — `count`/`ceiling`/`glow` retuning is Michael's explicit
+  post-review step, not this pass's.
