@@ -277,3 +277,50 @@ up-links (which point at their parent role/company name, e.g. "← Workday") are
 above (Zoom-out scroll anchoring); note here only because it was discovered and fixed in
 this same pass, before satellites/accent work began.
 
+
+## Zoom-in scroll settle — same bug class, other direction
+
+The scroll-settle fix in the earlier session covered `zoomOut` only. Follow-up review
+correctly caught that `finalizeIn` (used by every zoom-IN, both animated and
+reduced-motion) still called plain `window.scrollTo(0, 0)` after the swap, under the same
+global `scroll-behavior: smooth` — so zooming IN to a node below the fold still glided
+after the animation, the same symptom originally reported, just on the other direction.
+Grepped `app.js` for every remaining `window.scrollTo`/`scrollIntoView` call and converted
+every one to go through the shared helper: `finalizeIn`, both branches of `finalizeOut`,
+and the popstate click-storm escape hatch. No hash-anchor links exist anywhere in the site
+(`grep -r 'href="#"' public/` — zero matches), so `scroll-behavior: smooth` had no
+legitimate consumer left to preserve; every call site converted.
+
+**The `scrollToInstant` helper itself was broken and had to be rewritten.** The original
+implementation (toggle `documentElement.style.scrollBehavior` to `'auto'`, call
+`scrollTo`, revert) only happened to work in `zoomOut`'s verification because an unrelated
+forced-layout read (`stage.offsetHeight`, for the min-height freeze) immediately followed
+it and incidentally flushed the scroll synchronously. In `finalizeIn`, with no such
+incidental flush after it, the revert raced Chromium's scroll-animation scheduling — which
+resolves `scroll-behavior` for an in-flight `scrollTo` at the next frame, not at the call —
+and silently reinstated the smooth glide. Inserting an explicit forced-layout read inside
+the helper did NOT fix this either (still glided). Replaced the whole toggle-revert
+pattern with `window.scrollTo({ top: y, left: 0, behavior: 'instant' })`: per the WHATWG
+CSSOM View spec, an explicit `'instant'`/`'smooth'` behavior bypasses the element's CSS
+`scroll-behavior` unconditionally — only unspecified/`'auto'` consults it — so there is no
+race to have.
+
+**A second, unrelated scroll discontinuity in `zoomIn`, found only because the
+verification bar was "one instant jump, zero discontinuity," not "check the fix I
+intended to make."** `zoomIn` moves the outgoing page's children into `outLayer` (pulling
+them out of `#stage`'s normal flow) BEFORE adding the `is-zooming` class — this collapses
+`#stage` to its base `min-height` immediately, which can shrink the document below the
+current scroll position and force the BROWSER to natively clamp `scrollY` — a jump that
+is not a `scrollTo` call at all, so the grep above would never have found it. Same fix
+pattern as `zoomOut`'s min-height freeze: capture `#stage`'s height and set it as an
+inline `min-height` before any child leaves flow; `swapStage`'s existing cleanup
+(`stage.style.minHeight = ''`) clears it on the other end.
+
+Verified numerically: scrollY sampled every frame across a zoom-in to a node scrolled
+below the fold (L0 scrolled to the Contact node, `scrollY = 452`, then click) — exactly
+one instant jump (`452 → 0` in a single frame, at the animation's actual completion time),
+zero discontinuities for the full ~1.5s transition. Re-ran the zoom-out scrollY-continuity
+check, the `0bba9e8` double-click and preempted-Back regressions, and reduced-motion
+zoom-in — all still clean after the `scrollToInstant` rewrite and the `zoomIn` height
+freeze.
+

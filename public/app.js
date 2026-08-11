@@ -112,19 +112,20 @@
         return (o.left + o.width / 2 - s.left) + 'px ' + (o.top + o.height / 2 - s.top) + 'px';
     }
 
-    // html has global `scroll-behavior: smooth` (style.css) so a plain
-    // window.scrollTo never applies synchronously — it animates across
-    // later frames, and window.scrollY read right after calling it still
-    // reports the OLD position. zoomOut's "commit scroll before the
-    // animation" step needs the scroll to actually be final before it reads
-    // window.scrollY / builds the layers, so this forces that one jump to
-    // be instant without touching the global smooth-scroll behavior used
-    // elsewhere on the page.
+    // html has global `scroll-behavior: smooth` (style.css), which makes a
+    // plain window.scrollTo(x, y) animate — it does not apply synchronously,
+    // and window.scrollY read right after calling it still reports the OLD
+    // position. Toggling `documentElement.style.scrollBehavior` around the
+    // call is NOT reliable: Chromium resolves scroll-behavior for an
+    // in-flight scrollTo asynchronously (observed racing even a forced
+    // layout flush placed between the call and reverting the override), so
+    // an explicit `behavior: 'instant'` is used instead — per the WHATWG
+    // CSSOM View spec, an explicit 'instant'/'smooth' behavior bypasses the
+    // element's CSS scroll-behavior entirely; only unspecified/'auto'
+    // consults it. This is the only call in this file that must be
+    // synchronous; every other scroll on the page is free to stay smooth.
     function scrollToInstant(y) {
-        var prev = document.documentElement.style.scrollBehavior;
-        document.documentElement.style.scrollBehavior = 'auto';
-        window.scrollTo(0, y);
-        document.documentElement.style.scrollBehavior = prev;
+        window.scrollTo({ top: y, left: 0, behavior: 'instant' });
     }
 
     // Salvaged pattern 1 — char-split reveal (ported from the retired GSAP
@@ -216,7 +217,7 @@
 
     function finalizeIn(url, data, push) {
         swapStage(url, data, push);
-        window.scrollTo(0, 0);
+        scrollToInstant(0);
     }
 
     function finalizeOut(url, data, push) {
@@ -226,9 +227,9 @@
         if (liveOrigin) {
             var rect = liveOrigin.getBoundingClientRect();
             var y = window.scrollY + rect.top - window.innerHeight / 2 + rect.height / 2;
-            window.scrollTo(0, Math.max(0, y));
+            scrollToInstant(Math.max(0, y));
         } else {
-            window.scrollTo(0, 0);
+            scrollToInstant(0);
         }
     }
 
@@ -279,6 +280,15 @@
             }
 
             var origin = centerOrigin(originEl, stage);
+
+            // Freeze the document height before pulling content out of
+            // flow: moving children into the outgoing layer collapses
+            // #stage to its base min-height, which can shrink the document
+            // below the current scroll position and force the browser to
+            // silently clamp scrollY — a jump indistinguishable from the
+            // settle bug this pass already fixed, just at the other end of
+            // the transition. swapStage (called by finalizeIn) clears this.
+            stage.style.minHeight = stage.offsetHeight + 'px';
 
             var outLayer = document.createElement('div');
             outLayer.className = 'zoom-layer zoom-layer--out';
@@ -437,7 +447,7 @@
             loadPage(target).then(function (data) {
                 if (gen !== navGen) return;
                 swapStage(target, data, false);
-                window.scrollTo(0, 0);
+                scrollToInstant(0);
                 inflight = false;
             }).catch(function () {
                 inflight = false;
