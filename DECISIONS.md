@@ -349,3 +349,28 @@ ahead of content.
 Company line and overlap note moved from above the (former) children grid to below the new
 sub-constellation, per spec: the page reads as a constellation, then a document.
 
+
+## L0 composition — density over new nodes
+
+L0 read sparse (five cards in a large empty field). Fixed by growing card presence and
+tightening the stage rather than adding nodes or widening `max-width`: `.node__inner`
+padding `16px 20px → 18px 24px`, `.node__title` `1.05rem → 1.15rem`, `.constellation`
+`aspect-ratio: 2/1 → 9/4` (shorter field, same 1200px width — geometry stays identical at
+1280/1440/1920 since `.constellation-section` pads 40px on every width, which keeps every
+downstream pixel assertion simple). Chose this over scaling the whole constellation up
+(raising `max-width`) because a wider stage at the same card count is still the same
+emptiness ratio — presence-per-card is what actually reads as "considered", not more empty
+canvas. Coordinates rebalanced to use the shorter field's height and wider x extremes:
+
+| node | old | new |
+|---|---|---|
+| two-sided-data-platform | 12,18 | 11,22 |
+| muchane-cloud | 32,52 | 30,60 |
+| workday | 54,26 | 52,28 |
+| education | 72,64 | 73,68 |
+| contact | 90,38 | 91,42 |
+
+Verified: x strictly increasing, all y distinct, no polyline segment crossing (checked
+programmatically), polyline endpoints land on node centers within 2px (observed ≤0.02px)
+at 1280/1440/1920, and /workday's sub-constellation rects unchanged from the prior commit.
+

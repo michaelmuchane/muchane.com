@@ -270,7 +270,7 @@ main {
 
 .constellation {
     position: relative;
-    aspect-ratio: 2 / 1;
+    aspect-ratio: 9 / 4;
     max-width: 1200px;
     margin: 0 auto;
 }
@@ -304,7 +304,7 @@ main {
 .node__inner {
     background: var(--card-bg);
     border: 1px solid var(--border-color);
-    padding: 16px 20px;
+    padding: 18px 24px;
     transition: background 0.2s ease-out, border-color 0.2s ease-out, transform 0.3s cubic-bezier(0.215, 0.61, 0.355, 1);
 }
 
@@ -315,7 +315,7 @@ main {
 }
 
 .node__title {
-    font-size: 1.05rem;
+    font-size: 1.15rem;
     font-weight: 650;
     line-height: 1.2;
 }
