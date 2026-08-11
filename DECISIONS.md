@@ -374,3 +374,50 @@ Verified: x strictly increasing, all y distinct, no polyline segment crossing (c
 programmatically), polyline endpoints land on node centers within 2px (observed ≤0.02px)
 at 1280/1440/1920, and /workday's sub-constellation rects unchanged from the prior commit.
 
+
+## Satellites: orbit + legibility
+
+**Orbit is low-amplitude closed-loop drift, not full revolution.** Each satellite gets a
+fixed slot around its parent card (`--sat-x`/`--sat-y`, replacing the old
+`--sat-offset` stacked-column model) and traces a small ellipse (±4px x, ±3px y) over 22s
+via a CSS `@keyframes` animation, phase-offset per satellite (`--sat-phase`, staggered
+~3–7s apart) so a cluster's satellites never move in sync. Chose drift over full
+revolution because the spec's own constraints — "SLOW and low-amplitude", "if it draws the
+eye it has failed", disjointness required at every orbit phase, and legible static text —
+are unsatisfiable with a label sweeping the card perimeter (high-amplitude by definition,
+guaranteed to cross a neighbor at some phase). Pure CSS transform animation
+(compositor-driven); no JS, no rAF loop needed — `starfield.js`'s loop is untouched.
+
+**Legibility raised**: `font-size: 0.62rem → 0.72rem` (now matches the parent's
+`.node__meta`), opacity `0.75/0.85 → 0.9/0.95` (dark/light). Composited over the theme
+background at these values: dark theme `rgb(163,163,163)` @ 0.9 over `#0a0a0a` → contrast
+**6.50:1**; light theme `rgb(82,82,82)` @ 0.95 over `#f5f5f5` → contrast **6.31:1**. Both
+comfortably clear the 4.5:1 floor with margin to spare — this is legible at a normal
+viewing distance, not squint-text, while staying visually subordinate to the parent's
+`.node__title`/`.node__meta` (same mono family and `--meta-color`, just spatially detached
+from the card rather than sized/weighted like a heading).
+
+**One offset had to be corrected during verification**: `satellite-workday-2`'s initial
+right-flank slot (`calc(100% + 92px)`) put the ANCHOR point 92px past the card, but the
+`translate(-50%, -50%)` centering means the rendered label extends half its own width in
+both directions from that anchor — for "Product Management Rotation" (~193px rendered),
+half-width (~97px) reached back past the 92px offset and overlapped the card itself. Fixed
+to `calc(100% + 120px)`. Since satellite `font-size` is a fixed `rem` value (root font-size
+is never scaled by any media query in this codebase — confirmed by grep), this offset is
+constant across viewport widths, not something that needs per-width tuning.
+
+Verified: disjointness (satellite vs every card, satellite vs every other satellite,
+including own siblings) holds at 1280/1440/1920 **and** at 3 sampled points across the
+22s orbit cycle (0s/7.3s/14.6s) — zero overlaps after the fix, 9 real overlaps caught and
+fixed before that. `elementFromPoint` at every satellite's center resolves inside its
+parent `<a class="node">` (all 8, after scrolling each into view — off-screen nodes
+correctly return `null` from `elementFromPoint`, a viewport artifact, not occlusion).
+
+**Reduced motion asserted at the end state, not just the absence of motion** (a rule that
+collapsed satellites to the card's origin or hid them would pass a motion-only check): with
+`prefers-reduced-motion: reduce`, every satellite's position matches its no-animation slot
+within 5px (observed: exact 0px match for all 8), computed opacity is unchanged from the
+animated case (0.9/0.95), `display`/`visibility` show it's actually rendered with nonzero
+area, and two 1s-apart snapshots are position-identical (no drift). All four checks passed
+for all 8 satellites.
+

@@ -330,19 +330,29 @@ main {
 
 .node__satellite {
     position: absolute;
-    left: 50%;
-    top: calc(100% + var(--sat-offset));
-    transform: translateX(-50%);
+    left: var(--sat-x);
+    top: var(--sat-y);
+    transform: translate(-50%, -50%);
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
-    font-size: 0.62rem;
+    font-size: 0.72rem;
     letter-spacing: 0.02em;
     white-space: nowrap;
     color: var(--meta-color);
-    opacity: 0.75;
+    opacity: 0.9;
+    animation: sat-drift 22s ease-in-out infinite;
+    animation-delay: var(--sat-phase, 0s);
 }
 
 html.light-mode .node__satellite {
-    opacity: 0.85;
+    opacity: 0.95;
+}
+
+@keyframes sat-drift {
+    0%   { transform: translate(-50%, -50%) translate(4px, 0); }
+    25%  { transform: translate(-50%, -50%) translate(0, 3px); }
+    50%  { transform: translate(-50%, -50%) translate(-4px, 0); }
+    75%  { transform: translate(-50%, -50%) translate(0, -3px); }
+    100% { transform: translate(-50%, -50%) translate(4px, 0); }
 }
 
 /* SUB-CONSTELLATION (e.g. /workday role stars) — same grammar as L0's
@@ -529,6 +539,10 @@ main.is-zooming {
 
     .node__inner {
         transition: none;
+    }
+
+    .node__satellite {
+        animation: none;
     }
 }
 
