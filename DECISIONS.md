@@ -208,3 +208,72 @@ mid-zoom-out preempts cleanly with no stale `min-height` or orphaned `.zoom-laye
 elements) and the reduced-motion hard-swap path (unchanged, still no `.zoom-layer` ever
 appears).
 
+
+## Constellation satellites + accent pass
+
+**Satellites are signage, not links.** Each satellite is a plain `<span>` INSIDE the
+parent `<a class="node">`, with no `href` and no `data-zoom` — the whole cluster (card +
+its satellites) is one click target that zooms to the parent route. Reason: the zoom
+engine only defines its four-animation transition for single-level moves
+(`|Δdepth| === 1`, see `app.js` popstate handler's `delta` branch); a clickable role
+satellite under Workday would jump straight from L0 to L2, which the engine can only
+hard-swap — that would read as visibly broken next to every other transition on the site.
+The satellite text tells you what's inside; the page delivers it.
+
+**`aria-hidden="true"` on every satellite**, not folded into the parent's accessible
+name. The parent link's name stays concise ("Workday 2019 – 2025"); folding three role
+titles (or three contact channels) into it would turn every screen-reader announcement
+of a constellation node into a paragraph, and the destination page already delivers the
+same information as real, readable content — nothing is lost, only deferred one click.
+
+**Coordinates left unchanged** (`(12,18) (32,52) (54,26) (72,64) (90,38)`). The existing
+layout already keeps every satellite cluster clear of every other node's card and every
+other cluster's satellites at 1280/1440/1920px — verified by rect-disjointness assertion,
+not eyeballed. Leaving coordinates alone also means zero risk to the polyline-endpoint
+geometry fixed in `95a1013`; re-verified 0px endpoint-to-node-centre delta at all three
+widths after this pass.
+
+**Satellite sizing:** `0.62rem` monospace (vs. the parent `.node__meta`'s `0.72rem`),
+`opacity: 0.75` dark / `0.85` light — smaller and dimmer than the metadata line by
+construction, no border/background/card treatment (plain annotation text). Composited
+contrast measured 4.79:1 (dark) and 4.93:1 (light), both ≥ 4.5:1. Subjective read on the
+built page (not just the arithmetic): comfortably legible at normal viewing distance in
+both themes — reads as a soft label under the star, not squint-text — but it is
+deliberately close to the floor of readable; this is the first thing to revisit if it
+doesn't hold up on other displays.
+
+**Polyline repointed to accent, `--constellation-line` token retained.** `stroke: var(
+--accent-color)` with `stroke-opacity: 0.55` blends the accent into each theme's
+background so the path reads as a dim trace under the cards rather than a foreground
+line. The `--constellation-line` custom property stays defined in both `:root` and
+`html.light-mode` — NOT deleted — because the accent direction is explicitly
+incremental and provisional (a separate cyan/Tron variant is under consideration, and a
+non-accent constellation stroke is the first thing that variant would want back).
+Annotated in place with a one-line comment rather than removed.
+
+**Text-accent scheme.** Accent (`--accent-color`) now marks wayfinding elements only:
+`.page h2` (color + bottom border) and `.up-link` (color, no longer overridden back to
+`--text-color` on hover). Everything else keeps its existing register — body copy stays
+`--text-color`, metadata (`.page__meta`, `.node__meta`, `blockquote cite`) stays
+`--meta-color`. Reasoning: this keeps three distinct visual registers instead of
+flattening toward one accent-everywhere look — accent = navigate/scan anchor, gray mono
+= metadata, body text = reading — so the color addition aids scanning instead of
+competing with long-form copy. Contrast: h2/up-link `#3b82f6` on `#0a0a0a` ≈ 5.38:1,
+`#2563eb` on `#f5f5f5` ≈ 4.74:1 — both ≥ 4.5:1. Subjective read on
+`/workday/senior-product-quality-engineer` (the densest h2/h3 page): the accent "Receipts"
+heading and rule read as a clear, purposeful section label — noticeable but not
+overwhelming against the body copy above and the bullet list below.
+
+**Node focus now matches hover** — `.node:focus-visible .node__inner` gets the same
+accent border + hover background as `.node:hover .node__inner`; the pre-existing global
+`:focus-visible` 2px accent outline is untouched, so keyboard focus is ring + accent
+border together, strictly more visible than before.
+
+**Back label:** the L1 up-link text changed from "← Constellation" to "← Star map" on
+all 5 L1 pages (contact, education, muchane-cloud, workday, two-sided-data-platform); L2
+up-links (which point at their parent role/company name, e.g. "← Workday") are untouched.
+
+**`html { scroll-behavior: smooth }` and instant-scroll fix** — see the dedicated section
+above (Zoom-out scroll anchoring); note here only because it was discovered and fixed in
+this same pass, before satellites/accent work began.
+

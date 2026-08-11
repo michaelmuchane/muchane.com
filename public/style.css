@@ -9,7 +9,7 @@
     --card-bg: #111111;
     --hover-bg: #1a1a1a;
     --header-height: 80px;
-    --constellation-line: #262626;
+    --constellation-line: #262626; /* retained, currently unused — polyline uses accent pending the color-direction decision */
     --meta-color: #a3a3a3;
     --quote-border: var(--accent-color);
 }
@@ -190,6 +190,9 @@ main {
 .page h2 {
     font-size: 1.4rem;
     margin: 48px 0 16px;
+    padding-bottom: 8px;
+    color: var(--accent-color);
+    border-bottom: 1px solid var(--accent-color);
 }
 
 .page h3 {
@@ -221,14 +224,13 @@ main {
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
     font-size: 0.8rem;
     text-decoration: none;
-    color: var(--meta-color);
+    color: var(--accent-color);
     margin-bottom: 40px;
     border: 1px solid var(--border-color);
     padding: 8px 14px;
 }
 
 .up-link:hover {
-    color: var(--text-color);
     border-color: var(--accent-color);
     background: var(--hover-bg);
 }
@@ -282,7 +284,8 @@ main {
 }
 
 .constellation__svg polyline {
-    stroke: var(--constellation-line);
+    stroke: var(--accent-color);
+    stroke-opacity: 0.55;
     stroke-width: 1;
     fill: none;
     vector-effect: non-scaling-stroke;
@@ -305,7 +308,8 @@ main {
     transition: background 0.2s ease-out, border-color 0.2s ease-out, transform 0.3s cubic-bezier(0.215, 0.61, 0.355, 1);
 }
 
-.node:hover .node__inner {
+.node:hover .node__inner,
+.node:focus-visible .node__inner {
     background: var(--hover-bg);
     border-color: var(--accent-color);
 }
@@ -322,6 +326,23 @@ main {
     font-size: 0.72rem;
     color: var(--meta-color);
     margin-top: 6px;
+}
+
+.node__satellite {
+    position: absolute;
+    left: 50%;
+    top: calc(100% + var(--sat-offset));
+    transform: translateX(-50%);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    color: var(--meta-color);
+    opacity: 0.75;
+}
+
+html.light-mode .node__satellite {
+    opacity: 0.85;
 }
 
 /* CHILD CARDS */
@@ -508,5 +529,9 @@ main.is-zooming {
 
     .node {
         max-width: 220px;
+    }
+
+    .node__satellite {
+        display: none;
     }
 }
