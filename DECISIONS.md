@@ -324,3 +324,28 @@ check, the `0bba9e8` double-click and preempted-Back regressions, and reduced-mo
 zoom-in — all still clean after the `scrollToInstant` rewrite and the `zoomIn` height
 freeze.
 
+
+## Sub-constellation on /workday
+
+Replaced the three stacked `.child-card`s on /workday with a sub-constellation using the
+same visual grammar as L0 (scattered nodes + 1px polyline in a bounded stage), reusing L0's
+`.constellation`/`.node`/`.node__inner`/`.node__title`/`.node__meta` rules unchanged and
+adding a new `.constellation--sub` modifier (aspect-ratio, max-width, node max-width, inner
+padding, title size) rather than duplicating the block. Verified byte-identical L0
+rendering (rects + computed styles for all 5 nodes, the stage, and the svg, at 1440×900)
+before and after this change — the modifier is additive-only, L0's own rules untouched.
+
+**Polyline order is chronological** (Product Quality Engineer '19–'22 → Product Management
+Rotation '21–'23 → Senior Product Quality Engineer '22–'25), left to right, reversing the
+prior top-to-bottom card order. Each star carries its own year range in `.node__meta`, and
+the existing overlap note ("The PM Rotation ran concurrently with the QA roles by design")
+sits directly below the cluster — on the real render this reads as an intentional career
+path with a labeled caveat, not a false claim of strict sequence.
+
+`/two-sided-data-platform` keeps its single `.child-card` (a constellation of one is just a
+card) and `/muchane-cloud`'s empty `.children` div is untouched — no structure invented
+ahead of content.
+
+Company line and overlap note moved from above the (former) children grid to below the new
+sub-constellation, per spec: the page reads as a constellation, then a document.
+

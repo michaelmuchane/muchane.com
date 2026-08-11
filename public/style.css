@@ -345,6 +345,27 @@ html.light-mode .node__satellite {
     opacity: 0.85;
 }
 
+/* SUB-CONSTELLATION (e.g. /workday role stars) — same grammar as L0's
+   .constellation, scaled down to read as a cluster within a page rather
+   than a second homepage. */
+.constellation--sub {
+    aspect-ratio: 16 / 10;
+    max-width: 100%;
+    margin: 8px 0 40px;
+}
+
+.constellation--sub .node {
+    max-width: 240px;
+}
+
+.constellation--sub .node__inner {
+    padding: 12px 16px;
+}
+
+.constellation--sub .node__title {
+    font-size: 0.95rem;
+}
+
 /* CHILD CARDS */
 .children {
     display: grid;
