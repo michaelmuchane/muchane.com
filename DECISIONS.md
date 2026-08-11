@@ -160,3 +160,51 @@ Purely additive — zoom engine, routing, history, content, and every pre-existi
   speed; 53.3 fps under a 4× CPU-throttle emulation (`Emulation.setCPUThrottlingRate`).
   Flagged, not remediated — `count`/`ceiling`/`glow` retuning is Michael's explicit
   post-review step, not this pass's.
+
+## Zoom-out scroll anchoring — fallback applied
+
+The rebuild plan's own anticipated seam materialized: after a zoom-out finished, the page
+visibly scrolled into place. Root cause — `zoomOut()` animated against the OLD window
+scroll (using an internally-scrolled clipped preview layer to fake the future position),
+then `finalizeOut()` swapped the DOM and called `window.scrollTo` AFTER the animation;
+that post-animation scroll was the visible settle.
+
+Applied the pre-decided fallback: commit the incoming page and its final scroll position
+FIRST, then measure the zoom origin from the live DOM and animate. Concretely — capture
+the outgoing content into a plain wrapper, call the existing `swapStage` (DOM swap +
+`pushState` + title + focus, unchanged), scroll to center the live origin node, THEN wrap
+both the outgoing and incoming content into `.zoom-layer`s and animate. Nothing scrolls
+after the animation, so there is no settle. Same four WAAPI animations, same
+`{ scaleDur: 700, fadeDur: 434, delay: 196, scaleFar: 5, scaleNear: 0.86 }` and
+`cubic-bezier(0.22, 1, 0.36, 1)` easing — untouched.
+
+Two implementation details the fallback required, discovered during this pass, not in the
+original plan:
+- **Document height must be frozen before wrapping.** Pulling the committed content out of
+  normal flow into absolutely-positioned layers collapses `#stage` toward its
+  `min-height: 100vh` rule, shrinking the document and letting the browser clamp the
+  scroll position just committed. Fixed by setting an inline `min-height` to the stage's
+  measured height right before wrapping, cleared on unwrap (and also cleared inside
+  `swapStage` itself, so the popstate escape-hatch — which finalizes a preempted
+  transition through `swapStage` — never leaves a stale oversized min-height behind).
+- **`html { scroll-behavior: smooth }` is global** and made the "commit scroll first" step
+  not actually synchronous: a plain `window.scrollTo` glides across several animation
+  frames, and `window.scrollY` read immediately after calling it still reports the OLD
+  position. This is very likely the literal mechanism behind the original bug too. Added a
+  small `scrollToInstant()` helper that toggles `document.documentElement.style
+  .scrollBehavior` to `'auto'` for the one commit-scroll call, then restores it — the
+  global smooth-scroll behavior (used elsewhere, e.g. anchor links) is untouched outside
+  that single call.
+
+Verified numerically, not visually: sampled `window.scrollY` every animation frame across
+the full ~1.3s zoom-out on three paths (direct-load L2 → up-link; L0 zoom-in → up-link via
+the `history.back()` shortcut/popstate; direct-load L1 → up-link to L0) — each shows
+exactly one scroll jump, landing on the very first sampled frame after the click (i.e.
+inside the synchronous click handler, before any animation frame elapses), and zero
+discontinuities for the rest of the transition. Origin node re-centers to sub-pixel
+accuracy (≤ 0.31px) in all three cases. Re-ran both `0bba9e8` regressions against the
+rewritten `zoomOut` (rapid double-click pops exactly one level; browser Back fired
+mid-zoom-out preempts cleanly with no stale `min-height` or orphaned `.zoom-layer`
+elements) and the reduced-motion hard-swap path (unchanged, still no `.zoom-layer` ever
+appears).
+

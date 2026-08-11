@@ -112,6 +112,21 @@
         return (o.left + o.width / 2 - s.left) + 'px ' + (o.top + o.height / 2 - s.top) + 'px';
     }
 
+    // html has global `scroll-behavior: smooth` (style.css) so a plain
+    // window.scrollTo never applies synchronously — it animates across
+    // later frames, and window.scrollY read right after calling it still
+    // reports the OLD position. zoomOut's "commit scroll before the
+    // animation" step needs the scroll to actually be final before it reads
+    // window.scrollY / builds the layers, so this forces that one jump to
+    // be instant without touching the global smooth-scroll behavior used
+    // elsewhere on the page.
+    function scrollToInstant(y) {
+        var prev = document.documentElement.style.scrollBehavior;
+        document.documentElement.style.scrollBehavior = 'auto';
+        window.scrollTo(0, y);
+        document.documentElement.style.scrollBehavior = prev;
+    }
+
     // Salvaged pattern 1 — char-split reveal (ported from the retired GSAP
     // ScrollTrigger version: rotateX -90, 0.02s stagger). One-shot per
     // heading (unobserve after firing, no reverse-on-scroll-up). Skipped
@@ -186,6 +201,7 @@
 
     function swapStage(url, data, push) {
         stage.classList.remove('is-zooming');
+        stage.style.minHeight = '';
         stage.innerHTML = data.mainHTML;
         stage.dataset.depth = String(data.depth);
         document.title = data.title;
@@ -307,50 +323,66 @@
             if (gen !== navGen) return;
 
             if (REDUCED.matches) {
-                finalizeOut(url, data, push);
+                finalizeOut(url, data, push);   // hard swap + anchor scroll, unchanged
                 return;
             }
 
+            var leavingPath = currentPath;
+            var outScroll = window.scrollY;
+
+            // Capture the outgoing content before the swap.
             var outLayer = document.createElement('div');
             outLayer.className = 'zoom-layer zoom-layer--out';
             while (stage.firstChild) outLayer.appendChild(stage.firstChild);
 
+            // Commit the incoming page AND its final scroll position now —
+            // nothing scrolls after the animation, so there is no settle.
+            swapStage(url, data, push);
+            var liveOrigin = stage.querySelector('[href="' + leavingPath + '"]');
+            if (liveOrigin) {
+                var rect = liveOrigin.getBoundingClientRect();
+                scrollToInstant(Math.max(0, window.scrollY + rect.top - window.innerHeight / 2 + rect.height / 2));
+            } else {
+                scrollToInstant(0);
+            }
+
+            // Freeze the document height before pulling content out of flow:
+            // wrapping the children into absolute layers would otherwise collapse
+            // the stage to min-height:100vh, shrink the document, and let the
+            // browser clamp the scroll position we just committed.
+            stage.style.minHeight = stage.offsetHeight + 'px';
+
+            // Wrap the committed content in the incoming animation layer.
             var inLayer = document.createElement('div');
             inLayer.className = 'zoom-layer zoom-layer--in';
-            inLayer.style.visibility = 'hidden';
-            inLayer.style.height = '100vh';
-            inLayer.style.overflow = 'hidden';
-            inLayer.innerHTML = data.mainHTML;
+            while (stage.firstChild) inLayer.appendChild(stage.firstChild);
+            inLayer.style.opacity = '0';
 
             stage.classList.add('is-zooming');
             stage.appendChild(outLayer);
             stage.appendChild(inLayer);
 
-            // Origin lookup is scoped to the incoming LAYER, never `document` —
-            // the overlay menu (in <header>, before <main> in DOM order) links
-            // to the same five L1 routes, and a document-scoped query would
-            // match that hidden offscreen menu link instead of the real node.
-            var originNode = inLayer.querySelector('[href="' + currentPath + '"]');
+            // Keep the outgoing pixels where they were on screen despite the
+            // scroll jump: shift the out layer by the scroll delta.
+            outLayer.style.top = (window.scrollY - outScroll) + 'px';
 
-            if (data.depth === 0 && originNode) {
-                var layerRect = inLayer.getBoundingClientRect();
-                var nodeRect = originNode.getBoundingClientRect();
-                var nodeTopInLayer = nodeRect.top - layerRect.top + inLayer.scrollTop;
-                inLayer.scrollTop = Math.max(0, nodeTopInLayer - inLayer.clientHeight / 2 + nodeRect.height / 2);
-            }
-
-            var origin = originNode ? centerOrigin(originNode, inLayer) : '50% 50%';
-            outLayer.style.transformOrigin = origin;
-            inLayer.style.transformOrigin = origin;
-            inLayer.style.visibility = '';
-            inLayer.style.opacity = '0';
+            // Both origins name the SAME viewport point (the origin node's live
+            // centre), each expressed in its own layer's coordinate space.
+            inLayer.style.transformOrigin = liveOrigin ? centerOrigin(liveOrigin, inLayer) : '50% 50%';
+            outLayer.style.transformOrigin = liveOrigin ? centerOrigin(liveOrigin, outLayer) : '50% 50%';
 
             activeAnims = buildAnimations(outLayer, inLayer, 'out');
             await Promise.allSettled(activeAnims.map(function (a) { return a.finished; }));
             if (gen !== navGen) return;
             activeAnims = [];
 
-            finalizeOut(url, data, push);
+            // Unwrap in place — element identity preserved (reveal/parallax
+            // bindings from swapStage stay live), scroll untouched.
+            while (inLayer.firstChild) stage.appendChild(inLayer.firstChild);
+            outLayer.remove();
+            inLayer.remove();
+            stage.classList.remove('is-zooming');
+            stage.style.minHeight = '';
         } finally {
             if (gen === navGen) inflight = false;
         }
