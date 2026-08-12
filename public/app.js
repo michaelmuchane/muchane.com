@@ -307,6 +307,7 @@ renderTelemetry(TELEMETRY);
         bindRevealHeadings(stage);
         bindParallaxNodes(stage);
         bindSatelliteTeasers(stage);
+        bindIndexedStars(stage);
         if (window.updateMenuActive) window.updateMenuActive(url);
     }
 
@@ -533,6 +534,73 @@ renderTelemetry(TELEMETRY);
         await zoomIn(childUrl, origin2, true, scaledTiming(ZOOM, CHAIN.compress));
     }
 
+    // INDEXED BACKGROUND STARS — state lives at module scope (not inside
+    // bindIndexedStars) so repeat visits to L0 don't accumulate duplicate
+    // document/window listeners, and every call resets stale DOM references
+    // from whatever page was previously in #stage.
+    var activeStar = null;
+    var activeNode = null;
+    var starsGloballyBound = false;
+
+    function clearActiveStar() {
+        if (activeStar) {
+            activeStar.classList.remove('is-active');
+            activeStar.setAttribute('aria-pressed', 'false');
+        }
+        if (activeNode) activeNode.classList.remove('node--flagged');
+        var link = document.querySelector('[data-testid="indexed-star-link"]');
+        if (link) link.classList.remove('is-visible');
+        activeStar = null;
+        activeNode = null;
+    }
+
+    function activateStar(star) {
+        var node = stage.querySelector('[data-testid="' + star.dataset.starTarget + '"]');
+        if (!node) return;
+        if (activeStar === star) {
+            clearActiveStar();
+            return;
+        }
+        clearActiveStar();
+        star.classList.add('is-active');
+        star.setAttribute('aria-pressed', 'true');
+        node.classList.add('node--flagged');
+        activeStar = star;
+        activeNode = node;
+
+        var link = document.querySelector('[data-testid="indexed-star-link"]');
+        var lineEl = link ? link.querySelector('line') : null;
+        if (link && lineEl) {
+            var stageRect = stage.getBoundingClientRect();
+            var dotRect = star.querySelector('.istar__dot').getBoundingClientRect();
+            var nodeRect = node.getBoundingClientRect();
+            lineEl.setAttribute('x1', dotRect.x + dotRect.width / 2 - stageRect.x);
+            lineEl.setAttribute('y1', dotRect.y + dotRect.height / 2 - stageRect.y);
+            lineEl.setAttribute('x2', nodeRect.x + nodeRect.width / 2 - stageRect.x);
+            lineEl.setAttribute('y2', nodeRect.y + nodeRect.height / 2 - stageRect.y);
+            link.classList.add('is-visible');
+        }
+    }
+
+    function bindIndexedStars(root) {
+        activeStar = null;
+        activeNode = null;
+        var stars = root.querySelectorAll('.istar');
+        stars.forEach(function (star) {
+            star.addEventListener('click', function () { activateStar(star); });
+        });
+
+        if (!starsGloballyBound) {
+            starsGloballyBound = true;
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && activeStar) clearActiveStar();
+            });
+            window.addEventListener('resize', function () {
+                if (activeStar) clearActiveStar();
+            });
+        }
+    }
+
     /* CLICK WIRING */
     document.addEventListener('click', function (e) {
         if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
@@ -622,4 +690,5 @@ renderTelemetry(TELEMETRY);
     bindRevealHeadings(stage);
     bindParallaxNodes(stage);
     bindSatelliteTeasers(stage);
+    bindIndexedStars(stage);
 })();

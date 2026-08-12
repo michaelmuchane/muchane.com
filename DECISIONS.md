@@ -828,3 +828,58 @@ pre-approved) both held fixed. Per Michael's ruling: keep `compress: 0.7`
 (covers the measured 1583ms with headroom for real-machine variance) —
 documented here rather than silently fudging either fixed constant to hit
 the original number.
+
+## L0 refinement — C4: indexed background stars
+
+**Colors sourced from board 1d/1e exactly, not board 1a's own hardcoded
+dark-only preview.** Resting: 3px dot `#e8eefa` (matches `starfield.js`'s
+dark-theme star sprite color — the indexed stars read as literal stars
+among the canvas backdrop, same palette) + `0 0 4px 1px` glow at 30%
+alpha; label `#2c2c31`, 9px mono, 0.1em tracking — "grain until you look."
+Hover: dot 4px accent + `0 0 8px 2px` accent glow at 50% alpha, label
+accent. Active (`.is-active`): dot 5px core `var(--text-color)` (the
+design's own literal `#ffffff` is dark-theme-only; board 1e's caption
+explicitly says "core white = `--text-color` so light theme inverts
+sanely," so the plan's own translation is followed here, not the raw
+mockup value) + `0 0 10px 3px` accent halo at 55% alpha, label accent, no
+node box-shadow. New tokens (both themes): `--istar-dot`/`--istar-dot-glow`
+(light theme mirrors `starfield.js`'s light-theme "dark speck" sprite
+color `#161a22`, not a lightened version of the dark dot — same rationale
+as the dot-color choice above), `--istar-label`, `--istar-hover-glow`,
+`--istar-active-glow` — hex-plus-alpha-suffix notation, matching the
+existing `--icon-*-border/-bg` token pattern.
+
+**Percentages are approximations against a re-flowed layout, verified and
+nudged, not trusted as-authored.** The plan's `--x`/`--y` values transcribe
+the 1440×1360 design frame's coordinates, but C2's gate-5 fix (hero cut
+from ~550px to ~213px, section padding cut, constellation scaled to 0.78)
+changed the proportions those percentages were computed against — the
+plan anticipated exactly this ("percentages transcribe the design frame
+... as approximations... nudge and re-measure on collision"). Disjointness
+swept against hero, all 4 node cards, and each node's orbit-swept envelope
+(card half-width + board-1i half-extent + ~60px pill half-size) at
+1280/1440/1920: `indexed-star-pqe-22` (`--y:33.2%`, targets `node-workday`)
+collided with `node-two-sided-data-platform`'s card at 1280 and 1440 — an
+unrelated node collision purely from coordinate translation, not a
+relationship the star's own target implies proximity to. Nudged
+`--y: 33.2% -> 29.5%` (a 3.7% shift, within the plan's ±4% allowance);
+re-swept clean (zero collisions) at all three widths.
+
+**Reduced motion:** stars have no orbit/motion of their own (position is
+static; only the hover/active dot size and color are CSS-transitioned,
+not swept animation) — no `prefers-reduced-motion` override was added
+because there is no motion path to suppress. Verified the click-activate
+interaction (not a transition-based check) end-to-end under reduced-
+motion emulation: click still sets `.is-active`, `aria-pressed`,
+`node--flagged`, and draws the link line — the interaction is JS-state-
+driven, not animation-driven, so it is unaffected by the media query
+either way.
+
+**Escape clears all three states** (star `.is-active`/`aria-pressed`,
+node `.node--flagged`, link `.is-visible`) via a document-level `keydown`
+listener bound once (module-scope guard `starsGloballyBound`), not
+re-bound on every `swapStage` call — repeat visits to L0 would otherwise
+accumulate duplicate `document`/`window` listeners across the page's
+lifetime. `activeStar`/`activeNode` are reset (not just left stale) at
+the top of every `bindIndexedStars` call so a lingering reference from a
+previous L0 render can never leak into a fresh one.
