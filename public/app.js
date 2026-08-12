@@ -1,14 +1,11 @@
-// muchane.com — theme toggle, drawer menu, and the cosmic-zoom navigation
-// engine. Single file, no modules, no build step — this is the entire
+// muchane.com — drawer menu and the cosmic-zoom navigation engine. Single
+// file, no modules, no build step — this is the entire
 // client-side enhancement layer. Every link it intercepts is a real <a href>
 // that also works with JS disabled; this file only makes navigation zoom.
 
 (function () {
     'use strict';
 
-    var htmlRoot = document.documentElement;
-    var themeDark = document.querySelector('[data-testid="theme-toggle-dark"]');
-    var themeLight = document.querySelector('[data-testid="theme-toggle-light"]');
     var menuTrigger = document.querySelector('[data-testid="menu-trigger"]');
     var drawer = document.querySelector('[data-testid="overlay-menu"]');
     var workGroup = drawer ? drawer.querySelector('[data-testid="menu-group-work"]') : null;
@@ -17,27 +14,6 @@
     var headerEmail = document.querySelector('[data-testid="header-email"]');
     var headerContact = document.querySelector('.header__contact');
     var REDUCED = matchMedia('(prefers-reduced-motion: reduce)');
-
-    /* THEME TOGGLE — two explicit-state buttons, not a single ambiguous label */
-    function syncTheme() {
-        var isLight = htmlRoot.classList.contains('light-mode');
-        if (themeDark) themeDark.setAttribute('aria-pressed', String(!isLight));
-        if (themeLight) themeLight.setAttribute('aria-pressed', String(isLight));
-    }
-
-    function setTheme(theme) {
-        htmlRoot.classList.toggle('light-mode', theme === 'light');
-        try {
-            localStorage.setItem('theme', theme);
-        } catch (e) {
-            /* localStorage unavailable (private mode) — theme just won't persist */
-        }
-        syncTheme();
-    }
-
-    if (themeDark) themeDark.addEventListener('click', function () { setTheme('dark'); });
-    if (themeLight) themeLight.addEventListener('click', function () { setTheme('light'); });
-    syncTheme(); // FOUC guard may have set light-mode before this script ran
 
     /* DRAWER MENU */
     var isMenuOpen = false;
@@ -163,8 +139,16 @@ renderTelemetry(TELEMETRY);
     if (!stage) return;
 
     var QUINT_OUT = 'cubic-bezier(0.22, 1, 0.36, 1)';
+    // Mathematical inverse of QUINT_OUT (ease-in: slow start, fast finish) —
+    // used only for a chain's first push so it hands off to the second push
+    // already at speed, instead of decelerating to a near-stop then
+    // snapping back to full speed (the "stop-and-go" chain stutter).
+    var QUINT_IN = 'cubic-bezier(0.64, 0, 0.78, 0)';
     var ZOOM = { scaleDur: 700, fadeDur: 434, delay: 196, scaleFar: 5, scaleNear: 0.86 };
-    var CHAIN = { compress: 0.7, gap: 0 };            // second push = ZOOM x compress; gap ms between pushes
+    // second push = ZOOM x compress; gap ms between pushes; firstEase is a
+    // literal CSS easing string applied ONLY to a chain's first push (scale
+    // transforms only) — retune live via window.MOTION.CHAIN.firstEase.
+    var CHAIN = { compress: 0.7, gap: 0, firstEase: QUINT_IN };
     window.MOTION = { ZOOM: ZOOM, CHAIN: CHAIN };     // devtools-live tuning; transitions read current values at start
     var REDUCED = matchMedia('(prefers-reduced-motion: reduce)');
 
@@ -371,16 +355,17 @@ renderTelemetry(TELEMETRY);
         }
     }
 
-    function buildAnimations(outLayer, inLayer, direction, timing) {
+    function buildAnimations(outLayer, inLayer, direction, timing, easing) {
         // direction: 'in' mirrors the click-through zoom; 'out' reverses it.
         timing = timing || ZOOM;
+        easing = easing || QUINT_OUT;
         var outFrom = direction === 'in' ? 1 : 1;
         var outTo = direction === 'in' ? timing.scaleFar : timing.scaleNear;
         var inFrom = direction === 'in' ? timing.scaleNear : timing.scaleFar;
         return [
             outLayer.animate(
                 [{ transform: 'scale(' + outFrom + ')' }, { transform: 'scale(' + outTo + ')' }],
-                { duration: timing.scaleDur, easing: QUINT_OUT, fill: 'forwards' }
+                { duration: timing.scaleDur, easing: easing, fill: 'forwards' }
             ),
             outLayer.animate(
                 [{ opacity: 1 }, { opacity: 0 }],
@@ -388,7 +373,7 @@ renderTelemetry(TELEMETRY);
             ),
             inLayer.animate(
                 [{ transform: 'scale(' + inFrom + ')' }, { transform: 'scale(1)' }],
-                { duration: timing.scaleDur, easing: QUINT_OUT, delay: timing.delay, fill: 'forwards' }
+                { duration: timing.scaleDur, easing: easing, delay: timing.delay, fill: 'forwards' }
             ),
             inLayer.animate(
                 [{ opacity: 0 }, { opacity: 1 }],
@@ -397,7 +382,7 @@ renderTelemetry(TELEMETRY);
         ];
     }
 
-    async function zoomIn(url, originEl, push, timing) {
+    async function zoomIn(url, originEl, push, timing, easing) {
         if (push === undefined) push = true;
         if (inflight) return;
         inflight = true;
@@ -444,7 +429,7 @@ renderTelemetry(TELEMETRY);
             stage.appendChild(outLayer);
             stage.appendChild(inLayer);
 
-            activeAnims = buildAnimations(outLayer, inLayer, 'in', timing);
+            activeAnims = buildAnimations(outLayer, inLayer, 'in', timing, easing);
             await Promise.allSettled(activeAnims.map(function (a) { return a.finished; }));
             if (gen !== navGen) return;
             activeAnims = [];
@@ -544,6 +529,12 @@ renderTelemetry(TELEMETRY);
     // faster than two full-speed pushes back to back. Overlapping pushes are
     // rejected: the second push must measure its origin in the finalized L1
     // DOM, and nesting un-finalized zoom layers has no defined visual.
+    // VELOCITY HANDOFF: the first push uses CHAIN.firstEase (default
+    // QUINT_IN — slow start, fast finish) instead of QUINT_OUT so it hands
+    // off to the second push already at speed, rather than decelerating to
+    // a near-stop then snapping back to full speed at push 2's fast start —
+    // that snap read as a full stop regardless of CHAIN.gap. The second
+    // push stays QUINT_OUT so the chain still settles at the end.
     async function chainZoom(childUrl, satelliteEl) {
         if (inflight) return;
         var parentUrl = '/' + childUrl.split('/')[1];
@@ -556,7 +547,7 @@ renderTelemetry(TELEMETRY);
         }
 
         var origin1 = satelliteEl.closest('.node').querySelector('.node__card');
-        await zoomIn(parentUrl, origin1, true);
+        await zoomIn(parentUrl, origin1, true, undefined, CHAIN.firstEase);
 
         var gen = navGen;
         // popstate preempted between pushes — user's back wins

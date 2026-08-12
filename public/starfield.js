@@ -68,42 +68,15 @@
         return s;
     }
 
-    // Bright star, for dark theme: near-white, very slightly cool.
-    var spriteLight = makeSprite([
+    // Bright star: near-white, very slightly cool. Dark-only site — no
+    // theme branching, single sprite.
+    var sprite = makeSprite([
         [0, 'rgba(238,242,250,1)'],
         [0.16, 'rgba(238,242,250,0.92)'],
         [0.42, 'rgba(232,238,250,0.22)'],
         [0.72, 'rgba(228,236,250,0.05)'],
         [1, 'rgba(228,236,250,0)']
     ]);
-
-    // Dark speck, for light theme: tighter core, minimal halo.
-    var spriteDark = makeSprite([
-        [0, 'rgba(22,26,34,1)'],
-        [0.20, 'rgba(22,26,34,0.90)'],
-        [0.45, 'rgba(22,26,34,0.12)'],
-        [0.70, 'rgba(22,26,34,0.02)'],
-        [1, 'rgba(22,26,34,0)']
-    ]);
-
-    /* THEME STATE — reading html.light-mode at init matches the inline
-       FOUC-guard head script (which runs before this deferred script), so the
-       first paint always picks the correct sprite. */
-    var sprite, effCeiling, effMaxSize;
-
-    function applyTheme() {
-        var isLight = document.documentElement.classList.contains('light-mode');
-        if (isLight) {
-            sprite = spriteDark;
-            effCeiling = TUNING.ceiling * 0.42;
-            effMaxSize = TUNING.maxSize * 0.8;
-        } else {
-            sprite = spriteLight;
-            effCeiling = TUNING.ceiling;
-            effMaxSize = TUNING.maxSize;
-        }
-    }
-    applyTheme();
 
     /* SIZING */
     var w = 0, h = 0, dpr = 1;
@@ -130,15 +103,6 @@
     /* REDUCED MOTION — static render, still visible, no drift/twinkle/parallax. */
     var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-    /* THEME REACTION — MutationObserver on documentElement.class rather than
-       an app.js callback: keeps app.js byte-identical (this pass is purely
-       additive), needs no cross-page plumbing, and fires synchronously right
-       after classList.toggle in the existing theme-toggle handler. */
-    new MutationObserver(function () {
-        applyTheme();
-        if (REDUCED.matches) draw(t);
-    }).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-
     /* DRAW */
     var t = 0;
 
@@ -154,14 +118,14 @@
             x = ((x % w) + w) % w;
             y = ((y % h) + h) % h;
 
-            var a = star.a * effCeiling;
+            var a = star.a * TUNING.ceiling;
             if (star.tw && !REDUCED.matches) {
                 var osc = 0.5 + 0.5 * Math.sin(time * TUNING.twinkleRate * star.sp + star.ph);
                 a *= 1 - TUNING.twinkleDepth * (1 - osc);
             }
             if (a < 0.012) continue;
 
-            var rad = star.r * effMaxSize * L.size;
+            var rad = star.r * TUNING.maxSize * L.size;
             var d = rad * (1 + TUNING.glow * 2.2) * 2;
             ctx.globalAlpha = Math.min(a, 1);
             ctx.drawImage(sprite, x - d / 2, y - d / 2, d, d);

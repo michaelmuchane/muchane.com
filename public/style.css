@@ -9,9 +9,11 @@
     --star-highlight: 200ms;
     --contact-pulse: 900ms;
 
-    /* LAYOUT TUNABLES — gate-5 vertical-fit fix; floor at 0.78 (below that,
-       0.72rem satellite pill text drops under ~9px legibility). */
-    --constellation-scale: 0.78;
+    /* LAYOUT TUNABLES — gate 5 (no-scroll) retired 2026-08-12; approved design
+       frame is 1440×1360 and L0 is allowed to scroll. Scale floor 0.9 (below
+       that, 0.72rem satellite pill text drops under ~10px legibility). */
+    --constellation-scale: 1;
+    --constellation-max-width: min(1600px, 92vw);
 
     --bg-color: #0a0a0a;
     --text-color: #ededed;
@@ -41,36 +43,10 @@
     --icon-linkedin-bg: #0A66C21F;
     --satellite-link-border: #B07FFF66;
     --istar-dot: #e8eefa; /* matches starfield's dark-theme star color */
-    --istar-dot-glow: #e8eefa4d;
-    --istar-label: #2c2c31; /* grain until you look, per board 1d */
+    --istar-dot-glow: #e8eefa66; /* lifted 30%->40% alpha, resting visibility pass */
+    --istar-label: #6b6b7a; /* brightened from #2c2c31 via #3a3a42, #52525f (see DECISIONS.md for the iteration); contrast 1.43->3.78 vs bg */
     --istar-hover-glow: #B07FFF80;
     --istar-active-glow: #B07FFF8c;
-}
-
-html.light-mode {
-    --bg-color: #f5f5f5;
-    --text-color: #0a0a0a;
-    --accent-color: #7C3AED;
-    --border-color: #cccccc;
-    --card-bg: #ffffff;
-    --hover-bg: #eeeeee;
-    --constellation-line: #d4d4d4;
-    --meta-color: #525252;
-
-    --faint-color: #6b6b6b;
-    --drawer-child-color: #737373;
-    --telemetry-ok: #16A34A;
-
-    --icon-github-fg: #0a0a0a;
-    --icon-github-border: #0a0a0a4d;
-    --icon-github-bg: #0a0a0a14;
-    --icon-linkedin-fg: #0A66C2;
-    --satellite-link-border: #7C3AED66;
-    --istar-dot: #161a22; /* matches starfield's light-theme dark-speck color */
-    --istar-dot-glow: #161a224d;
-    --istar-label: #d4d4d4;
-    --istar-hover-glow: #7C3AED80;
-    --istar-active-glow: #7C3AED8c;
 }
 
 /* Base */
@@ -160,37 +136,6 @@ main {
 
 body[data-depth="0"] .header__logo {
     display: none;
-}
-
-.theme-toggle {
-    display: flex;
-    height: 34px;
-    border: 1px solid var(--border-color);
-}
-
-.theme-toggle__opt {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 0 12px;
-    background: transparent;
-    color: var(--faint-color);
-    border: 0;
-    border-right: 1px solid var(--border-color);
-    cursor: pointer;
-    font-family: 'JetBrains Mono', 'Fira Code', monospace;
-    font-size: 11px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-}
-
-.theme-toggle__opt:last-child {
-    border-right: 0;
-}
-
-.theme-toggle__opt[aria-pressed="true"] {
-    background: var(--hover-bg);
-    color: var(--text-color);
 }
 
 .menu-trigger {
@@ -496,9 +441,10 @@ main {
     display: flex;
     flex-direction: column;
     justify-content: center;
+    min-height: 400px;
     max-width: 900px;
     margin: 0 auto;
-    padding: 12px 40px 8px;
+    padding: 48px 40px;
 }
 
 .hero h1 {
@@ -508,31 +454,43 @@ main {
 }
 
 .hero__copy {
-    margin-top: 8px;
+    margin-top: 24px;
+    max-width: 62ch;
     font-size: 1.1rem;
 }
 
 /* CONSTELLATION */
 .constellation-section {
-    padding: 20px 40px 32px;
+    padding: 56px 40px 88px;
 }
 
 .constellation {
     position: relative;
     aspect-ratio: 12 / 7;
-    max-width: 1200px;
+    max-width: var(--constellation-max-width);
     margin: 0 auto;
 }
 
-/* Gate-5 vertical-fit fix: scale wrapper for L0's constellation only
-   (scoped by DOM ancestry so /workday's .constellation--sub, which shares
-   the base .constellation rule, is untouched). The wrap reserves the
-   SCALED flow height; .constellation itself keeps its native 1200x700
-   layout box (board-1i geometry untouched) and is shrunk purely visually. */
+/* Constellation scale wrapper: reserves the SCALED flow height so the page
+   never gains dead space when --constellation-scale < 1. `.constellation`
+   itself always keeps its native aspect-ratio:12/7 layout box (board-1i
+   geometry untouched) and is shrunk purely visually via transform.
+   `height` is computed directly from `--constellation-max-width` (not a
+   self-referential `aspect-ratio` — tried that first; it's a no-op here
+   because `.constellation` is a normal in-flow child whose own native
+   772px box forces the wrap's auto height regardless of the wrap's own
+   aspect-ratio, per the CSS block-sizing algorithm) rather than measuring
+   `.constellation`'s actual rendered width, so it's exact wherever
+   `--constellation-max-width` is the binding constraint on `.constellation`
+   (viewport ≥ ~1000px, true at all three verified breakpoints:
+   1280/1440/1920) and only approximate below that, same accepted-residual
+   class as gate 5's prior 1280×800 overflow. Scoped by DOM ancestry so
+   /workday's `.constellation--sub`, which shares the base `.constellation`
+   rule, is untouched. */
 .constellation-wrap {
-    max-width: 1200px;
+    max-width: var(--constellation-max-width);
     margin: 0 auto;
-    height: calc(700px * var(--constellation-scale));
+    height: calc(var(--constellation-max-width) * 7 / 12 * var(--constellation-scale));
 }
 
 .constellation-wrap .constellation {

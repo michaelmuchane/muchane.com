@@ -944,3 +944,217 @@ Retired: `contact-list`, `contact-email`, `contact-github`,
 `contact-linkedin` (the four testids that only existed on the now-deleted
 page). `menu-link-contact` stays at 86 (testid unchanged, element type
 changed from `<a>` to `<button>` — noted, not counted as a delta).
+
+## L0 refinement — fix pass: scroll restored, scale/spread widened, dark-only, chain easing
+
+**Gate 5 retired.** Michael's ruling: the approved design frame is
+1440×1360 — L0 was always meant to scroll. The earlier no-scroll ruling
+(C2b, `gate-5 vertical-fit fix`) is superseded; the hero-trim/section-
+padding-cut/scale-wrapper mechanism it introduced stays (still needed so
+`--constellation-scale` < 1 doesn't leave dead space) but its *target*
+changes from "fit in 900px" to "generous, scrolling." Replaced the
+`scrollHeight <= innerHeight` assertion with an above-the-fold check:
+`.constellation-wrap`'s top edge must be above `innerHeight` at 1440×900
+(a visitor must land ON the constellation, not scroll to find it).
+**Measured: `wrapTop: 536px`** at 1280×800, 1440×900, and 1920×1080 alike
+(header 80 + hero 400 + section-padding-top 56 = 536, viewport-independent
+since none of hero/section/header are `vh`-based anymore) — comfortably
+above the fold at every tested size (largest margin: 800−536=264px at
+1280×800).
+
+**Hero restored to a fixed, generous size — not the original `70vh`.**
+`min-height: 400px; padding: 48px 40px;` (was `12px 40px 8px`, no
+min-height, post-gate-5-cut). `.hero__copy` gets back `margin-top: 24px`
+and `max-width: 62ch` (both cut at C2b). **Measured: `heroHeight: 400px`**
+at all three checked widths — within Michael's 380–450px target, pinned
+by the fixed `min-height` rather than viewport-dependent, so it won't
+drift at other widths the way the original `70vh` version did.
+
+**`.constellation-section` padding restored to fixed values, not `vh`.**
+`56px 40px 88px` (was `20px 40px 32px` post-cut; original pre-cut was
+`8vh 40px 14vh`). Deliberately fixed px this time per Michael's explicit
+instruction ("comfortable fixed values") — asymmetric top/bottom mirrors
+the original's proportions (more breathing room above the telemetry strip
+than below the hero) without reintroducing viewport-dependent sizing.
+
+**`--constellation-scale` raised 0.78 → 1.0.** The 0.78 floor set at C2b
+made 0.72rem satellite pill text render at ~9px — illegible, per Michael's
+own report. At scale 1.0 the same text renders at its full 0.72rem
+(~11.5px at default root size). **Disjointness swept at 1280/1440/1920,
+8 orbit phases each (0%, 12.5%, …, 87.5% via `Animation.currentTime`
+seeking — the animation-delay-override technique used at C3's gate 7 does
+NOT reposition an already-running/paused animation and silently no-ops;
+`getAnimations()[i].currentTime = ` is the reliable seek), against every
+card, every sibling satellite, and every indexed star: zero collisions at
+every sample.** Scale stays at 1.0 — the 0.9-floor/0.05-step fallback in
+Michael's instruction was never needed.
+
+**`--constellation-max-width` introduced: `min(1600px, 92vw)`** (was a
+hardcoded `1200px` on both `.constellation` and `.constellation-wrap`).
+Node positions are `%`-based so they spread with the wider container;
+satellite orbit rectangles are fixed-px offsets from each card's own edge
+(board-1i geometry) and are therefore unaffected by container width —
+only the *gaps between node centers* grow. **Measured node-center spread
+(leftmost to rightmost of the four L0 nodes): 889px @1280w, 1000px
+@1440w, 1208px @1920w** (was capped at ~950px max regardless of viewport
+under the old 1200px cap). Re-swept disjointness after widening (see
+above) — zero collisions, confirming the plan's own expectation that
+wider gaps make crowding easier, not harder.
+
+**`.constellation-wrap`'s height mechanism reworked — the first attempt
+(a self-referential `aspect-ratio: calc(12 / var(--constellation-scale))
+/ 7`) does not work and was replaced before commit.** Tried it because it
+looked elegant (no duplicated width formula, reacts to the wrap's actual
+rendered width at any breakpoint). It measurably failed: `.constellation`
+is a normal in-flow child of the wrap with its OWN `aspect-ratio: 12/7`
+at its own (unscaled) width, and per the CSS block-sizing algorithm, a
+block container's `auto` height with in-flow content sizes to CONTAIN
+that content — the child's native (untransformed) height wins over the
+parent's own `aspect-ratio` hint every time, regardless of what the
+parent's aspect-ratio computes to. Verified live: computed
+`aspectRatio` on the wrap correctly showed the scale-adjusted ratio
+(`13.3333 / 7` at scale 0.9), but `getBoundingClientRect().height`
+never moved off the unscaled value. **Final mechanism:** direct
+`height: calc(var(--constellation-max-width) * 7 / 12 *
+var(--constellation-scale))` — computed from the same cap the width
+uses, not measured from the child. This is *exact* wherever
+`--constellation-max-width` is the actual binding constraint on
+`.constellation`'s width, which holds at every checked breakpoint
+(1280/1440/1920 — verified `viewport ≥ 1000px` is the exact threshold:
+below that, `.constellation-section`'s available width, `viewport−80px`,
+can undercut the `92vw` term before it clamps to `1600px`, so the
+formula would overestimate height slightly). Same accepted-residual
+class as gate 5's old 1280×800 overflow — logged, not silently ignored,
+and outside the three widths Michael asked to be verified.
+
+**Header left group is MENU-only** — the requested "MENU, then
+DARK/LIGHT" swap is moot: light mode was removed in the same pass (see
+below), so there's no toggle left to order. `header__logo` (hidden at
+L0, visible at L1/L2 per the original spec) still precedes `menu-trigger`
+in DOM order; tab order at L0 is simply `menu-trigger` → the three
+header contact icons, verified via the swapped-then-superseded markup —
+no dangling ordering question remains.
+
+**BU teaser copy: `MS Applied Data Analytics` → `Master of Science`.**
+Matches WFU's `Bachelor of Science` — both satellites now read as
+institution + degree level only, per Michael's explicit correction.
+
+**Indexed-star resting visibility — iterated past the first proposed
+step, per Michael's own stated preference ("I'd rather go further than
+pretend the number was the goal").** `--istar-label` against `--bg-color
+#0a0a0a`, WCAG contrast ratio at each step:
+
+| Value | Contrast vs bg | Note |
+|---|---|---|
+| `#2c2c31` (original) | 1.43:1 | Michael's complaint: effectively invisible |
+| `#3a3a42` (Michael's proposed "~25%" step) | 1.76:1 | rendered + inspected: still assessed as "reads as grain, blends in," not yet "noticeable on purpose" |
+| `#52525f` (2nd step) | 2.58:1 | rendered + inspected: better but still borderline/"deliberate hunt" |
+| **`#6b6b7a` (final)** | **3.78:1** | rendered + inspected: labels (`TSDP-25`, `WD-2019`, `PQE-22`, `WFU-2019`) legible in a normal scan, still small/mono/dim enough to read as environmental detail rather than UI chrome |
+
+Settled at `#6b6b7a` (2.65× the original ratio) after two independent
+vision-model assessments of live screenshots at each step — the first
+proposed value (`#3a3a42`) was rendered and honestly reported as still
+marginal rather than accepted on the arithmetic alone. `--istar-dot-glow`
+alpha lifted 30%→40% (`#e8eefa4d` → `#e8eefa66`) per "lift the dot's glow
+slightly" — the dot itself (bright `#e8eefa` core) was never the
+legibility problem, only the label was.
+
+**Light mode removed entirely — one-way door.** Ruling: this design is
+dark-only; a starfield backdrop does not survive inversion (dim specks on
+white collapse the core visual concept). Removed:
+- `html.light-mode` token block (`style.css`) — every token collapses to
+  its single (former dark) value; no `prefers-color-scheme` media query
+  added, per explicit instruction — the site is unconditionally dark.
+- `.theme-toggle`/`.theme-toggle__opt*` CSS rules and markup on all 9
+  pages (testids `theme-toggle`, `theme-toggle-dark`, `theme-toggle-light`
+  retired — **testid count 86 → 83**, fresh grep, matches exactly).
+- `app.js`: `themeDark`/`themeLight`/`htmlRoot` vars, `syncTheme()`,
+  `setTheme()`, both click listeners, the init `syncTheme()` call.
+- Every page's inline FOUC-guard head script
+  (`localStorage.getItem('theme')...`).
+- `starfield.js`: the light-theme "dark speck" sprite (`spriteDark`),
+  `applyTheme()`'s branching, the `effCeiling`/`effMaxSize` indirection
+  (now reads `TUNING.ceiling`/`TUNING.maxSize` directly), and the
+  `MutationObserver` watching `documentElement`'s class list (nothing
+  changes it anymore).
+- Grepped `light-mode|theme-toggle|localStorage.*theme|themeDark|
+  themeLight|syncTheme|setTheme|applyTheme` across `public/` post-removal:
+  **zero matches** — nothing unexpected turned up before deletion; the
+  scope was exactly the 9 head scripts + 9 markup blocks + the three JS
+  files, as expected going in.
+**Consequence, accepted deliberately:** visitors whose OS prefers light
+now always get dark. **Reintroducing light mode later means re-deriving
+every token pair from scratch** — this pass did not preserve the deleted
+`html.light-mode` values anywhere as a starting point.
+
+**Chained-zoom velocity discontinuity — fixed by giving the first push a
+non-decelerating easing, per Michael's diagnosis (confirmed correct).**
+Both pushes previously used `QUINT_OUT` (`cubic-bezier(0.22, 1, 0.36,
+1)`) — an ease-OUT curve: fast start, decelerating to near-zero velocity
+at the end. Push 1 therefore always arrived at the L1 handoff already
+slowed to a near-stop; push 2 then started its own `QUINT_OUT` animation
+at ITS fast start — the visible result was a hard velocity snap
+(near-zero → fast) at the seam, independent of `CHAIN.gap` (confirmed
+0ms gap doesn't hide it — the discontinuity is in the easing curves
+themselves, not spacing). **Fix:** added `CHAIN.firstEase`, defaulting to
+`QUINT_IN` (`cubic-bezier(0.64, 0, 0.78, 0)`, the mathematical inverse of
+`QUINT_OUT` — slow start, FAST finish), applied only to a chain's FIRST
+push's two scale animations (`buildAnimations` and `zoomIn` both gained
+an optional trailing `easing` param, defaulting to `QUINT_OUT` when
+omitted). Push 2 keeps `QUINT_OUT` unchanged ("so the motion still
+settles," per instruction) and every standalone single-push zoom
+(non-chained node clicks, and `zoomOut`) is untouched — neither call site
+passes the new param. `window.MOTION.CHAIN.firstEase` is live-tunable in
+devtools like the rest of `CHAIN`/`ZOOM`.
+
+**L1 finalize gap, measured (not assumed).** Instrumented `Element.
+animate` via a temporary prototype wrapper timestamping every WAAPI call
+start/finish during one live chained click: push 1's last scale
+animation to finish (`zoom-layer--in|scale`) ended at t=1383.3ms; push
+2's first animation started at t=1389.3ms. **Gap: 6ms — 0.36 of a frame
+at 60fps, well under the ~1-frame threshold** in the instruction. The
+`finalizeIn` DOM swap plus `chainZoom`'s cache-hit `loadPage` between
+pushes is not where the stutter came from; the easing fix above was the
+correct and sufficient diagnosis. No engine change (single continuous
+transform, overlapping layers) was attempted or needed, per the explicit
+instruction to keep that out of scope for this pass.
+
+**Chained zoom re-verified after both changes:** `history.length` still
+increases by exactly 2 per chain click (two `pushState` calls, unchanged
+by the easing edit); two sequential `history.back()` calls pop
+`/workday/senior-product-quality-engineer` (depth 2) → `/workday` (depth
+1) → `/` (depth 0), one level at a time. Reduced-motion chain (hard swap,
+no WAAPI at all) still completes correctly and instantly — unaffected by
+the easing change since it never reaches `buildAnimations`.
+
+**[FUTURE] Satellite teaser can overlap its own parent card at SIDE orbit
+positions — genuine latent bug, found during this pass's re-verification,
+NOT a regression from anything in this pass.** `bindSatelliteTeasers`'s
+flip logic (`app.js`) is vertical-only: `satCenterY − cardCenterY > 2` ⇒
+`.teaser-below` (renders under the pill), else the default "above the
+pill" position. Gate 7 (C3) only ever sampled orbit phase 0 and 0.5 (top
+and bottom of the rectangular path) — both pass. Sweeping all four phases
+(0, 0.25, 0.5, 0.75) during this fix pass's re-verification found that at
+the SIDE phases (0.25 and 0.75 — satellite roughly level with the card's
+own vertical center, off to its left/right), `satCenterY − cardCenterY`
+is near zero, so the teaser stays in its default "above" position — but
+since the teaser is horizontally centered on the pill (`left: 50%`) and
+the pill itself sits close to the card at those phases (14px clearance
+per board 1i), the teaser's near edge reaches back over the card.
+**Measured: `overlapsCard: true` at `satellite-workday-1`, frac 0.25**
+— reproduced identically at both this pass's values
+(`--constellation-scale: 1`, `--constellation-max-width: min(1600px,
+92vw)`) and the pre-fix-pass values (`0.78`, `1200px`), confirming it
+predates this pass entirely and was simply never sampled. Affects at
+least `satellite-workday-1`, `satellite-muchane-cloud-1`,
+`satellite-muchane-cloud-3`, `satellite-education-1`,
+`satellite-education-2` at 1440×900 (not exhaustively checked at other
+widths). **Not fixed here** — a real fix needs a horizontal
+flip/clamp/suppress mechanism (multiple viable shapes: quadrant-aware
+flip using both axes, a radial offset from card center instead of
+pill-anchored, or a horizontal clamp against the card's own rect) and is
+a product decision per Commandment 11, not a code-only call. Bug-fix
+work in this repo also starts red (Commandment 9) — the reproduction
+above is exactly that red case; a follow-up session can go straight to
+writing the fix once Michael picks a mechanism. Flagged to Michael
+directly in this pass's hand-back; logged here so it isn't lost.
