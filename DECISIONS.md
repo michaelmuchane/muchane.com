@@ -883,3 +883,64 @@ accumulate duplicate `document`/`window` listeners across the page's
 lifetime. `activeStar`/`activeNode` are reset (not just left stale) at
 the top of every `bindIndexedStars` call so a lingering reference from a
 previous L0 render can never leak into a fresh one.
+
+## L0 refinement — C6: retire /contact, drawer Contact becomes a wayfinder
+
+**Route deleted, own commit.** `git rm public/contact/index.html`. Grep for
+`/contact` across `public/` returned exactly the 9 expected drawer-item
+references before this commit and zero unexpected ones — no sitemap, no
+other internal link referenced the route. Post-fix grep is zero.
+
+**Drawer's Contact item: `<a href="/contact">` → `<button
+class="drawer__contact" data-testid="menu-link-contact" aria-label="Jump
+to contact links">`.** Testid deliberately unchanged (the handoff map
+holds; the element-type change is called out explicitly there instead).
+Styled by extending the existing shared `.drawer > a, .drawer__group { }`
+/ hover selectors to include `.drawer__contact`, rather than duplicating
+the rule — same 12.5px mono, same padding, same hover-to-accent.
+`updateMenuActive`'s `drawer.querySelectorAll('a[data-testid^="menu-link-"]')`
+selector already excludes buttons by construction (no code change needed
+there) — a button never carries `aria-current`, matching the earlier
+ruling.
+
+**Activation: close drawer → focus `header-email` → pulse.** The focus
+move is the actual affordance, not the pulse — a glow alone is useless to
+keyboard/screen-reader users. Normal motion: `.header__contact` gets
+`.is-pulsing`, a `box-shadow` keyframe animation (`--contact-pulse: 900ms`,
+new motion tunable) that settles then fades, removed on `animationend` so
+it can re-fire on a repeat activation (with a forced reflow via
+`void headerContact.offsetWidth` before re-adding the class, in case a
+second click lands mid-pulse). Reduced motion: `.is-pulse-static` — a
+static 2px accent outline, no animation — cleared on `focusout` leaving
+`.header__contact` (checked via `!headerContact.contains(e.relatedTarget)`,
+so tabbing BETWEEN the three contact icons does not clear it early) OR
+after `--contact-pulse` elapses via `setTimeout`, whichever fires first;
+parsed from `getComputedStyle`, falls back to 900 if parsing ever fails.
+Verified both paths live: normal motion reaches full `box-shadow` then
+clears to `none`; reduced motion shows the static 2px outline immediately
+with `animationName: none`, stays present while focus moves within the
+icon group, and clears the instant focus leaves it.
+
+**Contact surface correctness.** All three hrefs
+(`mailto:michaelmuchane@gmail.com`, `https://github.com/michaelmuchane`,
+`https://www.linkedin.com/in/michael-muchane/`) verified verbatim across
+all 9 remaining pages via grep (27/27 matches — 3 hrefs × 9 pages). Live
+reachability of the two external profile URLs was not probed — an
+agent-initiated external fetch to github.com/linkedin.com is ASK-gated per
+`.omp/AGENTS.md` §3, and this pass didn't request it; recorded as
+string-verified but unprobed, per the plan's own explicit fallback for
+this case.
+
+**`/contact` direct-load behavior (what production's `try_files` will need
+to handle):** the local static host (`npx serve`) returns **404** with its
+own generic not-found HTML page for a `fetch('/contact')`. This is not a
+redirect and not a soft-200 — a real 404 status. Logged here so whoever
+lands the production `try_files` rewrite (an existing, separate deploy
+blocker — see below) knows the local baseline behavior it's replacing.
+
+**Testid delta: 90 → 86** (fresh `find public -name '*.html' | xargs
+grep -hoE 'data-testid="[^"]+"' | sort -u | wc -l`, not arithmetic).
+Retired: `contact-list`, `contact-email`, `contact-github`,
+`contact-linkedin` (the four testids that only existed on the now-deleted
+page). `menu-link-contact` stays at 86 (testid unchanged, element type
+changed from `<a>` to `<button>` — noted, not counted as a delta).

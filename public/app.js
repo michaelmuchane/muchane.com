@@ -13,6 +13,10 @@
     var drawer = document.querySelector('[data-testid="overlay-menu"]');
     var workGroup = drawer ? drawer.querySelector('[data-testid="menu-group-work"]') : null;
     var workChildren = drawer ? drawer.querySelector('.drawer__children') : null;
+    var contactBtn = drawer ? drawer.querySelector('[data-testid="menu-link-contact"]') : null;
+    var headerEmail = document.querySelector('[data-testid="header-email"]');
+    var headerContact = document.querySelector('.header__contact');
+    var REDUCED = matchMedia('(prefers-reduced-motion: reduce)');
 
     /* THEME TOGGLE — two explicit-state buttons, not a single ambiguous label */
     function syncTheme() {
@@ -68,6 +72,44 @@
             var expanded = workGroup.getAttribute('aria-expanded') === 'true';
             workGroup.setAttribute('aria-expanded', String(!expanded));
             workChildren.hidden = expanded;
+        });
+    }
+
+    /* CONTACT WAYFINDER — the drawer's Contact item is a button, not a link
+       (there is no /contact page behind it): close the drawer, move focus to
+       the first contact icon, and pulse the group so the end state is never
+       "nothing visible happened." A glow alone is useless to keyboard/screen-
+       reader users — the focus move is the actual affordance. */
+    if (contactBtn) {
+        contactBtn.addEventListener('click', function () {
+            setMenu(false);
+            if (headerEmail) headerEmail.focus();
+            if (!headerContact) return;
+
+            if (REDUCED.matches) {
+                headerContact.classList.add('is-pulse-static');
+                var pulseMs = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--contact-pulse')) || 900;
+                var cleared = false;
+                var onFocusOut = function (e) {
+                    if (!headerContact.contains(e.relatedTarget)) clear();
+                };
+                function clear() {
+                    if (cleared) return;
+                    cleared = true;
+                    headerContact.classList.remove('is-pulse-static');
+                    headerContact.removeEventListener('focusout', onFocusOut);
+                }
+                headerContact.addEventListener('focusout', onFocusOut);
+                setTimeout(clear, pulseMs);
+            } else {
+                headerContact.classList.remove('is-pulsing');
+                void headerContact.offsetWidth; // restart the animation if re-triggered mid-pulse
+                headerContact.classList.add('is-pulsing');
+                headerContact.addEventListener('animationend', function handler() {
+                    headerContact.classList.remove('is-pulsing');
+                    headerContact.removeEventListener('animationend', handler);
+                });
+            }
         });
     }
 
