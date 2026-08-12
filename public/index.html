@@ -70,52 +70,54 @@
         </section>
 
         <section class="constellation-section" data-testid="constellation-section">
-            <div class="constellation" data-testid="constellation">
-                <svg class="constellation__svg" viewBox="0 0 1200 700" preserveAspectRatio="none" aria-hidden="true" data-testid="constellation-svg">
-                    <polyline points="190,105 330,500 790,240 1095,605"></polyline>
-                </svg>
+            <div class="constellation-wrap" data-testid="constellation-wrap">
+                <div class="constellation" data-testid="constellation">
+                    <svg class="constellation__svg" viewBox="0 0 1200 700" preserveAspectRatio="none" aria-hidden="true" data-testid="constellation-svg">
+                        <polyline points="190,105 330,500 790,240 1095,605"></polyline>
+                    </svg>
 
-                <div class="node node--tsdp" style="--x:15.8%; --y:15%">
-                    <a class="node__card" href="/two-sided-data-platform" data-zoom="in" data-testid="node-two-sided-data-platform">
-                        <div class="node__inner">
-                            <span class="node__title">Two-Sided Data Platform</span>
-                            <span class="node__meta">2025 – Present</span>
-                        </div>
-                    </a>
-                </div>
+                    <div class="node node--tsdp" style="--x:15.8%; --y:15%">
+                        <a class="node__card" href="/two-sided-data-platform" data-zoom="in" data-testid="node-two-sided-data-platform">
+                            <div class="node__inner">
+                                <span class="node__title">Two-Sided Data Platform</span>
+                                <span class="node__meta">2025 – Present</span>
+                            </div>
+                        </a>
+                    </div>
 
-                <div class="node node--wd" style="--x:27.5%; --y:71.4%">
-                    <a class="node__card" href="/workday" data-zoom="in" data-testid="node-workday">
-                        <div class="node__inner">
-                            <span class="node__title">Workday</span>
-                            <span class="node__meta">2019 – 2025</span>
-                        </div>
-                    </a>
-                    <a class="node__satellite node__satellite--link" href="/workday/senior-product-quality-engineer" data-zoom="chain" style="--s: 0; --rest-x: 0px; --rest-y: -72px" data-testid="satellite-workday-1">Senior PQ Engineer</a>
-                    <a class="node__satellite node__satellite--link" href="/workday/product-management-rotation" data-zoom="chain" style="--s: 0.3273; --rest-x: 161px; --rest-y: 72px" data-testid="satellite-workday-2">PM Rotation</a>
-                    <a class="node__satellite node__satellite--link" href="/workday/product-quality-engineer" data-zoom="chain" style="--s: 0.6727; --rest-x: -161px; --rest-y: 72px" data-testid="satellite-workday-3">PQ Engineer</a>
-                </div>
+                    <div class="node node--wd" style="--x:27.5%; --y:71.4%">
+                        <a class="node__card" href="/workday" data-zoom="in" data-testid="node-workday">
+                            <div class="node__inner">
+                                <span class="node__title">Workday</span>
+                                <span class="node__meta">2019 – 2025</span>
+                            </div>
+                        </a>
+                        <a class="node__satellite node__satellite--link" href="/workday/senior-product-quality-engineer" data-zoom="chain" style="--s: 0; --rest-x: 0px; --rest-y: -72px" data-testid="satellite-workday-1">Senior PQ Engineer</a>
+                        <a class="node__satellite node__satellite--link" href="/workday/product-management-rotation" data-zoom="chain" style="--s: 0.3273; --rest-x: 161px; --rest-y: 72px" data-testid="satellite-workday-2">PM Rotation</a>
+                        <a class="node__satellite node__satellite--link" href="/workday/product-quality-engineer" data-zoom="chain" style="--s: 0.6727; --rest-x: -161px; --rest-y: 72px" data-testid="satellite-workday-3">PQ Engineer</a>
+                    </div>
 
-                <div class="node node--mc" style="--x:65.8%; --y:34.3%">
-                    <a class="node__card" href="/muchane-cloud" data-zoom="in" data-testid="node-muchane-cloud">
-                        <div class="node__inner">
-                            <span class="node__title">Muchane Cloud</span>
-                            <span class="node__meta">2025 – Present</span>
-                        </div>
-                    </a>
-                    <span class="node__satellite" tabindex="0" style="--s: 0; --rest-x: 0px; --rest-y: -72px" data-testid="satellite-muchane-cloud-1">Career Command Center</span>
-                    <span class="node__satellite" tabindex="0" style="--s: 0.5; --rest-x: 0px; --rest-y: 72px" data-testid="satellite-muchane-cloud-3">Self-Hosted Infra</span>
-                </div>
+                    <div class="node node--mc" style="--x:65.8%; --y:34.3%">
+                        <a class="node__card" href="/muchane-cloud" data-zoom="in" data-testid="node-muchane-cloud">
+                            <div class="node__inner">
+                                <span class="node__title">Muchane Cloud</span>
+                                <span class="node__meta">2025 – Present</span>
+                            </div>
+                        </a>
+                        <span class="node__satellite" tabindex="0" style="--s: 0; --rest-x: 0px; --rest-y: -72px" data-testid="satellite-muchane-cloud-1">Career Command Center</span>
+                        <span class="node__satellite" tabindex="0" style="--s: 0.5; --rest-x: 0px; --rest-y: 72px" data-testid="satellite-muchane-cloud-3">Self-Hosted Infra</span>
+                    </div>
 
-                <div class="node node--edu" style="--x:91.3%; --y:86.4%">
-                    <a class="node__card" href="/education" data-zoom="in" data-testid="node-education">
-                        <div class="node__inner node__inner--center">
-                            <span class="node__title">Education</span>
-                            <span class="node__meta">2015 — 19 · 2021 — 23</span>
-                        </div>
-                    </a>
-                    <span class="node__satellite" tabindex="0" style="--s: 0; --rest-x: 0px; --rest-y: -72px" data-testid="satellite-education-1">BU</span>
-                    <span class="node__satellite" tabindex="0" style="--s: 0.5; --rest-x: 0px; --rest-y: 72px" data-testid="satellite-education-2">WFU</span>
+                    <div class="node node--edu" style="--x:91.3%; --y:86.4%">
+                        <a class="node__card" href="/education" data-zoom="in" data-testid="node-education">
+                            <div class="node__inner node__inner--center">
+                                <span class="node__title">Education</span>
+                                <span class="node__meta">2015 — 19 · 2021 — 23</span>
+                            </div>
+                        </a>
+                        <span class="node__satellite" tabindex="0" style="--s: 0; --rest-x: 0px; --rest-y: -72px" data-testid="satellite-education-1">BU</span>
+                        <span class="node__satellite" tabindex="0" style="--s: 0.5; --rest-x: 0px; --rest-y: 72px" data-testid="satellite-education-2">WFU</span>
+                    </div>
                 </div>
             </div>
         </section>

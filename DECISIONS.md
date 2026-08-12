@@ -671,3 +671,65 @@ Per the plan's pre-decided options, NOT chosen here — options only, no fix app
 
 Options 1 and 2 combined (a moderate scale plus a moderate spacing cut) is the
 likely-lowest-regret path but is Michael's call, not assumed here.
+
+## L0 refinement — C2 gate-5 fix: hybrid ruling (hero trim + section padding + scale wrapper)
+
+**Ruling: hybrid of options 1 and 2, with a mechanism correction to option 1.**
+`transform: scale()` alone does not reduce `scrollHeight` — it's a paint-only
+transform, not a layout property, so `.constellation` kept its full 700px flow
+height under naive scaling and the page gained dead space instead of shrinking.
+Fix: `.constellation` keeps its native 1200×700 layout box and board-1i geometry
+completely untouched, wrapped in a new `.constellation-wrap` whose explicit
+`height: calc(700px * var(--constellation-scale))` is what actually shrinks the
+section's contribution to document flow. `transform-origin: top center` keeps the
+scaled box's top edge and horizontal center anchored, so it exactly fills the
+wrap's shorter height with no bleed. Scoped via `.constellation-wrap .constellation`
+(DOM-ancestry selector) rather than a class on `.constellation` itself, because
+`/workday`'s sub-constellation shares the same base `.constellation` class via its
+`.constellation--sub` modifier — an unscoped rule would have also shrunk L1's
+sub-constellation, which was never in scope for this fix.
+
+**`--constellation-scale: 0.78`** (the instructed floor — legibility of the
+0.72rem satellite pill text is the binding constraint, not layout headroom; 0.78
+was needed regardless to close the gap, so the floor and the requirement
+coincide here).
+
+**Hero: dropped `min-height: calc(70vh - var(--header-height))` entirely**,
+content-sized now. Padding cut `60px 40px` → `12px 40px 8px`; `.hero__copy`'s
+`margin-top` cut `24px` → `8px`. Also removed `.hero__copy`'s `max-width: 62ch`
+(measured: the actual copy text wraps to 5 lines at 62ch vs 4 lines at the
+hero's own 820px content width — an 820px reading measure is wider than ideal
+typography guidance but not unreasonable, and the alternative was shortening
+content, which Commandment 6/the do-not-touch rules forbid). Measured hero
+height after all three changes: **212.66px** at 1440×900 — above the ~180-200px
+target. The floor is arithmetic, not a tuning miss: `.hero h1` (75.6px, `clamp()`
+capped at 4.5rem/72px + line-height 1.05) plus `.hero__copy` at its
+now-shortest-possible 4-line wrap (109.06px) alone total 184.66px, before any
+padding or margin — so 180-200px was only reachable with zero breathing room
+between the heading and the header/constellation, which this pass didn't do.
+Reported per instruction rather than silently re-targeting.
+
+**Section padding: `8vh 40px 14vh` → `20px 40px 32px`** (52px total — the
+instructed range's floor; 546px, `0.78`-scaled constellation plus 52px padding
+left no slack for more).
+
+**Load-bearing discovery: `main { min-height: calc(100vh - var(--header-height)) }`
+(pre-existing, all pages) makes gate 5 pass as an exact equality, not a
+comfortable margin.** Once `hero + constellation-section` content drops below
+`min-height`'s floor (820px at 1440×900), `main` pins to exactly that floor and
+`document.documentElement.scrollHeight` becomes exactly `innerHeight` —
+verified live: hero(212.66) + section(598) = 810.66px combined, safely under
+820, and `scrollHeight` measured exactly `900` (not 894 or any content-derived
+number). This means the fit isn't fragile to sub-pixel font rendering the way a
+content-height-driven near-miss would be; any combined content under ~820px at
+this viewport produces the identical pinned-to-viewport result.
+
+**Verified: gate 5 passes at 1440×900** (`scrollHeight: 900`, `overflow: 0`).
+**Accepted residual at 1280×800** (per explicit instruction): `scrollHeight: 891`,
+`innerHeight: 800`, **overflow: 91px** — the approved design frame is itself
+1360px tall (80 header + 1280 content), so a no-scroll L0 at 800px vertical was
+never achievable without illegible constellation text; logged as accepted, not
+silently fixed further. Polyline-to-node-center alignment re-verified after the
+scale wrapper at 1280, 1440, and 1920: all four vertices within 0.5px of their
+card centers on both axes (well inside the 2px gate), confirming the scale
+wrapper preserves board-1i geometry exactly rather than re-deriving it.

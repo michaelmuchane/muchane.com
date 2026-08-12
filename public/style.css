@@ -8,6 +8,10 @@
     --drawer-slide: 400ms;
     --star-highlight: 200ms;
 
+    /* LAYOUT TUNABLES — gate-5 vertical-fit fix; floor at 0.78 (below that,
+       0.72rem satellite pill text drops under ~9px legibility). */
+    --constellation-scale: 0.78;
+
     --bg-color: #0a0a0a;
     --text-color: #ededed;
     --accent-color: #B07FFF;
@@ -456,13 +460,12 @@ main {
 
 /* HERO */
 .hero {
-    min-height: calc(70vh - var(--header-height));
     display: flex;
     flex-direction: column;
     justify-content: center;
     max-width: 900px;
     margin: 0 auto;
-    padding: 60px 40px;
+    padding: 12px 40px 8px;
 }
 
 .hero h1 {
@@ -472,14 +475,13 @@ main {
 }
 
 .hero__copy {
-    margin-top: 24px;
-    max-width: 62ch;
+    margin-top: 8px;
     font-size: 1.1rem;
 }
 
 /* CONSTELLATION */
 .constellation-section {
-    padding: 8vh 40px 14vh;
+    padding: 20px 40px 32px;
 }
 
 .constellation {
@@ -487,6 +489,22 @@ main {
     aspect-ratio: 12 / 7;
     max-width: 1200px;
     margin: 0 auto;
+}
+
+/* Gate-5 vertical-fit fix: scale wrapper for L0's constellation only
+   (scoped by DOM ancestry so /workday's .constellation--sub, which shares
+   the base .constellation rule, is untouched). The wrap reserves the
+   SCALED flow height; .constellation itself keeps its native 1200x700
+   layout box (board-1i geometry untouched) and is shrunk purely visually. */
+.constellation-wrap {
+    max-width: 1200px;
+    margin: 0 auto;
+    height: calc(700px * var(--constellation-scale));
+}
+
+.constellation-wrap .constellation {
+    transform: scale(var(--constellation-scale));
+    transform-origin: top center;
 }
 
 .constellation__svg {
