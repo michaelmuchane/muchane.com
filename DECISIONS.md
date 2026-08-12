@@ -553,6 +553,18 @@ expand/collapse); with the footer gone, a `<noscript>` block in every `<head>` f
 drawer static and in-flow (`position:static`, children visible) so every route, including
 `/contact`, stays reachable and crawlable without JavaScript — Commandment 6.
 
+**Real bug caught in review, not by the original hand-back:** the `<noscript>` block was
+initially placed *before* `<link rel="stylesheet" href="/style.css">` in every `<head>`.
+Both the noscript rule and the main sheet's `.drawer { position: fixed; ... }` are single-
+class selectors (equal specificity), so with equal specificity the cascade falls to source
+order — and the noscript block, coming first, LOST to the main sheet every time,
+regardless of JS being enabled or disabled. A JS-disabled Puppeteer context confirmed the
+drawer stayed `position: fixed; visibility: hidden; translateX(-236px)` — completely inert
+— under the "fixed" version. Moved the `<noscript>` block to immediately after the
+stylesheet `<link>` in all 10 pages so it wins the equal-specificity tie by source order;
+re-verified with the same no-JS context: `position: static`, `visibility: visible`, no
+transform, and the Work submenu's `[hidden]` children render `display: flex`.
+
 **New tokens** (both themes; `public/style.css` `:root` / `html.light-mode`):
 `--drawer-width: 236px`; `--telemetry-height: 28px`; `--faint-color` (`#525252` dark /
 `#6b6b6b` light) for SECTIONS label, telemetry text, resting drawer chevron; `--drawer-child-color`
@@ -561,8 +573,9 @@ drawer static and in-flow (`position:static`, children visible) so every route, 
 GitHub icon flips `#ffffff`→`#0a0a0a` in light mode (white-on-white would be invisible);
 LinkedIn is lifted to `#3B93E8` on dark (native `#0A66C2` goes muddy on `#0a0a0a`) and
 reverts to native `#0A66C2` on light. Email stays `#EA4335` both themes (sufficient
-contrast on both backgrounds). `--constellation-line` is no longer "currently unused" —
-it's now the drawer's nested-link divider rule in addition to the polyline color.
+contrast on both backgrounds). `--constellation-line` was previously retained but
+genuinely unused (the polyline has always used `--accent-color`, per the Phase A/C
+entries above) — it's now load-bearing as the drawer's nested-link divider rule.
 
 **Motion tunables surfaced at the top of `:root`:** `--orbit-period: 75s`,
 `--teaser-fade: 160ms`, `--drawer-slide: 400ms`, `--star-highlight: 200ms` — defined now

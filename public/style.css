@@ -743,6 +743,7 @@ main.is-zooming {
     }
 
     .header,
+    main,
     .drawer,
     .drawer__group svg {
         transition: none;
