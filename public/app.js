@@ -1,4 +1,4 @@
-// muchane.com — theme toggle, overlay menu, and the cosmic-zoom navigation
+// muchane.com — theme toggle, drawer menu, and the cosmic-zoom navigation
 // engine. Single file, no modules, no build step — this is the entire
 // client-side enhancement layer. Every link it intercepts is a real <a href>
 // that also works with JS disabled; this file only makes navigation zoom.
@@ -7,37 +7,46 @@
     'use strict';
 
     var htmlRoot = document.documentElement;
-    var themeToggle = document.querySelector('[data-testid="theme-toggle"]');
+    var themeDark = document.querySelector('[data-testid="theme-toggle-dark"]');
+    var themeLight = document.querySelector('[data-testid="theme-toggle-light"]');
     var menuTrigger = document.querySelector('[data-testid="menu-trigger"]');
-    var overlayMenu = document.querySelector('[data-testid="overlay-menu"]');
-    var menuClose = overlayMenu ? overlayMenu.querySelector('[data-testid="overlay-menu-close"]') : null;
+    var drawer = document.querySelector('[data-testid="overlay-menu"]');
+    var workGroup = drawer ? drawer.querySelector('[data-testid="menu-group-work"]') : null;
+    var workChildren = drawer ? drawer.querySelector('.drawer__children') : null;
 
-    /* THEME TOGGLE */
-    if (themeToggle) {
-        themeToggle.addEventListener('click', function () {
-            htmlRoot.classList.toggle('light-mode');
-            var theme = htmlRoot.classList.contains('light-mode') ? 'light' : 'dark';
-            try {
-                localStorage.setItem('theme', theme);
-            } catch (e) {
-                /* localStorage unavailable (private mode) — theme just won't persist */
-            }
-        });
+    /* THEME TOGGLE — two explicit-state buttons, not a single ambiguous label */
+    function syncTheme() {
+        var isLight = htmlRoot.classList.contains('light-mode');
+        if (themeDark) themeDark.setAttribute('aria-pressed', String(!isLight));
+        if (themeLight) themeLight.setAttribute('aria-pressed', String(isLight));
     }
 
-    /* OVERLAY MENU */
+    function setTheme(theme) {
+        htmlRoot.classList.toggle('light-mode', theme === 'light');
+        try {
+            localStorage.setItem('theme', theme);
+        } catch (e) {
+            /* localStorage unavailable (private mode) — theme just won't persist */
+        }
+        syncTheme();
+    }
+
+    if (themeDark) themeDark.addEventListener('click', function () { setTheme('dark'); });
+    if (themeLight) themeLight.addEventListener('click', function () { setTheme('light'); });
+    syncTheme(); // FOUC guard may have set light-mode before this script ran
+
+    /* DRAWER MENU */
     var isMenuOpen = false;
 
     function setMenu(open) {
         isMenuOpen = open;
-        if (overlayMenu) {
-            overlayMenu.classList.toggle('is-open', open);
-        }
+        document.body.classList.toggle('drawer-open', open);
         if (menuTrigger) {
             menuTrigger.setAttribute('aria-expanded', String(open));
+            menuTrigger.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
         }
-        if (open && overlayMenu) {
-            var firstLink = overlayMenu.querySelector('a');
+        if (open && drawer) {
+            var firstLink = drawer.querySelector('a');
             if (firstLink) firstLink.focus();
         }
     }
@@ -47,17 +56,58 @@
             setMenu(!isMenuOpen);
         });
     }
-    if (menuClose) {
-        menuClose.addEventListener('click', function () {
-            setMenu(false);
-        });
-    }
     document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape' && isMenuOpen) {
             setMenu(false);
         }
     });
+
+    /* WORK GROUP — collapsed on every load (state not persisted) */
+    if (workGroup && workChildren) {
+        workGroup.addEventListener('click', function () {
+            var expanded = workGroup.getAttribute('aria-expanded') === 'true';
+            workGroup.setAttribute('aria-expanded', String(!expanded));
+            workChildren.hidden = expanded;
+        });
+    }
+
+    /* ACTIVE SECTION — highlights the drawer link for the current top-level route.
+       Exposed on window so the zoom engine (separate IIFE below) can call it from
+       swapStage() after a client-side navigation. */
+    function updateMenuActive(path) {
+        if (!drawer) return;
+        var section = '/' + (path.split('/').filter(Boolean)[0] || '');
+        var links = drawer.querySelectorAll('a[data-testid^="menu-link-"]');
+        links.forEach(function (link) {
+            var href = link.getAttribute('href');
+            if (href === section || (section === '/' && href === '/')) {
+                link.setAttribute('aria-current', 'page');
+            } else {
+                link.removeAttribute('aria-current');
+            }
+        });
+    }
+    window.updateMenuActive = updateMenuActive;
+    updateMenuActive(location.pathname);
 })();
+
+/* TELEMETRY STRIP — static placeholder now; a future n8n workflow will
+   publish JSON this page fetches. Swapping the source touches only the
+   renderTelemetry(TELEMETRY) call below — nothing else. */
+var TELEMETRY = {
+    left: 'MUCHANE CLOUD',
+    metrics: '21 CONTAINERS \u00b7 47 COMMITS THIS MONTH \u00b7 LAST DEPLOY 6H AGO',
+    right: 'AI PIPELINES',
+};
+
+function renderTelemetry(data) {
+    Object.keys(data).forEach(function (key) {
+        var el = document.querySelector('[data-telemetry="' + key + '"]');
+        if (el) el.textContent = data[key];
+    });
+}
+
+renderTelemetry(TELEMETRY);
 
 /* ===================================================================
    COSMIC-ZOOM ENGINE
@@ -205,6 +255,7 @@
         stage.style.minHeight = '';
         stage.innerHTML = data.mainHTML;
         stage.dataset.depth = String(data.depth);
+        document.body.dataset.depth = String(data.depth);
         document.title = data.title;
         if (push) {
             history.pushState({ via: 'zoom', depth: data.depth, from: currentPath }, '', url);
@@ -213,6 +264,7 @@
         currentPath = url;
         bindRevealHeadings(stage);
         bindParallaxNodes(stage);
+        if (window.updateMenuActive) window.updateMenuActive(url);
     }
 
     function finalizeIn(url, data, push) {

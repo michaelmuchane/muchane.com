@@ -516,3 +516,63 @@ satellites ("iapply", "muchane.com") that point at that node, so the homepage no
 advertises the page twice as prominently as before. Do not deploy until `/muchane-cloud`
 has real content — flagged again here, not resolved by this pass, which was explicitly
 scoped to leave page content untouched.
+
+## L0 refinement — C1: shell unification
+
+**Shell unified across all 10 pages, not per-level.** The zoom engine's `swapStage()`
+replaces only `main#stage`'s contents — header, drawer, telemetry, and (formerly) footer
+live outside `#stage` and are never touched by a client-side navigation. A per-page shell
+(new header on L0, old header on L1/L2) would therefore diverge the instant someone
+clicked through instead of hard-loading, breaking the locked "direct load and
+click-through render identically" invariant by construction. The header, drawer, and
+telemetry markup is now byte-identical across all 10 HTML files; only `body[data-depth]`
+(and, on L0, the still-present `main[data-depth]`) gates what's visible.
+
+**Old text footer retired everywhere, not just on L0.** With the header now carrying
+email/GitHub/LinkedIn icons on every page, the footer's three links were a pure
+duplicate. Removing it only on L0 while keeping it on L1/L2 would reintroduce the same
+shell-divergence problem the header fix was solving. `site-footer`, `footer-email`,
+`footer-github`, `footer-linkedin` are retired testids.
+
+**Drawer is non-modal and scrimless, Work group collapsed by default.** Board 1g/1j: no
+overlay dims the constellation behind the drawer — content visibly shifts right by
+`--drawer-width` (236px) instead, so the page underneath stays legible and interactive.
+The Work group (Two-Sided Data Platform / Muchane Cloud / Workday) starts collapsed on
+every page load; state is not persisted across navigations or reloads, matching board
+1j's labeled "COLLAPSED" default.
+
+**Telemetry strip does not shift with the drawer.** `body.drawer-open` translates
+`.header` and `main` by `--drawer-width`, but `.telemetry` (fixed, full-width, z-index 26)
+is left alone — it is chrome/status, not page content, and shifting a full-width fixed bar
+236px right would push its right zone off-viewport. The drawer itself stops 28px short of
+the viewport bottom on L0 (`bottom: var(--telemetry-height)`) so it never overlaps the
+strip. Verified by rect measurement with the drawer open (see hand-back).
+
+**No-JS fallback added for the drawer.** The drawer is JS-driven (open/close, Work
+expand/collapse); with the footer gone, a `<noscript>` block in every `<head>` forces the
+drawer static and in-flow (`position:static`, children visible) so every route, including
+`/contact`, stays reachable and crawlable without JavaScript — Commandment 6.
+
+**New tokens** (both themes; `public/style.css` `:root` / `html.light-mode`):
+`--drawer-width: 236px`; `--telemetry-height: 28px`; `--faint-color` (`#525252` dark /
+`#6b6b6b` light) for SECTIONS label, telemetry text, resting drawer chevron; `--drawer-child-color`
+(`#7a7a7a` dark / `#737373` light) for nested drawer links; `--telemetry-ok` (`#4ADE80` dark
+/ `#16A34A` light) for the AI PIPELINES status dot; per-icon `--icon-{email,github,linkedin}-{fg,border,bg}`.
+GitHub icon flips `#ffffff`→`#0a0a0a` in light mode (white-on-white would be invisible);
+LinkedIn is lifted to `#3B93E8` on dark (native `#0A66C2` goes muddy on `#0a0a0a`) and
+reverts to native `#0A66C2` on light. Email stays `#EA4335` both themes (sufficient
+contrast on both backgrounds). `--constellation-line` is no longer "currently unused" —
+it's now the drawer's nested-link divider rule in addition to the polyline color.
+
+**Motion tunables surfaced at the top of `:root`:** `--orbit-period: 75s`,
+`--teaser-fade: 160ms`, `--drawer-slide: 400ms`, `--star-highlight: 200ms` — defined now
+(consumed by C3/C4) so all motion timing for this pass lives in one devtools-tunable
+block, per Michael's explicit ask. `--contact-pulse` is added in C6, alongside the
+behavior that uses it.
+
+**Accepted ambient-contrast deviation.** Telemetry text, the drawer's `SECTIONS` label,
+and (in C4) indexed-star labels are deliberately styled below the ≥4.5:1 contrast token
+rule that governs reading text — they're ambient signage/grain by design (board 1a/1d),
+not content a visitor is meant to read at a glance. Interactive states (hover/focus) move
+them to `--accent-color`, which does clear 4.5:1. The header contact icons are held to the
+stricter ≥3:1 UI-component threshold since they're the site's sole contact affordance.
