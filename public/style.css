@@ -484,7 +484,7 @@ main {
 
 .constellation {
     position: relative;
-    aspect-ratio: 9 / 4;
+    aspect-ratio: 12 / 7;
     max-width: 1200px;
     margin: 0 auto;
 }
@@ -511,8 +511,13 @@ main {
     top: var(--y);
     transform: translate(-50%, -50%);
     display: block;
-    text-decoration: none;
     max-width: 360px;
+}
+
+.node__card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
 }
 
 .node__inner {
@@ -522,8 +527,16 @@ main {
     transition: background 0.2s ease-out, border-color 0.2s ease-out, transform 0.3s cubic-bezier(0.215, 0.61, 0.355, 1);
 }
 
-.node:hover .node__inner,
-.node:focus-visible .node__inner {
+.node__inner--center {
+    text-align: center;
+}
+
+.node__inner--center .node__meta {
+    white-space: nowrap;
+}
+
+.node__card:hover .node__inner,
+.node__card:focus-visible .node__inner {
     background: var(--hover-bg);
     border-color: var(--accent-color);
 }
@@ -544,34 +557,32 @@ main {
 
 .node__satellite {
     position: absolute;
-    left: var(--sat-x);
-    top: var(--sat-y);
-    transform: translate(-50%, -50%);
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) translate(var(--rest-x), var(--rest-y));
+    display: inline-block;
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
     font-size: 0.72rem;
     letter-spacing: 0.02em;
     line-height: 1.4;
     white-space: nowrap;
+    text-decoration: none;
     color: var(--meta-color);
     padding: 3px 10px;
     border-radius: 999px;
     border: 1px solid var(--border-color);
     background: var(--card-bg);
-    opacity: 0.9;
-    animation: sat-drift 36s ease-in-out infinite;
-    animation-delay: var(--sat-phase, 0s);
+    cursor: default;
 }
 
-html.light-mode .node__satellite {
-    opacity: 0.95;
+.node__satellite--link {
+    cursor: pointer;
 }
 
-@keyframes sat-drift {
-    0%   { transform: translate(-50%, -50%) translate(9px, 0); }
-    25%  { transform: translate(-50%, -50%) translate(0, 6px); }
-    50%  { transform: translate(-50%, -50%) translate(-9px, 0); }
-    75%  { transform: translate(-50%, -50%) translate(0, -6px); }
-    100% { transform: translate(-50%, -50%) translate(9px, 0); }
+.node__satellite:hover,
+.node__satellite:focus-visible {
+    border-color: var(--accent-color);
+    color: var(--text-color);
 }
 
 /* SUB-CONSTELLATION (e.g. /workday role stars) — same grammar as L0's

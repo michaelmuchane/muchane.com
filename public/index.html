@@ -71,52 +71,52 @@
 
         <section class="constellation-section" data-testid="constellation-section">
             <div class="constellation" data-testid="constellation">
-                <svg class="constellation__svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" data-testid="constellation-svg">
-                    <polyline points="10,20 29,63 52,26 73,70 91,42"></polyline>
+                <svg class="constellation__svg" viewBox="0 0 1200 700" preserveAspectRatio="none" aria-hidden="true" data-testid="constellation-svg">
+                    <polyline points="190,105 330,500 790,240 1095,605"></polyline>
                 </svg>
 
-                <a class="node" href="/two-sided-data-platform" data-zoom="in" style="--x:10%; --y:20%" data-testid="node-two-sided-data-platform">
-                    <div class="node__inner">
-                        <span class="node__title">Two-Sided Data Platform</span>
-                        <span class="node__meta">2025 – Present</span>
-                    </div>
-                </a>
+                <div class="node node--tsdp" style="--x:15.8%; --y:15%">
+                    <a class="node__card" href="/two-sided-data-platform" data-zoom="in" data-testid="node-two-sided-data-platform">
+                        <div class="node__inner">
+                            <span class="node__title">Two-Sided Data Platform</span>
+                            <span class="node__meta">2025 – Present</span>
+                        </div>
+                    </a>
+                </div>
 
-                <a class="node" href="/muchane-cloud" data-zoom="in" style="--x:29%; --y:63%" data-testid="node-muchane-cloud">
-                    <div class="node__inner">
-                        <span class="node__title">Muchane Cloud</span>
-                        <span class="node__meta">2025 – Present</span>
-                    </div>
-                    <span class="node__satellite" style="--sat-x: 68%; --sat-y: -30px; --sat-phase: -6s" aria-hidden="true" data-testid="satellite-muchane-cloud-1">iapply</span>
-                    <span class="node__satellite" style="--sat-x: 30%; --sat-y: calc(100% + 30px); --sat-phase: -28s" aria-hidden="true" data-testid="satellite-muchane-cloud-2">muchane.com</span>
-                </a>
+                <div class="node node--wd" style="--x:27.5%; --y:71.4%">
+                    <a class="node__card" href="/workday" data-zoom="in" data-testid="node-workday">
+                        <div class="node__inner">
+                            <span class="node__title">Workday</span>
+                            <span class="node__meta">2019 – 2025</span>
+                        </div>
+                    </a>
+                    <a class="node__satellite node__satellite--link" href="/workday/senior-product-quality-engineer" data-zoom="chain" style="--s: 0; --rest-x: 0px; --rest-y: -72px" data-testid="satellite-workday-1">Senior PQ Engineer</a>
+                    <a class="node__satellite node__satellite--link" href="/workday/product-management-rotation" data-zoom="chain" style="--s: 0.3273; --rest-x: 161px; --rest-y: 72px" data-testid="satellite-workday-2">PM Rotation</a>
+                    <a class="node__satellite node__satellite--link" href="/workday/product-quality-engineer" data-zoom="chain" style="--s: 0.6727; --rest-x: -161px; --rest-y: 72px" data-testid="satellite-workday-3">PQ Engineer</a>
+                </div>
 
-                <a class="node" href="/workday" data-zoom="in" style="--x:52%; --y:26%" data-testid="node-workday">
-                    <div class="node__inner">
-                        <span class="node__title">Workday</span>
-                        <span class="node__meta">2019 – 2025</span>
-                    </div>
-                    <span class="node__satellite" style="--sat-x: 70%; --sat-y: -30px; --sat-phase: 0s" aria-hidden="true" data-testid="satellite-workday-1">Senior PQE</span>
-                    <span class="node__satellite" style="--sat-x: calc(100% + 70px); --sat-y: 55%; --sat-phase: -12s" aria-hidden="true" data-testid="satellite-workday-2">PM Rotation</span>
-                    <span class="node__satellite" style="--sat-x: 22%; --sat-y: calc(100% + 30px); --sat-phase: -24s" aria-hidden="true" data-testid="satellite-workday-3">PQE</span>
-                </a>
+                <div class="node node--mc" style="--x:65.8%; --y:34.3%">
+                    <a class="node__card" href="/muchane-cloud" data-zoom="in" data-testid="node-muchane-cloud">
+                        <div class="node__inner">
+                            <span class="node__title">Muchane Cloud</span>
+                            <span class="node__meta">2025 – Present</span>
+                        </div>
+                    </a>
+                    <span class="node__satellite" tabindex="0" style="--s: 0; --rest-x: 0px; --rest-y: -72px" data-testid="satellite-muchane-cloud-1">Career Command Center</span>
+                    <span class="node__satellite" tabindex="0" style="--s: 0.5; --rest-x: 0px; --rest-y: 72px" data-testid="satellite-muchane-cloud-3">Self-Hosted Infra</span>
+                </div>
 
-                <a class="node" href="/education" data-zoom="in" style="--x:73%; --y:70%" data-testid="node-education">
-                    <div class="node__inner">
-                        <span class="node__title">Education</span>
-                    </div>
-                    <span class="node__satellite" style="--sat-x: 28%; --sat-y: -30px; --sat-phase: -4s" aria-hidden="true" data-testid="satellite-education-1">BU</span>
-                    <span class="node__satellite" style="--sat-x: 74%; --sat-y: calc(100% + 30px); --sat-phase: -22s" aria-hidden="true" data-testid="satellite-education-2">Wake Forest</span>
-                </a>
-
-                <a class="node" href="/contact" data-zoom="in" style="--x:91%; --y:42%" data-testid="node-contact">
-                    <div class="node__inner">
-                        <span class="node__title">Contact</span>
-                    </div>
-                    <span class="node__satellite" style="--sat-x: 36%; --sat-y: -30px; --sat-phase: -8s" aria-hidden="true" data-testid="satellite-contact-1">Email</span>
-                    <span class="node__satellite" style="--sat-x: calc(0% - 58px); --sat-y: 50%; --sat-phase: -20s" aria-hidden="true" data-testid="satellite-contact-2">GitHub</span>
-                    <span class="node__satellite" style="--sat-x: 58%; --sat-y: calc(100% + 30px); --sat-phase: -32s" aria-hidden="true" data-testid="satellite-contact-3">LinkedIn</span>
-                </a>
+                <div class="node node--edu" style="--x:91.3%; --y:86.4%">
+                    <a class="node__card" href="/education" data-zoom="in" data-testid="node-education">
+                        <div class="node__inner node__inner--center">
+                            <span class="node__title">Education</span>
+                            <span class="node__meta">2015 — 19 · 2021 — 23</span>
+                        </div>
+                    </a>
+                    <span class="node__satellite" tabindex="0" style="--s: 0; --rest-x: 0px; --rest-y: -72px" data-testid="satellite-education-1">BU</span>
+                    <span class="node__satellite" tabindex="0" style="--s: 0.5; --rest-x: 0px; --rest-y: 72px" data-testid="satellite-education-2">WFU</span>
+                </div>
             </div>
         </section>
 

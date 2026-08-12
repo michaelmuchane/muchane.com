@@ -576,3 +576,85 @@ rule that governs reading text — they're ambient signage/grain by design (boar
 not content a visitor is meant to read at a glance. Interactive states (hover/focus) move
 them to `--accent-color`, which does clear 4.5:1. The header contact icons are held to the
 stricter ≥3:1 UI-component threshold since they're the site's sole contact affordance.
+
+## L0 refinement — C2: constellation restructure
+
+**Four nodes, node-center-to-node-center polyline, contact node removed.**
+`.constellation` moved from `aspect-ratio: 9/4` to `12/7` (board-1i's 1200×700 design
+frame) with polyline points `190,105 330,500 790,240 1095,605`, node positions at exact
+design percentages. Contact is no longer an L0 node (it lives in the header icon trio);
+the `/contact` route itself is untouched here and stays reachable via the drawer until C6.
+
+**Node markup split into `.node` (position wrapper) + `.node__card` (the `<a>`).**
+Satellites are now real interactive elements (Workday: links; Muchane Cloud/Education:
+focusable pills) and cannot be children of another `<a>` — `<a>` inside `<a>` is invalid
+HTML and the parser silently breaks the nesting. `.node` keeps all positioning
+(`--x`/`--y`, `translate(-50%,-50%)`, `max-width`); `.node__card` carries `href`/`data-zoom`
+and is what the zoom engine's origin lookups (`stage.querySelector('[href="..."]')`) and
+the parallax binder (`inner.parentElement`) resolve to — both verified still functional
+after the split.
+
+**Satellite content:** `iapply` → **Career Command Center** (display label only — repo,
+container, subdomain stay `iapply`); `muchane.com` satellite removed (redundant with the
+page itself); **Self-Hosted Infra** added as `satellite-muchane-cloud-3` (`-2` retired,
+not reused, matching board 1a's numbering). Workday: `Senior PQE`→`Senior PQ Engineer`,
+`PQE`→`PQ Engineer`. Education: `Wake Forest`→`WFU`; node gains a centered title and a
+single-line combined meta (`2015 — 19 · 2021 — 23`).
+
+**Satellites ship at static rest positions in C2; the orbit animation itself is C3's
+job.** `--s`/`--rest-x`/`--rest-y` inline custom properties are authored now (per board
+1i's locked geometry — corner-exact `--s` of 0.3273/0.6727 for Workday's PM Rotation/PQ
+Engineer, 0.5 for the two-satellite nodes), and `.node__satellite`'s base transform reads
+`translate(var(--rest-x), var(--rest-y))` directly — this is also the exact rule C3's
+reduced-motion override will reuse, so nothing here gets thrown away in C3, only extended
+with an `animation`.
+
+**Vertical-fit gate (5) measured and reported, NOT fixed in this commit — pending
+Michael's ruling per his explicit stop-here instruction.** At 1440×900:
+`document.documentElement.scrollHeight` = 1528px against a 900px viewport, **628px
+overflow**. At 1280×800: scrollHeight 1436px against 800px, **636px overflow**. Height
+breakdown (both sizes; header and telemetry are viewport-independent, hero and the
+constellation-section's own padding are `vh`-based, the constellation itself is a fixed
+700px because `aspect-ratio:12/7` is evaluated against the constellation's own
+`max-width:1200px`, not the viewport):
+
+| Zone | 1440×900 | 1280×800 | Basis |
+|---|---|---|---|
+| `.header` (sticky, in-flow) | 80px | 80px | fixed `--header-height` |
+| `.hero` | 550px | 480px | `min-height: calc(70vh - 80px)` + `60px`×2 padding (already inside the calc) |
+| `.constellation-section` padding | 198px | 176px | `8vh` top + `14vh` bottom |
+| `.constellation` | 700px | 700px | `aspect-ratio:12/7` × `max-width:1200px` — independent of viewport |
+| **Document total** | **1528px** | **1436px** | sum of the above (`.telemetry` is `position:fixed`, contributes 0 to `scrollHeight` but visually covers the bottom 28px of whatever renders behind it) |
+
+Load-bearing arithmetic: even at zero hero height and zero section padding, `header(80) +
+constellation(700) + telemetry(28) = 808px` — already **8px over** the 1280×800 budget on
+its own. The constellation's fixed 700px is the dominant term at both sizes; spacing cuts
+alone (hero/padding) cannot close the gap at 1280×800, only at 1440×900 (92px of slack
+once header+constellation+telemetry are subtracted).
+
+Per the plan's pre-decided options, NOT chosen here — options only, no fix applied:
+1. **Uniform `transform: scale()` on `.constellation`** — shrinks cards, polyline, and
+   every board-1i pixel offset (161px/203px/139px/72px) together, so the "hug the card +
+   14px clearance" ratio the locked extents encode is preserved exactly (a linear
+   transform doesn't re-derive the math, it renders the same geometry smaller — the same
+   idiom the zoom engine already uses for L0/L1 transitions). Needed scale ≈0.73–0.83
+   depending on how much hero/padding also gets cut; risk: satellite pill text
+   (`0.72rem`) renders near ~8px at 0.73 scale, likely below comfortable legibility, and
+   38–46px card touch targets shrink proportionally.
+2. **Tighten hero `min-height`/`constellation-section` padding.** Zero risk to the locked
+   orbit math (touches only spacing, not the constellation itself) but, per the
+   arithmetic above, is **insufficient alone** at 1280×800 — the constellation's fixed
+   700px plus header plus telemetry already exceeds that viewport before any hero/padding
+   height is added. Only closes the gap at 1440×900, and only if hero+padding together
+   drop to ≤92px (a near-total loss of the hero's current breathing room).
+3. **Scale node cards down (typography/padding only, `.constellation--sub`-style).**
+   Does NOT reduce the constellation container's height by itself — the container's
+   700px comes from `aspect-ratio` × `max-width`, not from card content, so this option
+   alone is a non-fix unless paired with a `max-width` reduction on `.constellation` —
+   which, unlike uniform `transform: scale()`, would desync the board-1i pixel-valued
+   orbit offsets from the now-smaller card sizes (offsets are fixed px, not %), silently
+   re-deriving the locked extents' ratio. Effectively subsumed by option 1 if done
+   correctly (scale, not `max-width`).
+
+Options 1 and 2 combined (a moderate scale plus a moderate spacing cut) is the
+likely-lowest-regret path but is Michael's call, not assumed here.
