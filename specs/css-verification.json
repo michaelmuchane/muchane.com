@@ -6,7 +6,7 @@
     "variables": {
       "--bg-color": "#0a0a0a",
       "--text-color": "#ededed",
-      "--accent-color": "#3b82f6",
+      "--accent-color": "#B07FFF",
       "--border-color": "#333333",
       "--card-bg": "#111111",
       "--header-height": "80px"
