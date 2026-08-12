@@ -38,6 +38,7 @@
     --icon-linkedin-fg: #3B93E8;
     --icon-linkedin-border: #0A66C280;
     --icon-linkedin-bg: #0A66C21F;
+    --satellite-link-border: #B07FFF66;
 }
 
 html.light-mode {
@@ -58,6 +59,7 @@ html.light-mode {
     --icon-github-border: #0a0a0a4d;
     --icon-github-bg: #0a0a0a14;
     --icon-linkedin-fg: #0A66C2;
+    --satellite-link-border: #7C3AED66;
 }
 
 /* Base */
@@ -577,7 +579,6 @@ main {
     position: absolute;
     left: 50%;
     top: 50%;
-    transform: translate(-50%, -50%) translate(var(--rest-x), var(--rest-y));
     display: inline-block;
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
     font-size: 0.72rem;
@@ -591,17 +592,112 @@ main {
     border: 1px solid var(--border-color);
     background: var(--card-bg);
     cursor: default;
+    animation: none var(--orbit-period) linear infinite;
+    animation-delay: calc(-1 * var(--s) * var(--orbit-period));
+}
+
+.node--wd .node__satellite { animation-name: orbit-wd; }
+.node--mc .node__satellite { animation-name: orbit-mc; }
+.node--edu .node__satellite { animation-name: orbit-edu; }
+
+/* Orbit rectangles per board-1i extents — WD ±161x±72, MC ±203x±72,
+   EDU ±139x±72. Waypoint offsets are cumulative segment length / perimeter,
+   so linear timing = constant perimeter speed. 0% = top center, clockwise. */
+@keyframes orbit-wd {
+    0%     { transform: translate(-50%, -50%) translate(0, -72px); }
+    17.27% { transform: translate(-50%, -50%) translate(161px, -72px); }
+    32.73% { transform: translate(-50%, -50%) translate(161px, 72px); }
+    67.27% { transform: translate(-50%, -50%) translate(-161px, 72px); }
+    82.73% { transform: translate(-50%, -50%) translate(-161px, -72px); }
+    100%   { transform: translate(-50%, -50%) translate(0, -72px); }
+}
+
+@keyframes orbit-mc {
+    0%     { transform: translate(-50%, -50%) translate(0, -72px); }
+    18.45% { transform: translate(-50%, -50%) translate(203px, -72px); }
+    31.55% { transform: translate(-50%, -50%) translate(203px, 72px); }
+    68.45% { transform: translate(-50%, -50%) translate(-203px, 72px); }
+    81.55% { transform: translate(-50%, -50%) translate(-203px, -72px); }
+    100%   { transform: translate(-50%, -50%) translate(0, -72px); }
+}
+
+@keyframes orbit-edu {
+    0%     { transform: translate(-50%, -50%) translate(0, -72px); }
+    16.47% { transform: translate(-50%, -50%) translate(139px, -72px); }
+    33.53% { transform: translate(-50%, -50%) translate(139px, 72px); }
+    66.47% { transform: translate(-50%, -50%) translate(-139px, 72px); }
+    83.53% { transform: translate(-50%, -50%) translate(-139px, -72px); }
+    100%   { transform: translate(-50%, -50%) translate(0, -72px); }
 }
 
 .node__satellite--link {
     cursor: pointer;
+    border-color: var(--satellite-link-border);
+}
+
+.node__satellite--link::after {
+    content: '\203A';
+    margin-left: 6px;
+    color: var(--accent-color);
 }
 
 .node__satellite:hover,
 .node__satellite:focus-visible {
     border-color: var(--accent-color);
     color: var(--text-color);
+    animation-play-state: paused;
 }
+
+/* SATELLITE HOVER TEASERS */
+.satellite__teaser {
+    position: absolute;
+    bottom: calc(100% + 12px);
+    left: 50%;
+    transform: translateX(-50%) scale(calc(1 / var(--constellation-scale)));
+    transform-origin: 50% 100%;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    padding: 10px 14px;
+    width: max-content;
+    max-width: 230px;
+    white-space: normal;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    font-size: 0.72rem;
+    line-height: 1.4;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--teaser-fade), visibility 0s linear var(--teaser-fade);
+    pointer-events: none;
+}
+
+.node__satellite:hover .satellite__teaser,
+.node__satellite:focus-visible .satellite__teaser {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity var(--teaser-fade), visibility 0s linear 0s;
+}
+
+.node__satellite.teaser-below .satellite__teaser {
+    top: calc(100% + 12px);
+    bottom: auto;
+    transform-origin: 50% 0%;
+}
+
+.satellite__teaser-title {
+    color: var(--text-color);
+}
+
+.satellite__teaser-meta {
+    color: var(--meta-color);
+}
+
+.satellite__teaser-accent {
+    color: var(--accent-color);
+}
+
 
 /* SUB-CONSTELLATION (e.g. /workday role stars) — same grammar as L0's
    .constellation, scaled down to read as a cluster within a page rather
@@ -773,6 +869,7 @@ main.is-zooming {
 
     .node__satellite {
         animation: none;
+        transform: translate(-50%, -50%) translate(var(--rest-x), var(--rest-y));
     }
 }
 

@@ -122,7 +122,19 @@ renderTelemetry(TELEMETRY);
 
     var QUINT_OUT = 'cubic-bezier(0.22, 1, 0.36, 1)';
     var ZOOM = { scaleDur: 700, fadeDur: 434, delay: 196, scaleFar: 5, scaleNear: 0.86 };
+    var CHAIN = { compress: 0.7, gap: 0 };            // second push = ZOOM x compress; gap ms between pushes
+    window.MOTION = { ZOOM: ZOOM, CHAIN: CHAIN };     // devtools-live tuning; transitions read current values at start
     var REDUCED = matchMedia('(prefers-reduced-motion: reduce)');
+
+    function scaledTiming(timing, factor) {
+        return {
+            scaleDur: Math.round(timing.scaleDur * factor),
+            fadeDur: Math.round(timing.fadeDur * factor),
+            delay: Math.round(timing.delay * factor),
+            scaleFar: timing.scaleFar,
+            scaleNear: timing.scaleNear,
+        };
+    }
 
     var pageCache = new Map();
     var inflight = false;
@@ -223,8 +235,8 @@ renderTelemetry(TELEMETRY);
 
     // Salvaged pattern 2 — parallax hover (ported from the retired GSAP
     // mousemove version: 0.1 follow factor). Mouse-only, skipped under
-    // reduced motion, applied to .node__inner (a CHILD of the <a class="node">)
-    // so the zoom-origin rect measured off the <a> itself stays stable.
+    // reduced motion, applied to .node__inner (a CHILD of <a class="node__card">)
+    // so the zoom-origin rect measured off the card link itself stays stable.
     function bindParallaxNodes(root) {
         if (!matchMedia('(hover: hover)').matches) return;
         var inners = root.querySelectorAll('.constellation .node__inner');
@@ -250,6 +262,36 @@ renderTelemetry(TELEMETRY);
         });
     }
 
+    // Side-flip binder for satellite hover teasers: every satellite orbits
+    // through the bottom run of its rect, where an above-anchored teaser
+    // would cover the parent card for roughly a third of each revolution.
+    // Measured at reveal (mouseenter/focusin) rather than via a discrete
+    // CSS keyframe swap — the orbit is paused while hovered/focused, so the
+    // measurement can't go stale mid-hover, and it works identically under
+    // reduced motion (measures the static rest position).
+    function bindSatelliteTeasers(root) {
+        var sats = root.querySelectorAll('.node__satellite');
+        sats.forEach(function (sat) {
+            if (sat.dataset.teaserBound === 'true') return;
+            sat.dataset.teaserBound = 'true';
+            var update = function () {
+                var card = sat.closest('.node').querySelector('.node__card');
+                var satRect = sat.getBoundingClientRect();
+                var cardRect = card.getBoundingClientRect();
+                var satCenterY = satRect.top + satRect.height / 2;
+                var cardCenterY = cardRect.top + cardRect.height / 2;
+                // ties within +/-2px keep the above anchor
+                if (satCenterY - cardCenterY > 2) {
+                    sat.classList.add('teaser-below');
+                } else {
+                    sat.classList.remove('teaser-below');
+                }
+            };
+            sat.addEventListener('mouseenter', update);
+            sat.addEventListener('focusin', update);
+        });
+    }
+
     function swapStage(url, data, push) {
         stage.classList.remove('is-zooming');
         stage.style.minHeight = '';
@@ -264,6 +306,7 @@ renderTelemetry(TELEMETRY);
         currentPath = url;
         bindRevealHeadings(stage);
         bindParallaxNodes(stage);
+        bindSatelliteTeasers(stage);
         if (window.updateMenuActive) window.updateMenuActive(url);
     }
 
@@ -285,32 +328,33 @@ renderTelemetry(TELEMETRY);
         }
     }
 
-    function buildAnimations(outLayer, inLayer, direction) {
+    function buildAnimations(outLayer, inLayer, direction, timing) {
         // direction: 'in' mirrors the click-through zoom; 'out' reverses it.
+        timing = timing || ZOOM;
         var outFrom = direction === 'in' ? 1 : 1;
-        var outTo = direction === 'in' ? ZOOM.scaleFar : ZOOM.scaleNear;
-        var inFrom = direction === 'in' ? ZOOM.scaleNear : ZOOM.scaleFar;
+        var outTo = direction === 'in' ? timing.scaleFar : timing.scaleNear;
+        var inFrom = direction === 'in' ? timing.scaleNear : timing.scaleFar;
         return [
             outLayer.animate(
                 [{ transform: 'scale(' + outFrom + ')' }, { transform: 'scale(' + outTo + ')' }],
-                { duration: ZOOM.scaleDur, easing: QUINT_OUT, fill: 'forwards' }
+                { duration: timing.scaleDur, easing: QUINT_OUT, fill: 'forwards' }
             ),
             outLayer.animate(
                 [{ opacity: 1 }, { opacity: 0 }],
-                { duration: ZOOM.fadeDur, easing: 'linear', fill: 'forwards' }
+                { duration: timing.fadeDur, easing: 'linear', fill: 'forwards' }
             ),
             inLayer.animate(
                 [{ transform: 'scale(' + inFrom + ')' }, { transform: 'scale(1)' }],
-                { duration: ZOOM.scaleDur, easing: QUINT_OUT, delay: ZOOM.delay, fill: 'forwards' }
+                { duration: timing.scaleDur, easing: QUINT_OUT, delay: timing.delay, fill: 'forwards' }
             ),
             inLayer.animate(
                 [{ opacity: 0 }, { opacity: 1 }],
-                { duration: ZOOM.fadeDur, easing: 'linear', delay: ZOOM.delay, fill: 'forwards' }
+                { duration: timing.fadeDur, easing: 'linear', delay: timing.delay, fill: 'forwards' }
             ),
         ];
     }
 
-    async function zoomIn(url, originEl, push) {
+    async function zoomIn(url, originEl, push, timing) {
         if (push === undefined) push = true;
         if (inflight) return;
         inflight = true;
@@ -357,7 +401,7 @@ renderTelemetry(TELEMETRY);
             stage.appendChild(outLayer);
             stage.appendChild(inLayer);
 
-            activeAnims = buildAnimations(outLayer, inLayer, 'in');
+            activeAnims = buildAnimations(outLayer, inLayer, 'in', timing);
             await Promise.allSettled(activeAnims.map(function (a) { return a.finished; }));
             if (gen !== navGen) return;
             activeAnims = [];
@@ -450,6 +494,45 @@ renderTelemetry(TELEMETRY);
         }
     }
 
+    // Satellite click = two camera pushes (L0 -> parent node -> child page).
+    // Both pages are prefetched before the first push starts (zero mid-chain
+    // network stall, since zoomIn's own loadPage call then hits the cache).
+    // The second push is compressed (CHAIN.compress) so the full chain reads
+    // faster than two full-speed pushes back to back. Overlapping pushes are
+    // rejected: the second push must measure its origin in the finalized L1
+    // DOM, and nesting un-finalized zoom layers has no defined visual.
+    async function chainZoom(childUrl, satelliteEl) {
+        if (inflight) return;
+        var parentUrl = '/' + childUrl.split('/')[1];
+
+        try {
+            await Promise.all([loadPage(parentUrl), loadPage(childUrl)]);
+        } catch (e) {
+            location.href = childUrl;
+            return;
+        }
+
+        var origin1 = satelliteEl.closest('.node').querySelector('.node__card');
+        await zoomIn(parentUrl, origin1, true);
+
+        var gen = navGen;
+        // popstate preempted between pushes — user's back wins
+        if (location.pathname !== parentUrl) return;
+
+        var origin2 = stage.querySelector('a[href="' + childUrl + '"]');
+        if (!origin2) {
+            location.href = childUrl;
+            return;
+        }
+
+        if (CHAIN.gap) {
+            await new Promise(function (r) { setTimeout(r, CHAIN.gap); });
+            if (navGen !== gen) return;
+        }
+
+        await zoomIn(childUrl, origin2, true, scaledTiming(ZOOM, CHAIN.compress));
+    }
+
     /* CLICK WIRING */
     document.addEventListener('click', function (e) {
         if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
@@ -474,6 +557,8 @@ renderTelemetry(TELEMETRY);
             } else {
                 zoomOut(href);
             }
+        } else if (link.dataset.zoom === 'chain') {
+            chainZoom(href, link);
         }
     });
 
@@ -536,4 +621,5 @@ renderTelemetry(TELEMETRY);
 
     bindRevealHeadings(stage);
     bindParallaxNodes(stage);
+    bindSatelliteTeasers(stage);
 })();

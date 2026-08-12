@@ -733,3 +733,98 @@ silently fixed further. Polyline-to-node-center alignment re-verified after the
 scale wrapper at 1280, 1440, and 1920: all four vertices within 0.5px of their
 card centers on both axes (well inside the 2px gate), confirming the scale
 wrapper preserves board-1i geometry exactly rather than re-deriving it.
+
+## L0 refinement — C3: satellite orbit, hover teasers, link affordance, chained zoom
+
+**Orbit mechanism: CSS keyframed `transform`, not rAF.** Per-node
+`@keyframes orbit-wd/-mc/-edu`, piecewise-linear waypoints at cumulative
+segment-length fractions (linear timing = constant perimeter speed), one
+`animation-name` per node via `.node--wd .node__satellite { animation-name:
+orbit-wd; }` etc. `animation: none var(--orbit-period) linear infinite;` on
+the base `.node__satellite` rule sets duration/timing/iteration-count via
+shorthand while defaulting `animation-name` to the `none` keyword (a safe
+fallback for any satellite not covered by a per-node override); the
+longhand `animation-name` override on the per-node selector only touches
+that one sub-property. Per-satellite start position: `animation-delay:
+calc(-1 * var(--s) * var(--orbit-period))` (negative delay seeks into the
+cycle immediately at load, no visible "wind-up"). Rejected rAF: a
+permanently-running main-thread timer for ~0.2px/frame motion is waste: the
+compositor animates `transform` off-thread for free, and pause (`:hover`/
+`:focus-visible` → `animation-play-state: paused`) and reduced-motion (see
+below) both have declarative answers. Rejected `offset-path`: path
+coordinates resolve against the containing block, so per-node card sizing
+would leak into the path, and reduced-motion rest positions would still
+need per-satellite transform overrides regardless — no win over keyframes.
+
+**Reduced motion:** `.node__satellite { animation: none; transform:
+translate(-50%, -50%) translate(var(--rest-x), var(--rest-y)); }` — the
+explicit static `transform` is required, not optional: disabling the
+animation alone leaves `transform` unset (the property is entirely
+animation-driven in the motion-enabled path), which would collapse every
+satellite to its card's exact center instead of its per-satellite rest
+position. End-state visible, never hidden, per Commandment 6.
+
+**Link affordance (ruling 3's required addition):** `.node__satellite--link`
+gets a rest-state accent-tinted border (new token `--satellite-link-border`:
+`#B07FFF66` dark / `#7C3AED66` light — 40%-alpha, quieter than the shared
+full-accent hover state) plus a trailing `::after { content: '\203A' }`
+chevron. Both cues together, not color alone (color-blind users). Hover/
+focus-visible styling stays identical for both link and informational
+pills (full accent border + text color) — the distinction is rest-state
+only, by design (hover already means "this is interactive" regardless of
+kind). Verified: computed `border-color` differs between a link satellite
+and an informational one; chevron `content` present only on links; cursor
+`pointer` vs `default`.
+
+**Hover teasers:** child `<span class="satellite__teaser" aria-hidden="true">`
+per satellite, `aria-label` set on the satellite itself so its accessible
+name stays the plain pill label (teaser is a visual preview only; full
+content lives on the linked/would-be-linked page). Copy per the approved
+table, three span classes (`-title`/`-meta`/`-accent`) matching existing
+`--text-color`/`--meta-color`/`--accent-color` token usage. Counter-scaled
+by `scale(calc(1 / var(--constellation-scale)))` (composed with the
+existing `translateX(-50%)` centering, `transform-origin: 50% 100%` above /
+`50% 0%` below) so the 0.72rem teaser text reads at its authored size
+despite the L0 constellation's 0.78 scale-down — the counter-scale is
+isolated to `.satellite__teaser`, an absolutely-positioned overlay, so it
+doesn't touch orbit geometry.
+
+**Side flip:** `bindSatelliteTeasers(root)` (registered alongside
+`bindParallaxNodes`, same `dataset` bind-once guard, called at init and in
+`swapStage`) measures the pill's `getBoundingClientRect()` center-Y against
+its node's `.node__card` center-Y on `mouseenter`/`focusin` and toggles
+`.teaser-below`; exact at reveal because the orbit is paused while
+hovered/focused (measurement cannot go stale mid-hover), and identical
+under reduced motion (measures the static rest position). Ties within
+±2px keep the above anchor. Rejected a discrete-keyframe top/bottom swap
+(engine-quirky timing; the flip only matters at reveal, where a
+measurement is exact). Verified at both orbit extremes (forced via a
+clean `animation: none` + reflow + `animation-delay` + `animation-
+play-state: paused` reset — a naive delay change on an already-running
+animation seeks from load time, not from the moment of the test, and
+silently lands on the wrong frame) for one satellite per node plus both
+Education satellites: top phase → teaser above, disjoint from card and
+siblings; bottom phase → `teaser-below` present, teaser below the pill,
+disjoint from card and siblings.
+
+**Chained zoom pacing — gate-8 correction.** `CHAIN = { compress: 0.7, gap:
+0 }` (pre-approved) scales the second push's `scaleDur`/`fadeDur`/`delay`
+by 0.7, `Math.round`ed. `chainZoom` prefetches both pages before the first
+push starts (`Promise.all([loadPage(parentUrl), loadPage(childUrl)])`), so
+neither push stalls on network; each `zoomIn` call's own `loadPage` then
+hits the cache. Overlapping pushes rejected — the second push measures its
+origin (`stage.querySelector('a[href="' + childUrl + '"]')`) in the
+finalized L1 DOM, and nesting un-finalized zoom layers has no defined
+visual. The plan's original "≈1190ms total" pacing estimate summed only
+the two `scaleDur` values (700 + 490) and didn't count each push's own
+start `delay` — the animation actually finalizes (and `history.pushState`
+fires) at `delay + scaleDur` per push, not at `scaleDur` alone: first push
+896ms (196+700) + second push 627ms (137+490) = **1523ms theoretical**,
+**1583ms measured live** (instrumented via a `history.pushState` hook,
+click to second `pushState`) — the original 1300ms gate was arithmetically
+unreachable with `ZOOM.delay` (locked) and `CHAIN.compress: 0.7` (also
+pre-approved) both held fixed. Per Michael's ruling: keep `compress: 0.7`
+(the smoother second push), gate 8's threshold corrected to **~1600ms**
+(covers the measured 1583ms with headroom for real-machine variance) —
+documented here rather than silently fudging either fixed constant to hit
+the original number.
