@@ -599,13 +599,32 @@ a.node:focus-visible .node__inner {
     animation-delay: calc(-1 * var(--s) * var(--orbit-period));
 }
 
+.node--tsdp .node__satellite { animation-name: orbit-tsdp; }
 .node--wd .node__satellite { animation-name: orbit-wd; }
 .node--mc .node__satellite { animation-name: orbit-mc; }
 .node--edu .node__satellite { animation-name: orbit-edu; }
 
-/* Orbit rectangles per board-1i extents — WD ±161x±72, MC ±203x±72,
-   EDU ±139x±72. Waypoint offsets are cumulative segment length / perimeter,
-   so linear timing = constant perimeter speed. 0% = top center, clockwise. */
+/* Orbit rectangles per board-1i extents — TSDP ±156x±72 (a second TSDP
+   satellite would take s: 0.5), WD ±161x±72, MC ±203x±72, EDU ±139x±72.
+   TSDP's A is card half-width + a real 4px clearance + pill half-width
+   (a bare floor of card-half+pill-half gives a sub-pixel margin that
+   rounds to a self-overlap with the card at side phases — matches WD's
+   own real shipped clearance of ~3.77px). Label "Wrangling" (not a
+   longer heading-derived phrase) is required to keep this real
+   clearance while also staying inside the 1280 viewport at every
+   orbit phase — see DECISIONS.md for the full measurement trail.
+   Waypoint offsets are cumulative segment length / perimeter, so
+   linear timing = constant perimeter speed. 0% = top center,
+   clockwise. */
+@keyframes orbit-tsdp {
+    0%     { transform: translate(-50%, -50%) translate(0, -72px); }
+    17.11% { transform: translate(-50%, -50%) translate(156px, -72px); }
+    32.89% { transform: translate(-50%, -50%) translate(156px, 72px); }
+    67.11% { transform: translate(-50%, -50%) translate(-156px, 72px); }
+    82.89% { transform: translate(-50%, -50%) translate(-156px, -72px); }
+    100%   { transform: translate(-50%, -50%) translate(0, -72px); }
+}
+
 @keyframes orbit-wd {
     0%     { transform: translate(-50%, -50%) translate(0, -72px); }
     17.27% { transform: translate(-50%, -50%) translate(161px, -72px); }

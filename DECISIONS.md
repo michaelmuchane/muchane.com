@@ -1196,3 +1196,117 @@ occurrences in 10 files changed to "DaaS Platform". The route
 (`node-two-sided-data-platform`, `menu-link-two-sided-data-platform`,
 etc.) are unchanged. `grep -rn 'Two-Sided Data Platform' public/`
 returns zero matches post-rename.
+
+## L0/L1 fix-and-extend pass — DaaS Platform's first satellite (navigable), orbit derivation
+
+**One satellite, "Wrangling," linking to the existing
+`/two-sided-data-platform/multimodal-data-wrangling-application` L2
+page — single word verbatim from that page's own heading ("Multimodal
+Data Wrangling Application"), full heading in `aria-label` and the
+teaser title, meta/accent are verbatim pitch fragments, no client or
+company named.** DaaS Platform had no satellites and no orbit
+geometry; derived the rectangular path the same way board 1i did for
+Workday/Muchane Cloud/Education: card rect inflated by clearance +
+pill half-size, vertical half-extent pinned at ±72, horizontal
+half-extent set by card half-width + real clearance + pill half-width.
+Card half-width (post-rename, "DaaS Platform") measured 98.09px live,
+viewport-independent (a fixed CSS width, not a percentage).
+
+**Two measurement bugs caught and corrected during implementation,
+in sequence — both by live browser measurement, neither by
+re-reasoning from the original plan's numbers:**
+
+1. **Self-overlap with the parent card, caught by a live phase sweep.**
+   The pre-implementation plan used a bare mathematical floor
+   (`A = ceil(cardHalf + pillHalf)`, no explicit clearance term), which
+   gave a sub-pixel (0.16px) real-world margin. Pausing the WAAPI
+   animation and seeking `currentTime` to 8 phases (0, 0.125, …0.875),
+   forcing a reflow, and checking `getBoundingClientRect()` overlap
+   against the parent card showed the pill overlapping
+   `node-two-sided-data-platform` at phases 0.25 and 0.75 — reproduced
+   at all three widths. Re-ran the identical sweep against
+   `satellite-workday-1` vs `node-workday`: zero overlap at any phase,
+   confirming this was a real, DaaS-specific defect, not a false
+   positive. Fix: added an explicit clearance term matching Workday's
+   own real shipped margin (`161 - 71.57(cardHalf) - 85.665(pillHalf) =
+   3.765px`) — `A = ceil(cardHalf + 4 + pillHalf)`.
+2. **Pill-width measurement itself was ~7px short, caught by
+   comparing a synthetic probe against the real live element.** Every
+   width measured via a cloned, shallow (`cloneNode(false)`) probe
+   element with `probe.textContent = label` (no earlier session's
+   numbers, nor this pass's first attempt, caught this). The REAL
+   satellite markup — matching every existing satellite — has a
+   trailing newline + indentation between the label text and the
+   nested `<span class="satellite__teaser">`, which HTML whitespace
+   collapsing renders as one trailing space; the shallow-clone probe
+   never included that nested span, so it never included the trailing
+   space either, undermeasuring every candidate by the width of one
+   rendered space (~7.17px in this font/size). Re-measured every
+   candidate directly on the live satellite element (setting
+   `sat.childNodes[0].textContent = label + '\n' + <same indentation>`)
+   to exactly reproduce the real markup: "Data Wrangling" 142.67px
+   (was measured 135.50), "Wrangling App" 135.50px (was measured
+   128.34), "Wrangling Application" 192.83px, "Wrangling" 106.84px.
+
+**With corrected widths and the real clearance term, NEITHER of this
+pass's original two candidates fits the 1280 viewport budget.**
+Budget at 1280 (unchanged): `A + pillHalf ≤ 237.25` (gutter +
+card-center-x). "Data Wrangling" → `A=174`, viewport margin
+**−8.09px**. "Wrangling App" → `A=170`, viewport margin **−0.5px**.
+Both fail. Tried every contiguous-or-single-word-abbreviation label
+derivable from the heading "Multimodal Data Wrangling Application"
+with the corrected measurement method; only single-word "Wrangling"
+clears both constraints with real margin: `A=156`, card-clearance
+margin **+4.49px** (comparable to Workday's 3.77px precedent),
+viewport margin **+27.83px** — an order of magnitude more robust than
+any two-word candidate. Font-robustness re-confirmed at this final
+width: site stack/system-monospace/Courier New widths 106.84 / 106.84
+/ 106.59px, margins 4.49/27.83 (site, monospace) and 4.62/27.95
+(Courier) — comfortably positive in every state. "Wrangling" alone
+reads as abstract without context, but every other satellite on this
+site (Workday's abbreviated role titles, Education's "BU"/"WFU"
+institution initials) already relies on the hover teaser (full
+heading here) to supply the complete meaning — consistent with the
+established pattern, not a new departure.
+
+**Derived geometry (final):** `A = ceil(cardHalf + 4 + pillHalf) =
+ceil(98.09 + 4 + 53.42) = 156`, vertical half-extent 72. Perimeter
+`4×(156+72)=912`; waypoints (cumulative length/perimeter, top center,
+clockwise): 17.11% / 32.89% / 67.11% / 82.89%. Single satellite at
+`--s: 0` (top center, rest `0,-72px`). **A second DaaS satellite would
+take `s: 0.5`** (bottom center, matching the Muchane Cloud/Education
+two-satellite pattern) — the A=156/vertical-72 rectangle would need
+re-deriving only if the second satellite's own label is wider than
+"Wrangling".
+
+**Clearance proof — DaaS's swept envelope against every other node,
+1280/1440/1920 (all previously unchecked against DaaS's position at
+the constellation's top-left), using the final A=156, pillHalf=53.42,
+pillHalf-height=12.055.** Swept pill-body envelopes (half-extents
+x×y): DaaS 209.42×84.1, WD 246.66×84.1, MC 289.25×84.1, EDU
+160.75×84.1.
+
+| Pair | Axis | 1280 | 1440 | 1920 | Required | Verdict |
+|---|---|---|---|---|---|---|
+| DaaS↔WD | y | Δ387.4 | Δ435.9 | Δ526.4 | >168.2 | clear |
+| DaaS↔MC | x | Δ588.8 | Δ662.4 | Δ800.0 | >498.7 | clear |
+| DaaS↔EDU | x | Δ889.1 | Δ1000.2 | Δ1208.0 | >370.2 | clear |
+
+DaaS↔MC fails on the y-axis at 1280 only but clears on x at every
+width, satisfying board 1i's one-axis-clear criterion. Envelope stays
+inside the container vertically at every width; the horizontal
+envelope stays comfortably inside the viewport at every width
+(27.83px margin at 1280, more at wider viewports). Re-verified against
+all six indexed stars post-fix: zero overlaps at 1280/1440/1920.
+Self-overlap-with-own-card re-verified fixed with the final A=156
+geometry: zero overlap at all 8 sampled phases × 3 widths (24/24).
+
+**[FUTURE] The DaaS satellite makes the existing spec-case-21
+teaser-side-overlap defect (logged above, not fixed in this pass)
+worse.** On the left run (phases approaching the left vertex), the
+hovered teaser (230px max-width, centered on the pill) clips the
+viewport's left edge — DaaS's left run sits closer to the viewport
+edge than any existing satellite's, since DaaS is the constellation's
+leftmost node. No fix applied here; same [FUTURE] disposition as the
+pre-existing case.
+
