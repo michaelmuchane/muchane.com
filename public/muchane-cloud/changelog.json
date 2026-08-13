@@ -37,7 +37,8 @@
       "slug": "platform-overview",
       "page": "/muchane-cloud",
       "title": "The platform",
-      "date": "2025 → present",
+      "date_display": "2025 → present",
+      "week_start": null,
       "date_verified": true,
       "tags": [
         "platform",
@@ -63,7 +64,8 @@
       "slug": "muchane-com",
       "page": "/muchane-cloud",
       "title": "This site, zero dependencies on purpose",
-      "date": "Aug 2026",
+      "date_display": "Week of Aug 10, 2026",
+      "week_start": "2026-08-10",
       "date_verified": true,
       "tags": [
         "frontend"
@@ -88,7 +90,8 @@
       "slug": "tailoring-quality-triad",
       "page": "/muchane-cloud/career-command-center",
       "title": "Tailoring under control",
-      "date": "Aug 5, 2026",
+      "date_display": "Week of Aug 3, 2026",
+      "week_start": "2026-08-03",
       "date_verified": true,
       "tags": [
         "ai",
@@ -114,7 +117,8 @@
       "slug": "paragraph-break-overlap",
       "page": "/muchane-cloud/career-command-center",
       "title": "The 16% that never rendered",
-      "date": "Aug 5, 2026",
+      "date_display": "Week of Aug 3, 2026",
+      "week_start": "2026-08-03",
       "date_verified": true,
       "tags": [
         "pipeline",
@@ -140,7 +144,8 @@
       "slug": "companies-surface",
       "page": "/muchane-cloud/career-command-center",
       "title": "Company intelligence in one surface",
-      "date": "Aug 12, 2026",
+      "date_display": "Week of Aug 10, 2026",
+      "week_start": "2026-08-10",
       "date_verified": true,
       "tags": [
         "frontend",
@@ -166,8 +171,9 @@
       "slug": "ats-ingestion-feed-complete",
       "page": "/muchane-cloud/career-command-center",
       "title": "Ingestion that closes its own ghosts",
-      "date": "Early 2026 · active",
-      "date_verified": false,
+      "date_display": "Week of Jul 6, 2026 · active",
+      "week_start": "2026-07-06",
+      "date_verified": true,
       "tags": [
         "pipeline",
         "database"
@@ -192,7 +198,8 @@
       "slug": "updated-at-phantom-writer",
       "page": "/muchane-cloud/career-command-center",
       "title": "Hunting a phantom writer",
-      "date": "Aug 6, 2026",
+      "date_display": "Week of Aug 3, 2026",
+      "week_start": "2026-08-03",
       "date_verified": true,
       "tags": [
         "database"
@@ -216,8 +223,9 @@
       "slug": "kanban-status-history",
       "page": "/muchane-cloud/career-command-center",
       "title": "Kanban with measured time-in-stage",
-      "date": "Early 2026",
-      "date_verified": false,
+      "date_display": "Week of May 4, 2026",
+      "week_start": "2026-05-04",
+      "date_verified": true,
       "tags": [
         "database"
       ],
@@ -231,7 +239,8 @@
       "slug": "dual-path-network",
       "page": "/muchane-cloud/self-hosted-infra",
       "title": "Two paths to one database",
-      "date": "Early 2026",
+      "date_display": "Early 2026",
+      "week_start": null,
       "date_verified": false,
       "tags": [
         "security",
@@ -258,7 +267,8 @@
       "slug": "char-budget-gate",
       "page": "/muchane-cloud/self-hosted-infra",
       "title": "Stop asking LibreOffice how many pages a Word document has",
-      "date": "May 27, 2026",
+      "date_display": "Week of May 25, 2026",
+      "week_start": "2026-05-25",
       "date_verified": true,
       "tags": [
         "pipeline",
@@ -284,7 +294,8 @@
       "slug": "n8n-bloat-surgery",
       "page": "/muchane-cloud/self-hosted-infra",
       "title": "3.65GB of dead execution logs",
-      "date": "Aug 6, 2026",
+      "date_display": "Week of Aug 3, 2026",
+      "week_start": "2026-08-03",
       "date_verified": true,
       "tags": [
         "database",
@@ -309,7 +320,8 @@
       "slug": "agent-hardening",
       "page": "/muchane-cloud/self-hosted-infra",
       "title": "A locked-down user for the coding agent",
-      "date": "May 2026",
+      "date_display": "May 2026",
+      "week_start": null,
       "date_verified": true,
       "tags": [
         "security"
@@ -324,7 +336,8 @@
       "slug": "swap-provisioning",
       "page": "/muchane-cloud/self-hosted-infra",
       "title": "Swap before the OOM killer wins",
-      "date": "Aug 4, 2026",
+      "date_display": "Week of Aug 3, 2026",
+      "week_start": "2026-08-03",
       "date_verified": true,
       "tags": [
         "ops"
@@ -339,8 +352,9 @@
       "slug": "backup-integrity",
       "page": "/muchane-cloud/self-hosted-infra",
       "title": "Backups that restore, not backups that exist",
-      "date": "Aug 2026",
-      "date_verified": false,
+      "date_display": "Week of Jul 13, 2026",
+      "week_start": "2026-07-13",
+      "date_verified": true,
       "tags": [
         "ops"
       ],
@@ -354,7 +368,8 @@
       "slug": "workflow-status-lights",
       "page": "/muchane-cloud/self-hosted-infra",
       "title": "Green and amber lights",
-      "date": "Aug 6, 2026",
+      "date_display": "Week of Aug 3, 2026",
+      "week_start": "2026-08-03",
       "date_verified": true,
       "tags": [
         "ops"

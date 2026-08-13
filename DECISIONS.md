@@ -1527,3 +1527,52 @@ wrong ahead of the week-dating commit that actually adds `date_display`/`week_st
 **`.gitignore` widening to `muchane_changelog_copy*.md` was already committed by Michael**
 ahead of this pass (verified via `git check-ignore -v` on both `muchane_changelog_copy.md` and
 `muchane_changelog_copy_v2.md`); this pass made no `.gitignore` edit.
+
+## Week-level dating (replaces day-precision dates everywhere)
+
+**Date model per entry, uniform across all 15:** `date_display` (string, what renders),
+`week_start` (ISO date string|null, Monday-start), `date_verified` (bool). The `⚠` marker used
+in the copy docs never renders — it survives only as `date_verified: false`. No entry renders
+a day-precision date; where `week_start` is set the display is always `Week of {Mon D, YYYY}`
+(optionally suffixed ` · active`, ats-ingestion-feed-complete only); where `week_start` is null
+the display is month- or season-level (`May 2026`, `Early 2026`) or the platform-overview
+special case below. `app.js` reads `entry.date_display` directly, no `|| entry.date` fallback —
+a missing field fails loudly; the JSON shape is enforced by `scripts/validate-changelog.mjs`,
+not by a renderer-side default.
+
+**Assignments, evidence-backed:**
+- `ats-ingestion-feed-complete` → Week of Jul 6, 2026 (`week_start` 2026-07-06), now
+  `date_verified: true`. Evidence: n8n workflow `createdAt` — ingestion core + Greenhouse
+  adapter Jul 10 2026, Ashby adapter Jul 12 2026. Kept the `· active` suffix from the copy doc.
+- `tailoring-quality-triad`, `paragraph-break-overlap`, `updated-at-phantom-writer`,
+  `n8n-bloat-surgery`, `workflow-status-lights`, `swap-provisioning` → Week of Aug 3, 2026
+  (`2026-08-03`). Evidence: this cohort shipped Aug 5–6, 2026; Aug 3 is the Monday-start week
+  containing those ship dates.
+- `companies-surface`, `muchane-com` → Week of Aug 10, 2026 (`2026-08-10`). Evidence:
+  companies-surface shipped Aug 12; the muchane.com L0 pass ran Aug 12–13.
+- `kanban-status-history` → Week of May 4, 2026 (`2026-05-04`), now `date_verified: true`.
+  Evidence: app repo, Wed May 6 2026, single-session build (`@dnd-kit` deps 15:16 → Playwright
+  suite 15:36). The SOLUTION's DB-trigger claim was independently disputed and then confirmed
+  this same pass — `pg_trigger` shows `trg_log_application_status_change` exists on
+  `applications`, matching the copy doc's claim; no hand-back flag needed.
+- `char-budget-gate` → Week of May 25, 2026 (`2026-05-25`). Evidence: doc-renderer repo, May 27
+  2026, commits `ffbecb9 42635f0 85c9ea9 cdc0a21 a44e432`.
+- `backup-integrity` → Week of Jul 13, 2026 (`2026-07-13`), now `date_verified: true`. Evidence:
+  muchane-cloud repo, commit `e00d624`, 2026-07-17 (Friday), "backups/db: drop -t from pg_dump
+  docker exec (fixes silent PTY CRLF corruption)". Copy flag (not fixed): the shipped summary
+  says "A PTY flag was corrupting dumps in transit," while the commit names the mechanism more
+  precisely as silent PTY CRLF corruption. Transcribed verbatim per the standing rule; surfaced
+  in the hand-back for Michael's call on sharpening the wording later.
+- `agent-hardening` → May 2026 (`week_start: null`), month-level only, `date_verified: true`
+  (already true; no week-level evidence available, none needed).
+- `dual-path-network` → Early 2026 (`week_start: null`), `date_verified: false`, unchanged and
+  final. Predates the searchable record — the only entry still season-level after this pass.
+- `platform-overview` → `2025 → present`, unchanged, `date_verified: true` (already true). The
+  app repo's first commit is Apr 20 2026, which looked like a contradiction — resolved: the
+  platform ran as local, un-versioned work through 2025, and the Apr 2026 first commit marks
+  migration to version control, not the start of the work. No hand-back flag needed.
+
+All 15 rendered dates spot-verified live (`entry-date-*` testid text content) against this
+table on all three changelog pages (`/muchane-cloud`, `/muchane-cloud/career-command-center`,
+`/muchane-cloud/self-hosted-infra`) before committing — exact match, no day-precision date
+visible anywhere.

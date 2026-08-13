@@ -292,7 +292,7 @@ renderTelemetry(TELEMETRY);
         var date = document.createElement('span');
         date.className = 'entry__date';
         date.dataset.testid = 'entry-date-' + entry.slug;
-        date.textContent = entry.date;
+        date.textContent = entry.date_display;
         head.appendChild(title);
         head.appendChild(date);
 
