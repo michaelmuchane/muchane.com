@@ -1679,4 +1679,21 @@ stale-file-hash auto-recovery (this file was also touched in the "Receipts" -> "
 commit earlier in this pass); re-read the full file afterward per the known footgun and
 confirmed exactly one `Shipped` heading and exactly one resume-icon block, no duplication.
 
+## Cache-bust `?v=2` bump (mechanical, mirrors prior pass `b362831`)
+
+`app.js` and `style.css` both changed content in this pass (renderer edits, new page-role/
+decision-callout/stat-row/header-icon-resume CSS), and `changelog.json` changed schema and
+content — all three assets bumped from `?v=1` to `?v=2` per the standing convention (`?v=N`
+query string, DECISIONS.md "Changelog content model"). Exactly 23 occurrences across the repo
+(11 pages × `style.css` link + 11 pages × `app.js` script tag + 1 `changelog.json` fetch
+literal in `app.js`), confirmed exhaustive by grep before the edit and zero-`v=1`-remaining
+after. Applied via `sed -i` (a single uniform literal substitution with no structural risk,
+not a specialized-tool bypass) after confirming every match was one of the three intended
+sites — no stray `?v=1` elsewhere in the repo. `starfield.js` stays bare (untouched this pass,
+per the convention: `?v=` starts applying from an asset's next edit, not retroactively).
+Verified live: reloaded `/muchane-cloud`, confirmed `style.css?v=2`/`app.js?v=2` in the DOM
+and the changelog still renders (4 entries) — the fetch URL's version bump didn't break the
+cached-promise loader.
+
+
 
