@@ -1576,3 +1576,28 @@ All 15 rendered dates spot-verified live (`entry-date-*` testid text content) ag
 table on all three changelog pages (`/muchane-cloud`, `/muchane-cloud/career-command-center`,
 `/muchane-cloud/self-hosted-infra`) before committing — exact match, no day-precision date
 visible anywhere.
+
+## Sitewide label: "Receipts" -> "Shipped"
+
+**Five edit sites, verified exhaustive by case-insensitive grep of `public/`:** the DaaS page
+`<h2 data-testid="receipts">`, the wrangling-app page (same, keeps `reveal-heading`), both PM
+Rotation and Senior PQE Workday role pages (same, keep `reveal-heading`), and Product Quality
+Engineer's compact `<ul class="note" data-testid="receipts-compact">` (no visible heading on
+that page — only the testid changes). Testids renamed alongside the label (`receipts` ->
+`shipped`, `receipts-compact` -> `shipped-compact`) so label and testid never drift; safe
+because Phase E's Playwright specs are unwritten (parked per DECISIONS.md "Phase E —
+deferred") and nothing else in the repo consumes the old names.
+
+**Education heading drop is a no-op.** The prompt described `/education/wfu` and
+`/education/bu` subpages with a section heading to remove; neither exists. The only education
+page (`public/education/index.html`) has no section heading at all — the two institution
+lines are bare `<p data-testid="institution-bu|wfu">` paragraphs. Reported as a repo-reality
+correction, not "fixed."
+
+**Range em dash corrected to en dash.** `public/index.html:152` (L0 Education node meta,
+`2015 — 19 · 2021 — 23`) was the only remaining em-dash range in rendered markup — every other
+range in the repo (`node__meta` lines, role-page meta lines) already used en dashes. Fixed to
+`2015 – 19 · 2021 – 23`. Every `<title>` em dash (a separator, not a range) is left alone;
+post-edit sweep confirms the only `—` matches left in `public/**/*.html` are inside `<title>`
+tags.
+
