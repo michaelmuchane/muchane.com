@@ -1,0 +1,359 @@
+{
+  "pages": {
+    "/muchane-cloud": {
+      "grid": [
+        "platform-overview",
+        "muchane-com",
+        "dual-path-network",
+        "tailoring-quality-triad"
+      ]
+    },
+    "/muchane-cloud/career-command-center": {
+      "grid": [
+        "tailoring-quality-triad",
+        "paragraph-break-overlap",
+        "companies-surface",
+        "ats-ingestion-feed-complete",
+        "updated-at-phantom-writer",
+        "kanban-status-history"
+      ]
+    },
+    "/muchane-cloud/self-hosted-infra": {
+      "grid": [
+        "dual-path-network",
+        "char-budget-gate",
+        "n8n-bloat-surgery"
+      ],
+      "ops_log": [
+        "agent-hardening",
+        "swap-provisioning",
+        "backup-integrity",
+        "workflow-status-lights"
+      ]
+    }
+  },
+  "entries": {
+    "platform-overview": {
+      "slug": "platform-overview",
+      "page": "/muchane-cloud",
+      "title": "The platform",
+      "date": "2025 → present",
+      "date_verified": true,
+      "tags": [
+        "platform",
+        "ai"
+      ],
+      "summary": "~21 containers, one schema, human approval gates on everything that ships.",
+      "metric": "21 containers",
+      "compact": false,
+      "sections": {
+        "problem": "Running real AI pipelines against real personal data needs more than API keys: it needs a data layer, network isolation, and controls that survive automation.",
+        "solution": "Self-hosted Supabase (Postgres 15, Kong, GoTrue, Realtime, Storage) as the single source of truth. Multi-tenant schema from day one: UUID keys, user_id plus RLS on every table. Two production applications on top: a job-search command center and a document-rendering microservice.",
+        "implementation": [
+          "One heavily customized docker-compose runs the fleet on a 4 vCPU / 8GB VPS.",
+          "Cloudflare Tunnel + Access in front of admin surfaces; Docker-internal DNS everywhere.",
+          "House rule: no LLM for anything mechanical. Sorting, staleness, search, and analytics are pure computation."
+        ],
+        "iteration": "Every later release in this changelog ran through the same gates: written spec, plan review, my approval, measured verification, my push."
+      },
+      "shots": []
+    },
+    "muchane-com": {
+      "slug": "muchane-com",
+      "page": "/muchane-cloud",
+      "title": "This site: zero dependencies on purpose",
+      "date": "Aug 2026",
+      "date_verified": true,
+      "tags": [
+        "frontend"
+      ],
+      "summary": "Vanilla HTML/CSS/JS, no build step, no remote scripts. The rejections are the design.",
+      "metric": "0 dependencies",
+      "compact": false,
+      "sections": {
+        "problem": "A portfolio claiming engineering judgment shouldn't ship a framework payload to render a star map.",
+        "solution": "Vanilla HTML/CSS/JS with zero build step and zero remote script origins. The rejection ledger is the point: no frameworks, no GSAP (WAAPI covers the zoom), no WebGL (Canvas 2D covers the starfield), each rejected for a stated reason rather than by taste.",
+        "implementation": [
+          "Path-based routing: hard render on direct load, animated zoom on click-through; back pops one zoom level.",
+          "Dependency-free circular carousel; satellite orbits with derived geometry and clearance proofs.",
+          "85 test ids shipped ahead of the E2E suite rebuild."
+        ],
+        "iteration": "An 8-commit refinement pass plus a 6-commit fix pass (Aug 12–13, 2026). Light mode removed: a starfield does not survive inversion."
+      },
+      "shots": []
+    },
+    "tailoring-quality-triad": {
+      "slug": "tailoring-quality-triad",
+      "page": "/muchane-cloud/career-command-center",
+      "title": "Tailoring under control: grounding, growth caps, model-per-task",
+      "date": "Aug 5, 2026",
+      "date_verified": true,
+      "tags": [
+        "ai",
+        "pipeline"
+      ],
+      "summary": "Three controls shipped together so tailored documents can't invent claims or bloat past two pages.",
+      "metric": "growth ≤ +78 chars",
+      "compact": false,
+      "sections": {
+        "problem": "Three failure modes in AI document tailoring: models invent qualifications, tailored text silently bloats a canonical 2-page resume onto page 3, and one model for everything either overspends or underperforms by subtask.",
+        "solution": "Three independent controls. Claim-grounding: a verification model at temperature 0 checks every proposed edit against my real profile; ungrounded claims are dropped, overclaims are kept but flagged for my review. That asymmetry is deliberate: fabrication is auto-rejected, exaggeration is a human judgment call. Growth ledger: per-bullet caps plus a document ceiling, so tailoring is reallocation, not accretion. Model-per-task: a cheap model generates, a stronger model evaluates.",
+        "implementation": [
+          "Document growth mathematically bounded at +78 characters against a 6,360-character budget: no combination of legal per-bullet growth can breach the page limit.",
+          "Evaluator selection was empirical: models compared on score-band placement (6 distinct output values vs. compressed bands), not vibes.",
+          "Nothing is ever submitted automatically. Every document gets human review."
+        ],
+        "iteration": "A standing finding from the evals: the fit score measures resume-to-job fit, not tailoring quality, and honest paraphrase should not move an honest evaluator. That distinction now shapes what the pipeline is allowed to claim about itself."
+      },
+      "shots": []
+    },
+    "paragraph-break-overlap": {
+      "slug": "paragraph-break-overlap",
+      "page": "/muchane-cloud/career-command-center",
+      "title": "The 16% that never rendered",
+      "date": "Aug 5, 2026",
+      "date_verified": true,
+      "tags": [
+        "pipeline",
+        "quality"
+      ],
+      "summary": "Edits spanning a paragraph break logged as applied but never rendered. A sixth of output, silently discarded.",
+      "metric": "16% silent failures → 0",
+      "compact": false,
+      "sections": {
+        "problem": "The renderer resolved each tailoring edit against pristine base text. Edits spanning a paragraph break silently failed: logged as applied, absent from the shipped document. Measured across the prior corpus, ~16% of \"applied\" edits had never rendered. Paid model output, thrown away invisibly.",
+        "solution": "A crossesBreak check with strict inequality, run before slot occupancy, rejects any spanning edit so it regenerates within bounds. Rejected alternative: teaching the renderer to apply cross-break edits. Constraining generation is simpler than complicating application semantics.",
+        "implementation": [
+          "Boundary math validated in the ops layer before any write.",
+          "Two verification executions confirmed first-attempt renders, zero retries.",
+          "The diagnostic matters: structural log comparison was blind to the failure. Only walking the corpus with field extraction exposed it."
+        ],
+        "iteration": "The investigation exposed a contaminated control set: \"applied\" labels included pre-strip operations, so the known-good corpus didn't prove what it claimed. Kept as a rule: interrogate what a good label actually attests."
+      },
+      "shots": []
+    },
+    "companies-surface": {
+      "slug": "companies-surface",
+      "page": "/muchane-cloud/career-command-center",
+      "title": "/companies: intelligence, funnel, and staleness in one surface",
+      "date": "Aug 12, 2026",
+      "date_verified": true,
+      "tags": [
+        "frontend",
+        "database"
+      ],
+      "summary": "~70 tracked companies with pure-SQL analytics. No analytics service, no ETL copy.",
+      "metric": "835 vitest · 103 e2e",
+      "compact": false,
+      "sections": {
+        "problem": "Research, postings, applications, and comp data spread across tables, with no single answer to: where do I stand with this company, is my intel stale, where do applications die in the funnel.",
+        "solution": "One surface: target cards in a carousel, tabbed detail pages, and an Analytics tab computed entirely in SQL against the live schema. Staleness is measured, not guessed: a company_views table records every look, under RLS.",
+        "implementation": [
+          "Funnel with time-in-stage, response rate, posting velocity, comp bands, fit-dimension distribution: all pure SQL.",
+          "Test suite grew 719 → 835 vitest and 87 → 103 Playwright specs, 0 failures.",
+          "A rail-layout defect traced to duplicated breakpoint values; the breakpoint was hoisted into a single exported constant."
+        ],
+        "iteration": "The fit-score slot shipped null-tolerant so the surface renders before the upstream score exists. Display first, data later."
+      },
+      "shots": []
+    },
+    "ats-ingestion-feed-complete": {
+      "slug": "ats-ingestion-feed-complete",
+      "page": "/muchane-cloud/career-command-center",
+      "title": "Ingestion that closes its own ghosts",
+      "date": "Early 2026 · active",
+      "date_verified": false,
+      "tags": [
+        "pipeline",
+        "database"
+      ],
+      "summary": "Adapter-per-ATS on staggered 4-hour schedules, with an invariant that makes lifecycle closure safe.",
+      "metric": "~1,949 postings / 4h",
+      "compact": false,
+      "sections": {
+        "problem": "Two hard problems in multi-ATS ingestion: dedup without fake placeholder keys (Postgres treats NULL != NULL), and closure: marking a posting dead requires knowing the feed you just read was complete. A partial feed treated as complete mass-closes live postings.",
+        "solution": "Adapters per source feeding a shared core, with an explicit invariant: any trigger path that is not a complete company feed must set feed_complete=false, or the core will close everything it didn't see. Rejected alternative: per-posting liveness checks, O(postings) requests against rate-limited vendors.",
+        "implementation": [
+          "Greenhouse every 4h (~1,949 postings per cycle, full content), Ashby offset 10 minutes, retention sweep after: staggered for a 4-vCPU box.",
+          "Sequential batch processing before dedup checks prevents race-condition duplicates.",
+          "A designed Lever adapter extends the invariant with a sentinel-probe completeness gate: prove the feed is complete before it may close anything."
+        ],
+        "iteration": "The invariant became system law: a planned single-URL ingest path is designed around it, forced to declare its feeds incomplete. No mass-close incidents on record since."
+      },
+      "shots": []
+    },
+    "updated-at-phantom-writer": {
+      "slug": "updated-at-phantom-writer",
+      "page": "/muchane-cloud/career-command-center",
+      "title": "Hunting a phantom writer",
+      "date": "Aug 6, 2026",
+      "date_verified": true,
+      "tags": [
+        "database"
+      ],
+      "summary": "updated_at churned on every cycle. The writer wasn't on the table being written.",
+      "metric": null,
+      "compact": false,
+      "sections": {
+        "problem": "updated_at on jobs rows churned every ingestion cycle even when nothing changed, poisoning staleness logic and masking real updates. The jobs table's own triggers and write paths were clean.",
+        "solution": "Widen the search: inventory triggers on every table that writes into the target, not just the target. The writer was a trigger on the job_locations junction table, touching the parent row on every location re-upsert. Dropped, and all write paths now diff before writing.",
+        "implementation": [
+          "A second latent bug fixed in the same pass: the update mapping was NULL-writing two score columns on every cycle.",
+          "Diff-before-write adopted as the standard for every update path."
+        ],
+        "iteration": "The junction-table lesson is now a standing diagnostic rule, and the repaired timestamp feeds the /companies staleness chips with a signal worth trusting."
+      },
+      "shots": []
+    },
+    "kanban-status-history": {
+      "slug": "kanban-status-history",
+      "page": "/muchane-cloud/career-command-center",
+      "title": "Kanban with measured time-in-stage",
+      "date": "Early 2026",
+      "date_verified": false,
+      "tags": [
+        "database"
+      ],
+      "summary": "A DB trigger writes every status transition to an append-only history table, so funnel analytics compute from real events, not a mutable column.",
+      "metric": null,
+      "compact": true,
+      "sections": null,
+      "shots": []
+    },
+    "dual-path-network": {
+      "slug": "dual-path-network",
+      "page": "/muchane-cloud/self-hosted-infra",
+      "title": "Two paths to one database",
+      "date": "Early 2026",
+      "date_verified": false,
+      "tags": [
+        "security",
+        "database"
+      ],
+      "summary": "App traffic rides Kong under JWT-enforced RLS. Automation rides an isolated internal network. The tiers can't reach each other.",
+      "metric": "5432: never public",
+      "compact": false,
+      "sections": {
+        "problem": "The automation engine needs upsert semantics the REST layer cannot express: multi-column conflict resolution on nullable keys, where Postgres evaluates NULL != NULL and matching fails outright. The naive fixes are all bad: placeholder sentinels pollute the schema; exposing Postgres to the app tier widens the attack surface.",
+        "solution": "Two physically separate data paths. Application traffic: Nginx Proxy Manager to Kong to services, JWT-enforced Row Level Security, apps see only their user's rows. System traffic: n8n direct to Postgres over an internal Docker bridge the web-facing proxy has no route to. Rejected: routing automation through PostgREST (can't express the writes). Rejected: sentinel values (dishonest schema).",
+        "implementation": [
+          "Port 5432 never exposed publicly; system traffic never leaves the internal bridge.",
+          "Services addressed by Docker-internal DNS, never IPs.",
+          "Codified convention: Postgres nodes for writes, Supabase nodes for simple reads, sequential batches before dedup checks.",
+          "A compromised frontend cannot reach the database port. Different tier."
+        ],
+        "iteration": "Every later pipeline (ingestion, research, tailoring) shipped without needing a new network path. The NULL lesson became a standing rule: check existence before upserting on nullable fields."
+      },
+      "shots": []
+    },
+    "char-budget-gate": {
+      "slug": "char-budget-gate",
+      "page": "/muchane-cloud/self-hosted-infra",
+      "title": "Stop asking LibreOffice how many pages a Word document has",
+      "date": "May 27, 2026",
+      "date_verified": true,
+      "tags": [
+        "pipeline",
+        "quality"
+      ],
+      "summary": "Identity round-trip testing proved the renderer miscounts the unmodified template. The page gate became a character budget.",
+      "metric": "44/44 tests",
+      "compact": false,
+      "sections": {
+        "problem": "The document renderer gated output on LibreOffice's page count. Identity round-trip testing proved LibreOffice counts the 2-page Calibri template as 3 pages even with genuine Microsoft Calibri installed, so the gate rejected valid documents. A compounding bug: the spec endpoint reported a budget equal to the base length, telling the tailoring model it had zero room to expand.",
+        "solution": "Replace page counting with a character budget: a per-template sidecar declares canonical pages and a hard budget (6,360 characters for the primary template). Rejected alternative: chasing font-metric parity inside LibreOffice. The identity test showed the renderer disagrees with Word on the untouched template itself, so no amount of tuning converges.",
+        "implementation": [
+          "Balanced bold markers stripped before counting so formatting doesn't consume budget.",
+          "Error-response shape preserved for the pipeline consumer; new diagnostic fields added (actual chars, budget, per-field breakdown).",
+          "44/44 pytest tests pass in-container."
+        ],
+        "iteration": "The diagnostic fields later made retry accounting debuggable, and the budget concept moved upstream in August as the growth ledger: constrain generation, not just output."
+      },
+      "shots": []
+    },
+    "n8n-bloat-surgery": {
+      "slug": "n8n-bloat-surgery",
+      "page": "/muchane-cloud/self-hosted-infra",
+      "title": "3.65GB of dead execution logs",
+      "date": "Aug 6, 2026",
+      "date_verified": true,
+      "tags": [
+        "database",
+        "ops"
+      ],
+      "summary": "The automation engine was persisting full execution data for every successful run, and the backups were hauling it.",
+      "metric": "3.65GB → 73MB",
+      "compact": false,
+      "sections": {
+        "problem": "Full execution data persisted for every successful run of three high-frequency ingestion workflows: 3.65GB on an 8GB VPS, with the backup pipeline compressing and shipping ~3.36GB of dead logs every cycle.",
+        "solution": "Success-execution retention set to none on the three ingestion workflows, keeping failure data for debugging. Rejected alternative: periodic manual pruning, a treadmill that fails open the week nobody runs it.",
+        "implementation": [
+          "Data volume 3.65GB → 72.75MB, ~98% reduction; backup archives ~3.36GB → ~385MB compressed.",
+          "The exemption that matters was verified, not assumed: a manual test execution was fired specifically to prove hand-run debugging still captures full data."
+        ],
+        "iteration": "The verification step is the story: positive evidence of the behavior you need, not absence of the behavior you don't."
+      },
+      "shots": []
+    },
+    "agent-hardening": {
+      "slug": "agent-hardening",
+      "page": "/muchane-cloud/self-hosted-infra",
+      "title": "A locked-down user for the coding agent",
+      "date": "May 2026",
+      "date_verified": true,
+      "tags": [
+        "security"
+      ],
+      "summary": "The VPS coding agent runs as a dedicated no-sudo user with command blocks, a logged network wrapper, and session and incident logs. Autonomy inside enforced guardrails, not trust.",
+      "metric": null,
+      "compact": true,
+      "sections": null,
+      "shots": []
+    },
+    "swap-provisioning": {
+      "slug": "swap-provisioning",
+      "page": "/muchane-cloud/self-hosted-infra",
+      "title": "Swap before the OOM killer wins",
+      "date": "Aug 4, 2026",
+      "date_verified": true,
+      "tags": [
+        "ops"
+      ],
+      "summary": "Diagnosed the VPS running with zero swap and the OOM killer firing immediately under pressure. 4GB provisioned; ~2GB in steady use.",
+      "metric": "0 OOM kills since",
+      "compact": true,
+      "sections": null,
+      "shots": []
+    },
+    "backup-integrity": {
+      "slug": "backup-integrity",
+      "page": "/muchane-cloud/self-hosted-infra",
+      "title": "Backups that restore, not backups that exist",
+      "date": "Aug 2026",
+      "date_verified": false,
+      "tags": [
+        "ops"
+      ],
+      "summary": "A PTY flag was corrupting dumps in transit. Dropped; historical dumps tested individually; verified-restore roadmap in place.",
+      "metric": null,
+      "compact": true,
+      "sections": null,
+      "shots": []
+    },
+    "workflow-status-lights": {
+      "slug": "workflow-status-lights",
+      "page": "/muchane-cloud/self-hosted-infra",
+      "title": "Green and amber lights",
+      "date": "Aug 6, 2026",
+      "date_verified": true,
+      "tags": [
+        "ops"
+      ],
+      "summary": "Every pipeline upserts a heartbeat row to workflow_runs, surfaced as status lights in the app footer. Health at a glance, not at failure.",
+      "metric": "4 workflows",
+      "compact": true,
+      "sections": null,
+      "shots": []
+    }
+  }
+}
