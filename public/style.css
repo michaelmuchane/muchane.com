@@ -41,6 +41,9 @@
     --icon-linkedin-fg: #3B93E8;
     --icon-linkedin-border: #0A66C280;
     --icon-linkedin-bg: #0A66C21F;
+    --icon-resume-fg: #B07FFF;
+    --icon-resume-border: #B07FFF66;
+    --icon-resume-bg: #B07FFF1A;
     --satellite-link-border: #B07FFF66;
     --istar-dot: #e8eefa; /* matches starfield's dark-theme star color */
     --istar-dot-glow: #e8eefa66; /* lifted 30%->40% alpha, resting visibility pass */
@@ -193,6 +196,12 @@ body[data-depth="0"] .header__logo {
     color: var(--icon-linkedin-fg);
     border-color: var(--icon-linkedin-border);
     background: var(--icon-linkedin-bg);
+}
+
+.header__icon--resume {
+    color: var(--icon-resume-fg);
+    border-color: var(--icon-resume-border);
+    background: var(--icon-resume-bg);
 }
 
 /* CONTACT WAYFINDER — the drawer's Contact button closes the drawer, moves

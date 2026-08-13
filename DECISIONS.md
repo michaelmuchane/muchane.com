@@ -1649,3 +1649,34 @@ testid'd elements in page order: zero vertical overlaps, monotonically increasin
 across the stack; `decision-callout`'s computed `border-left` is `2px solid rgb(176, 127,
 255)` (`--accent-color`), visually distinct from the plain-paragraph siblings on either side.
 
+## Resume download button (built, ships hidden)
+
+**Fourth header icon, all 11 pages that share the header.** `<a data-testid="header-resume"
+aria-label="Download resume" download>` inserted immediately after the LinkedIn icon in
+`.header__contact`, following the existing `.header__icon`/`.header__icon--*` pattern
+(new tokens `--icon-resume-fg/-border/-bg`, accent-purple family `#B07FFF`, same alpha
+grammar as the email/GitHub/LinkedIn tokens — no new hex).
+
+**Ships hidden via the site's existing dormant-element convention**: `hidden` attribute +
+`.is-hidden` class together, matching `.entry-shot` (amendment A2). Verified live on all 11
+routes: present in the DOM, `hidden` attribute and `.is-hidden` class both set, computed
+`display: none`, `offsetParent === null` — zero visible output, testid resolvable for the
+future Playwright rebuild.
+
+**`/resume/muchane-resume-v0.pdf` does not exist and must not be created.** The link is
+dormant scaffolding; unhiding it (removing `hidden` + `.is-hidden`, pointing `href` at the
+real file) is future work once the PDF is delivered. **Versioned-filename discipline**: the
+real file ships under a new versioned/content-suffixed filename at delivery time (bump the
+filename itself, never reuse `muchane-resume-v0.pdf` for a later revision) — same reasoning
+as the `?v=` query-string convention, but applied to the filename because a resume PDF is a
+standalone binary asset a browser/CDN caches by URL, not a page asset referenced with a
+query-string cache-buster. Cloudflare must never pin a stale resume.
+
+**One edit site per page (11 total), no shared markup** — the known accepted tradeoff from
+Phase A (shell duplication across all 10, now 11, HTML files) applies here too. One of the 11
+edits (`workday/product-management-rotation/index.html`) triggered the edit tool's
+stale-file-hash auto-recovery (this file was also touched in the "Receipts" -> "Shipped"
+commit earlier in this pass); re-read the full file afterward per the known footgun and
+confirmed exactly one `Shipped` heading and exactly one resume-icon block, no duplication.
+
+
