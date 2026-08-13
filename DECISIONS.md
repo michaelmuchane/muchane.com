@@ -1158,3 +1158,29 @@ work in this repo also starts red (Commandment 9) — the reproduction
 above is exactly that red case; a follow-up session can go straight to
 writing the fix once Michael picks a mechanism. Flagged to Michael
 directly in this pass's hand-back; logged here so it isn't lost.
+
+## L0/L1 fix-and-extend pass — three-state satellite affordance
+
+**Dotted border replaces plain border for informational (non-navigable)
+satellites; navigable satellites are unchanged.** Muchane Cloud's two and
+Education's two satellites previously rendered with the same plain
+`1px solid var(--border-color)` as their resting state, which read as
+"broken/unfinished" rather than "informational" — indistinguishable from a
+card that simply hadn't been hovered yet. New `.node__satellite--info`
+class sets `border-style: dotted` with `border-color:
+var(--satellite-link-border)` (the same accent-tinted color the navigable
+`--link` variant already uses), signaling "there is content here, hover
+it" without promising a destination. Applied to `satellite-muchane-cloud-1`,
+`satellite-muchane-cloud-3`, `satellite-education-1`,
+`satellite-education-2`. Workday's three satellites keep `--link`
+(solid border + chevron) unchanged. Informational pills keep their
+existing `tabindex="0"`, teaser-on-hover/focus, and `cursor: default` —
+only the border style/color changed.
+
+**Conversion path for when an L2 page gets real content (no stub pages
+created in this pass — Commandment 9/12):** change the satellite's element
+from `<span class="node__satellite node__satellite--info" tabindex="0">`
+to `<a class="node__satellite node__satellite--link" href="/<route>"
+data-zoom="chain">` — testid, `aria-label`, the `.satellite__teaser`
+markup, and the `--s`/`--rest-x`/`--rest-y` custom properties all stay
+exactly as they are; nothing else changes.

@@ -644,6 +644,14 @@ a.node:focus-visible .node__inner {
     color: var(--accent-color);
 }
 
+/* Informational (non-navigable) satellite: dotted accent border, no chevron —
+   "content here, hover it" without promising a destination. Converting one to
+   navigable later = swap --info for --link on an <a href> with data-zoom="chain". */
+.node__satellite--info {
+    border-style: dotted;
+    border-color: var(--satellite-link-border);
+}
+
 .node__satellite:hover,
 .node__satellite:focus-visible {
     border-color: var(--accent-color);
