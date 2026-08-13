@@ -1184,3 +1184,15 @@ to `<a class="node__satellite node__satellite--link" href="/<route>"
 data-zoom="chain">` — testid, `aria-label`, the `.satellite__teaser`
 markup, and the `--s`/`--rest-x`/`--rest-y` custom properties all stay
 exactly as they are; nothing else changes.
+
+## L0/L1 fix-and-extend pass — "Two-Sided Data Platform" → "DaaS Platform" (display label only)
+
+**Display-label-only rename, route preserved — same pattern as iapply's
+"Career Command Center" rename.** Every occurrence of the string
+"Two-Sided Data Platform" as user-facing text (drawer item, L0 node
+title, page `<title>`, L1 `<h1>`, L2 up-link text) across all 14
+occurrences in 10 files changed to "DaaS Platform". The route
+(`/two-sided-data-platform`), directory name, and every `data-testid`
+(`node-two-sided-data-platform`, `menu-link-two-sided-data-platform`,
+etc.) are unchanged. `grep -rn 'Two-Sided Data Platform' public/`
+returns zero matches post-rename.
