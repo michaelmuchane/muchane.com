@@ -162,6 +162,7 @@ body[data-depth="0"] .header__logo {
 }
 
 .header__contact {
+    position: relative;
     display: flex;
     gap: 10px;
     border-radius: 6px;
@@ -210,6 +211,34 @@ body[data-depth="0"] .header__logo {
 
 .header__contact.is-pulse-static {
     box-shadow: 0 0 0 2px var(--accent-color);
+}
+
+/* "Address copied" confirmation for the email icon's clipboard fallback
+   (app.js). Fade timing derives from the --contact-pulse tunable
+   (900/4.5 = 200ms) so it retunes with the pulse family; visible
+   duration is JS-timed at 2x --contact-pulse. */
+.email-copied {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    padding: 4px 10px;
+    background: var(--card-bg);
+    border: 1px solid var(--accent-color);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: var(--accent-color);
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity calc(var(--contact-pulse) / 4.5), visibility 0s linear calc(var(--contact-pulse) / 4.5);
+}
+
+.email-copied.is-visible {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity calc(var(--contact-pulse) / 4.5), visibility 0s;
 }
 
 /* DRAWER */
@@ -988,6 +1017,11 @@ main.is-zooming {
     }
 
     .node__inner {
+        transition: none;
+    }
+
+    .email-copied,
+    .email-copied.is-visible {
         transition: none;
     }
 

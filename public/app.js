@@ -89,6 +89,45 @@
         });
     }
 
+    /* EMAIL COPY FALLBACK — a mailto silently no-ops for visitors with no OS
+       mail client (most webmail users). Alongside the native mailto (never
+       preventDefault'd — it must still fire for people who have a client),
+       copy the address and confirm briefly with an "Address copied" note —
+       but only if the page still has focus/visibility a moment later. If
+       the mailto handoff to an external client succeeded, the OS moves
+       focus away from this tab almost immediately; showing "Address
+       copied" over an already-open compose window would read as a stray,
+       unrelated action rather than the confirmation it's meant to be.
+       Degrades silently to mailto-only when the Clipboard API is
+       unavailable, permission is denied, or a client actually opened. */
+    var EMAIL_COPY_FOCUS_CHECK_DELAY = 150;
+    if (headerEmail && headerContact) {
+        var copyNote = null;
+        var copyTimer = null;
+        headerEmail.addEventListener('click', function () {
+            if (!(navigator.clipboard && navigator.clipboard.writeText)) return;
+            navigator.clipboard.writeText('michaelmuchane@gmail.com').then(function () {
+                setTimeout(function () {
+                    if (document.hidden || !document.hasFocus()) return; // a client opened; stay silent
+                    if (!copyNote) {
+                        copyNote = document.createElement('span');
+                        copyNote.className = 'email-copied';
+                        copyNote.setAttribute('data-testid', 'email-copied-note');
+                        copyNote.setAttribute('role', 'status');
+                        copyNote.textContent = 'Address copied';
+                        headerContact.appendChild(copyNote);
+                    }
+                    clearTimeout(copyTimer);
+                    copyNote.classList.add('is-visible');
+                    var pulseMs = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--contact-pulse')) || 900;
+                    copyTimer = setTimeout(function () {
+                        copyNote.classList.remove('is-visible');
+                    }, pulseMs * 2);
+                }, EMAIL_COPY_FOCUS_CHECK_DELAY);
+            }).catch(function () { /* silent: the mailto already fired */ });
+        });
+    }
+
     /* ACTIVE SECTION — highlights the drawer link for the current top-level route.
        Exposed on window so the zoom engine (separate IIFE below) can call it from
        swapStage() after a client-side navigation. */

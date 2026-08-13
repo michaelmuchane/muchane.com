@@ -1310,3 +1310,52 @@ edge than any existing satellite's, since DaaS is the constellation's
 leftmost node. No fix applied here; same [FUTURE] disposition as the
 pre-existing case.
 
+## L0/L1 fix-and-extend pass — email icon clipboard fallback ("Address copied")
+
+**Diagnosis: the code was never the defect.** `header-email` already
+had `href="mailto:michaelmuchane@gmail.com"` verbatim on all 10 pages
+(shipped commit `49af3f5`); a real click event fires with
+`defaultPrevented: false`, the delegated zoom handler ignores it (no
+`data-zoom` attribute), and CDP confirms `Page.frameRequestedNavigation`
+→ the mailto URL fires on every click. The reported inertness is the
+OS/browser external-protocol handoff: a visitor with no default mail
+client configured (most webmail users) clicks and sees nothing happen.
+
+**Fix: keep the mailto exactly as-is (no webmail fallback, no
+provider-specific URL), add a clipboard-copy side channel with a
+focus-gated confirmation.** `header-email`'s click handler (app.js,
+first IIFE, after the Contact wayfinder block) also calls
+`navigator.clipboard.writeText('michaelmuchane@gmail.com')`, never
+`preventDefault`s, and degrades silently (no visible failure) when the
+Clipboard API is absent or permission is denied.
+
+**"Address copied" note is gated on the page still having focus 150ms
+after the copy succeeds — deliberately, to avoid reading as an error
+or duplicate action for visitors who DO have a mail client.** For
+those visitors the mailto handoff to the external client is the
+expected, successful outcome; showing a confirmation banner over an
+already-open compose window would look like a stray, unrelated
+action, not a confirmation. The check: `setTimeout(() => { if
+(document.hidden || !document.hasFocus()) return; …show note… }, 150)`.
+Verified in this session (no OS mail client is registered in the
+sandboxed test browser, so the "client opens" path could not be
+exercised end-to-end against a real client): with `document.hidden`/
+`hasFocus()` mocked to simulate a lost-focus state at the 150ms check,
+the note is correctly suppressed and the mailto request still fires;
+with focus retained (the actual sandbox behavior — no client
+registered), the note displays normally. Michael should re-confirm
+the "client opens, no stray note" half of this on a machine with a
+real mail client registered, since that path is unexercisable here.
+
+**Timing:** note stays visible for `2 × --contact-pulse` (currently
+1800ms), fades over `--contact-pulse / 4.5` (200ms) — the same
+`--contact-pulse` tunable the drawer's Contact-wayfinder pulse already
+uses, so both retune together. `role="status"` announces the
+confirmation to screen readers. Under `prefers-reduced-motion:
+reduce`, the fade transition is removed (instant show/hide) but the
+JS-timed visible duration is unchanged. The note element is created
+lazily on first successful copy (no markup change on any of the 10
+pages) and repeat clicks restart its hide timer via `clearTimeout`
+rather than stacking duplicate notes.
+
+
