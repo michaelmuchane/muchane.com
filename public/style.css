@@ -897,6 +897,169 @@ a.node:focus-visible .node__inner {
     font-size: 1rem;
 }
 
+/* CHANGELOG — Muchane Cloud release entries (single column; page column is
+   720px and entries are text-heavy, so a multi-column grid would cramp
+   line length). Cards reuse .node__inner-family tokens, no new colors. */
+.changelog {
+    display: grid;
+    gap: 16px;
+    margin: 32px 0;
+}
+
+.entry {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+}
+
+/* Neutralize the generic `details` rule (below) inside entries — it would
+   double-border and shift the card, since .entry already owns the border. */
+.entry .entry__details {
+    border: 0;
+    padding: 0;
+    margin: 0;
+}
+
+.entry .entry__details[open] summary {
+    margin-bottom: 0;
+}
+
+.entry__card {
+    display: block;
+    padding: 20px 24px;
+}
+
+summary.entry__card {
+    cursor: pointer;
+    list-style: none;
+}
+
+summary.entry__card::-webkit-details-marker {
+    display: none;
+}
+
+/* Hover/focus affordance on interactive cards only — the renderer stamps
+   entry--interactive on full entries and cross-list link cards, never on
+   compact (no-drill-in) cards. No transitions, matching .child-card;
+   nothing to exempt under reduced motion. */
+.entry--interactive:hover,
+.entry--interactive:focus-within {
+    border-color: var(--accent-color);
+}
+
+.entry--interactive .entry__card:hover,
+.entry--interactive summary.entry__card:focus-visible,
+a.entry--link:hover,
+a.entry--link:focus-visible {
+    background: var(--hover-bg);
+}
+
+a.entry--link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+
+.entry__more {
+    color: var(--accent-color);
+}
+
+.entry__head {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: baseline;
+}
+
+.entry__title {
+    font-weight: 650;
+    font-size: 1.05rem;
+    line-height: 1.25;
+}
+
+.entry__date {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.72rem;
+    color: var(--meta-color);
+    white-space: nowrap;
+}
+
+.entry__summary {
+    display: block;
+    margin-top: 8px;
+    color: var(--text-color);
+}
+
+.entry__foot {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.entry__tag {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--meta-color);
+    border: 1px solid var(--border-color);
+    padding: 2px 8px;
+}
+
+.entry__metric {
+    margin-left: auto;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.72rem;
+    color: var(--accent-color);
+    border: 1px solid var(--satellite-link-border);
+    padding: 2px 8px;
+    white-space: nowrap;
+}
+
+.entry__body {
+    border-top: 1px solid var(--border-color);
+    padding: 4px 24px 20px;
+}
+
+.entry__label {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent-color);
+    margin: 20px 0 6px;
+}
+
+.entry__body p,
+.entry__body ul {
+    margin: 6px 0;
+}
+
+.entry__body ul {
+    margin-left: 20px;
+}
+
+.entry__body li {
+    margin: 6px 0;
+}
+
+/* Screenshot embed (built now, dormant): soft backlight treatment. Invisible
+   while every instance carries `hidden` + `.is-hidden` (amendment A2) — no
+   visible output until real captures exist. */
+.entry-shot {
+    margin: 20px 0 4px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-color);
+    box-shadow: 0 0 48px -12px var(--istar-active-glow);
+}
+
+.entry-shot img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
 /* CONTENT BLOCKS */
 blockquote {
     border-left: 2px solid var(--quote-border);

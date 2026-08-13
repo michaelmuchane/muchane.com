@@ -202,6 +202,8 @@ renderTelemetry(TELEMETRY);
     }
 
     var pageCache = new Map();
+    var changelogData = null;
+    var changelogPromise = null;
     var inflight = false;
     var navGen = 0;        // bumped whenever a transition is superseded by popstate
     var activeAnims = [];  // WAAPI animations owned by the current transition only
@@ -217,6 +219,7 @@ renderTelemetry(TELEMETRY);
     }
 
     async function loadPage(path) {
+        path = path.split('#')[0];
         if (pageCache.has(path)) return pageCache.get(path);
         var res = await fetch(path);
         if (!res.ok) throw new Error('fetch failed: ' + res.status);
@@ -228,9 +231,218 @@ renderTelemetry(TELEMETRY);
             title: doc.title,
             mainHTML: main.innerHTML,
             depth: Number(main.dataset.depth || '0'),
+            hasChangelog: main.querySelector('[data-changelog]') !== null,
         };
         pageCache.set(path, data);
         return data;
+    }
+
+    // CHANGELOG RENDERER — Muchane Cloud release entries. changelog.json is
+    // fetched once per page load (cached promise) and rendered client-side
+    // into every [data-changelog] container found in the current stage or
+    // an about-to-animate-in zoom layer. `pages[key]` in the JSON is the
+    // authoritative slug order for that container — never re-sorted here.
+    function loadChangelog() {
+        if (changelogData) return Promise.resolve(changelogData);
+        if (!changelogPromise) {
+            changelogPromise = fetch('/muchane-cloud/changelog.json?v=1')
+                .then(function (res) {
+                    if (!res.ok) throw new Error('changelog fetch failed: ' + res.status);
+                    return res.json();
+                })
+                .then(function (data) {
+                    changelogData = data;
+                    return data;
+                })
+                .catch(function (e) {
+                    changelogPromise = null;
+                    throw e;
+                });
+        }
+        return changelogPromise;
+    }
+
+    // Header height is read live rather than hardcoded — it lives in CSS
+    // (--header-height) and this stays correct if that ever changes.
+    function headerOffset() {
+        var header = document.querySelector('.header');
+        return (header ? header.offsetHeight : 80) + 16;
+    }
+
+    function hashScrollY(target) {
+        return window.scrollY + target.getBoundingClientRect().top - headerOffset();
+    }
+
+    function buildEntryCard(entry, pageKey) {
+        var isLink = entry.page !== pageKey;
+        var root = document.createElement(isLink ? 'a' : 'article');
+        root.className = 'entry' + (entry.compact ? ' entry--compact' : ' entry--interactive') + (isLink ? ' entry--link' : '');
+        root.dataset.testid = isLink ? 'entry-link-' + entry.slug : 'entry-' + entry.slug;
+        if (!isLink) root.id = entry.slug;
+        if (isLink) {
+            root.href = entry.page + '#' + entry.slug;
+            root.setAttribute('data-zoom', 'in');
+        }
+
+        var head = document.createElement('span');
+        head.className = 'entry__head';
+        var title = document.createElement('span');
+        title.className = 'entry__title';
+        title.textContent = entry.title;
+        var date = document.createElement('span');
+        date.className = 'entry__date';
+        date.dataset.testid = 'entry-date-' + entry.slug;
+        date.textContent = entry.date;
+        head.appendChild(title);
+        head.appendChild(date);
+
+        var summaryLine = document.createElement('span');
+        summaryLine.className = 'entry__summary';
+        summaryLine.textContent = entry.summary;
+
+        var foot = document.createElement('span');
+        foot.className = 'entry__foot';
+        var tagsEl = document.createElement('span');
+        tagsEl.className = 'entry__tags';
+        tagsEl.dataset.testid = 'entry-tags-' + entry.slug;
+        entry.tags.forEach(function (tag) {
+            var tagEl = document.createElement('span');
+            tagEl.className = 'entry__tag';
+            tagEl.textContent = tag;
+            tagsEl.appendChild(tagEl);
+        });
+        foot.appendChild(tagsEl);
+        if (entry.metric) {
+            var metricEl = document.createElement('span');
+            metricEl.className = 'entry__metric';
+            metricEl.dataset.testid = 'entry-metric-' + entry.slug;
+            metricEl.textContent = entry.metric;
+            foot.appendChild(metricEl);
+        }
+
+        if (isLink) {
+            var faceLink = document.createElement('span');
+            faceLink.className = 'entry__card';
+            faceLink.appendChild(head);
+            faceLink.appendChild(summaryLine);
+            faceLink.appendChild(foot);
+            var chevron = document.createElement('span');
+            chevron.className = 'entry__more';
+            chevron.setAttribute('aria-hidden', 'true');
+            chevron.textContent = '\u203A';
+            root.appendChild(faceLink);
+            root.appendChild(chevron);
+            return root;
+        }
+
+        if (entry.compact) {
+            var faceDiv = document.createElement('div');
+            faceDiv.className = 'entry__card';
+            faceDiv.appendChild(head);
+            faceDiv.appendChild(summaryLine);
+            faceDiv.appendChild(foot);
+            root.appendChild(faceDiv);
+            return root;
+        }
+
+        var details = document.createElement('details');
+        details.className = 'entry__details';
+        details.dataset.testid = 'entry-details-' + entry.slug;
+
+        var summaryEl = document.createElement('summary');
+        summaryEl.className = 'entry__card';
+        summaryEl.dataset.testid = 'entry-toggle-' + entry.slug;
+        summaryEl.appendChild(head);
+        summaryEl.appendChild(summaryLine);
+        summaryEl.appendChild(foot);
+
+        var body = document.createElement('div');
+        body.className = 'entry__body';
+        body.dataset.testid = 'entry-body-' + entry.slug;
+
+        [['problem', 'Problem'], ['solution', 'Solution']].forEach(function (pair) {
+            var label = document.createElement('h3');
+            label.className = 'entry__label';
+            label.textContent = pair[1];
+            var p = document.createElement('p');
+            p.textContent = entry.sections[pair[0]];
+            body.appendChild(label);
+            body.appendChild(p);
+        });
+
+        var implLabel = document.createElement('h3');
+        implLabel.className = 'entry__label';
+        implLabel.textContent = 'Implementation';
+        var ul = document.createElement('ul');
+        entry.sections.implementation.forEach(function (line) {
+            var li = document.createElement('li');
+            li.textContent = line;
+            ul.appendChild(li);
+        });
+        body.appendChild(implLabel);
+        body.appendChild(ul);
+
+        var iterLabel = document.createElement('h3');
+        iterLabel.className = 'entry__label';
+        iterLabel.textContent = 'Iteration';
+        var iterP = document.createElement('p');
+        iterP.textContent = entry.sections.iteration;
+        body.appendChild(iterLabel);
+        body.appendChild(iterP);
+
+        // A2: the screenshot embed ships now (testid present) but always
+        // empty and hidden — zero visible output until captures exist.
+        var shot = document.createElement('figure');
+        shot.className = 'entry-shot is-hidden';
+        shot.hidden = true;
+        shot.setAttribute('aria-hidden', 'true');
+        shot.dataset.testid = 'entry-shot-' + entry.slug;
+        body.appendChild(shot);
+
+        details.appendChild(summaryEl);
+        details.appendChild(body);
+        root.appendChild(details);
+        return root;
+    }
+
+    function renderChangelogContainer(container, hash) {
+        var pageKey = container.getAttribute('data-changelog');
+        var listKey = container.getAttribute('data-changelog-list') || 'grid';
+        var slugs = changelogData.pages[pageKey] && changelogData.pages[pageKey][listKey];
+        if (!slugs) return;
+        slugs.forEach(function (slug) {
+            var entry = changelogData.entries[slug];
+            if (!entry) return;
+            container.appendChild(buildEntryCard(entry, pageKey));
+        });
+        if (hash) {
+            var target = document.getElementById(hash);
+            if (target && container.contains(target)) {
+                var details = target.querySelector('.entry__details');
+                if (details) details.open = true;
+            }
+        }
+    }
+
+    function renderChangelog(root, hash) {
+        var containers = root.querySelectorAll('[data-changelog]');
+        containers.forEach(function (container) {
+            if (container.dataset.changelogRendered === 'true') return;
+            container.dataset.changelogRendered = 'true';
+            if (changelogData) {
+                renderChangelogContainer(container, hash);
+                return;
+            }
+            loadChangelog().then(function () {
+                if (!container.isConnected) return;
+                renderChangelogContainer(container, hash);
+            }).catch(function () {
+                var note = document.createElement('p');
+                note.className = 'note';
+                note.textContent = 'Release entries are unavailable right now.';
+                container.appendChild(note);
+            });
+        });
     }
 
     function centerOrigin(el, relativeToEl) {
@@ -368,23 +580,30 @@ renderTelemetry(TELEMETRY);
             history.pushState({ via: 'zoom', depth: data.depth, from: currentPath }, '', url);
         }
         stage.focus({ preventScroll: true });
-        currentPath = url;
+        currentPath = url.split('#')[0];
         bindRevealHeadings(stage);
         bindParallaxNodes(stage);
         bindSatelliteTeasers(stage);
         bindIndexedStars(stage);
+        renderChangelog(stage, location.hash.slice(1));
         if (window.updateMenuActive) window.updateMenuActive(url);
     }
 
     function finalizeIn(url, data, push) {
         swapStage(url, data, push);
-        scrollToInstant(0);
+        var hashIdx = url.indexOf('#');
+        var target = hashIdx >= 0 ? document.getElementById(url.slice(hashIdx + 1)) : null;
+        if (target) {
+            scrollToInstant(Math.max(0, hashScrollY(target)));
+        } else {
+            scrollToInstant(0);
+        }
     }
 
     function finalizeOut(url, data, push) {
         var leavingPath = currentPath;
         swapStage(url, data, push);
-        var liveOrigin = stage.querySelector('[href="' + leavingPath + '"]');
+        var liveOrigin = stage.querySelector('[href="' + leavingPath + '"], [href^="' + leavingPath + '#"]');
         if (liveOrigin) {
             var rect = liveOrigin.getBoundingClientRect();
             var y = window.scrollY + rect.top - window.innerHeight / 2 + rect.height / 2;
@@ -426,16 +645,21 @@ renderTelemetry(TELEMETRY);
         if (inflight) return;
         inflight = true;
         var gen = ++navGen;
+        var path = url.split('#')[0];
+        var hash = url.indexOf('#') >= 0 ? url.slice(url.indexOf('#') + 1) : '';
 
         try {
             var data;
             try {
-                data = await loadPage(url);
+                data = await loadPage(path);
             } catch (e) {
                 if (gen === navGen) location.href = url;
                 return;
             }
             if (gen !== navGen) return;
+            if (data.hasChangelog) {
+                try { await loadChangelog(); } catch (e) { /* renderer shows its own fallback note */ }
+            }
 
             if (REDUCED.matches) {
                 finalizeIn(url, data, push);
@@ -463,6 +687,7 @@ renderTelemetry(TELEMETRY);
             inLayer.style.transformOrigin = origin;
             inLayer.style.opacity = '0';
             inLayer.innerHTML = data.mainHTML;
+            renderChangelog(inLayer, hash);
 
             stage.classList.add('is-zooming');
             stage.appendChild(outLayer);
@@ -511,7 +736,7 @@ renderTelemetry(TELEMETRY);
             // Commit the incoming page AND its final scroll position now —
             // nothing scrolls after the animation, so there is no settle.
             swapStage(url, data, push);
-            var liveOrigin = stage.querySelector('[href="' + leavingPath + '"]');
+            var liveOrigin = stage.querySelector('[href="' + leavingPath + '"], [href^="' + leavingPath + '#"]');
             if (liveOrigin) {
                 var rect = liveOrigin.getBoundingClientRect();
                 scrollToInstant(Math.max(0, window.scrollY + rect.top - window.innerHeight / 2 + rect.height / 2));
@@ -763,4 +988,19 @@ renderTelemetry(TELEMETRY);
     bindParallaxNodes(stage);
     bindSatelliteTeasers(stage);
     bindIndexedStars(stage);
+
+    // Initial direct load of a changelog page: render immediately (fetch
+    // kicks off inside renderChangelog if not cached yet) and, if the URL
+    // carries a hash, chase the render to scroll once the target exists —
+    // a native anchor-scroll can't reach content that isn't in the DOM yet.
+    if (stage.querySelector('[data-changelog]')) {
+        var initialHash = location.hash.slice(1);
+        renderChangelog(stage, initialHash);
+        if (initialHash) {
+            loadChangelog().then(function () {
+                var target = document.getElementById(initialHash);
+                if (target) scrollToInstant(Math.max(0, hashScrollY(target)));
+            }).catch(function () {});
+        }
+    }
 })();
