@@ -534,7 +534,8 @@ main {
     max-width: 360px;
 }
 
-.node__card {
+.node__card,
+a.node {
     display: block;
     text-decoration: none;
     color: inherit;
@@ -556,7 +557,9 @@ main {
 }
 
 .node__card:hover .node__inner,
-.node__card:focus-visible .node__inner {
+.node__card:focus-visible .node__inner,
+a.node:hover .node__inner,
+a.node:focus-visible .node__inner {
     background: var(--hover-bg);
     border-color: var(--accent-color);
 }
