@@ -806,6 +806,7 @@ renderTelemetry(TELEMETRY);
         try {
             await Promise.all([loadPage(parentUrl), loadPage(childUrl)]);
         } catch (e) {
+            console.warn('chainZoom: prefetch failed for "' + childUrl + '", falling back to hard navigation', e);
             location.href = childUrl;
             return;
         }
@@ -817,8 +818,9 @@ renderTelemetry(TELEMETRY);
         // popstate preempted between pushes — user's back wins
         if (location.pathname !== parentUrl) return;
 
-        var origin2 = stage.querySelector('a[href="' + childUrl + '"]');
+        var origin2 = stage.querySelector('a[href="' + childUrl + '"], a[href^="' + childUrl + '#"]');
         if (!origin2) {
+            console.warn('chainZoom: no origin anchor for "' + childUrl + '" on ' + parentUrl + ', falling back to hard navigation');
             location.href = childUrl;
             return;
         }
