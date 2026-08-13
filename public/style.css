@@ -405,6 +405,15 @@ main {
     padding: 60px 40px 100px;
 }
 
+.page__role {
+    font-size: 1.35rem;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    color: var(--text-color);
+    margin: 0 0 6px;
+}
+
 .page h1 {
     font-size: clamp(2rem, 5vw, 3rem);
     line-height: 1.1;
@@ -1066,6 +1075,30 @@ blockquote {
     padding-left: 20px;
     margin: 32px 0;
     font-size: 1.15rem;
+}
+
+.decision-callout {
+    border-left: 2px solid var(--quote-border);
+    padding-left: 20px;
+    margin: 24px 0;
+    font-size: 1.15rem;
+}
+
+.stat-row {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 24px 0;
+    padding: 0;
+}
+
+.stat-row li {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.8rem;
+    color: var(--meta-color);
+    border: 1px solid var(--border-color);
+    padding: 6px 12px;
 }
 
 blockquote cite {

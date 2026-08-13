@@ -1601,3 +1601,51 @@ range in the repo (`node__meta` lines, role-page meta lines) already used en das
 post-edit sweep confirms the only `—` matches left in `public/**/*.html` are inside `<title>`
 tags.
 
+
+## DaaS page treatment: role lockup, decision callout, stat row
+
+**Role lockup: two-line, role above title, h1 unchanged (Michael's choice over the
+role-as-h1 alternative).** New `.page__role` line ("Technical Product Manager", 1.35rem/600,
+`--text-color`) inserted directly above the existing h1; the meta line drops the role,
+keeping `Raleigh, NC · 2025 – Present`. h1 stays "DaaS Platform" specifically to preserve the
+L0 node-title <-> page-h1 continuity the zoom morph and drawer link depend on — the rejected
+alternative (role as h1, "DaaS Platform" demoted to metadata) would have landed the zoom-in
+animation on a page whose headline no longer matched the clicked node. Verified live: rendered
+order `page-role -> page-heading -> page-meta -> ...`, `page-role` 21.6px vs. `page-heading`
+48px — smaller than the h1 by construction but semibold/`--text-color`, distinctly heavier
+than the mono/`--meta-color` metadata line, matching the "equal-weight lockup line, not
+metadata" intent (not literally h1-sized).
+
+**Breakup: decision callout + stat row (Michael's choice over the sensor-decision titled
+block).** The sensor-block candidate was rejected because extracting it would have required
+inventing a title and rewriting the remaining sentence (a mid-sentence clause, not a clean
+split point) — the other two candidates move existing sentences verbatim into styled
+containers with zero new prose.
+- **Decision callout:** the narrative paragraph split at its existing sentence boundary into
+  three DOM siblings (`narrative`, `.decision-callout` aside, `narrative-continued`) — zero
+  words changed, reading order unchanged. Styled with the same tokens as `blockquote`
+  (`--quote-border` left border, `1.15rem`), on an `<aside>` rather than `<blockquote>` since
+  it's the author's own claim, not a quotation.
+- **Stat row:** three composed mono chips (`8 months → 3 sprints`, `$500K raise`, `160K+
+  addressable users`) between the pitch and the narrative — the only invented visible text in
+  this whole changelog pass. The first two figures are lifted directly from the page's own
+  Shipped bullets (composed-metadata precedent, DECISIONS.md Phase D). The third required a
+  correction during this pass: the source bullet reads "a serviceable addressable market of
+  160K+ end users" — a market-sizing figure, not actual users served — and a bare "160K+ end
+  users" chip would have silently overstated it as traction on a public, hiring-manager-facing
+  page. Kept the "addressable" qualifier in the chip specifically to preserve that distinction.
+  Styled `.stat-row li` with the same mono/meta-color/border grammar as `.entry__metric` and
+  `.note`.
+
+**Workday role pages checked, no change.** All three role pages' `<h1>` already equal the
+role name (Product Management Rotation, Product Quality Engineer, Senior Product Quality
+Engineer) — the title-prominence problem this pass fixes on the DaaS page doesn't exist there.
+
+**No new color tokens.** `--quote-border`, `--text-color`, `--meta-color`, `--border-color`
+all reused as-is.
+
+**Verified via DOM geometry, not a screenshot.** `getBoundingClientRect()` on all ten
+testid'd elements in page order: zero vertical overlaps, monotonically increasing top/bottom
+across the stack; `decision-callout`'s computed `border-left` is `2px solid rgb(176, 127,
+255)` (`--accent-color`), visually distinct from the plain-paragraph siblings on either side.
+
