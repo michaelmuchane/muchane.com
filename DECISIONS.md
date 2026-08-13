@@ -1359,3 +1359,101 @@ pages) and repeat clicks restart its hide timer via `clearTimeout`
 rather than stacking duplicate notes.
 
 
+## Changelog content model — Muchane Cloud pages (text-first)
+
+**Replaced the `/muchane-cloud` TODO block with a changelog/release model**
+across all three Muchane Cloud pages (`/muchane-cloud`,
+`/muchane-cloud/career-command-center` [new],
+`/muchane-cloud/self-hosted-infra` [new]). One data file,
+`public/muchane-cloud/changelog.json`, holds 15 release entries keyed by
+slug plus a `pages` map giving each page's explicit slug order — the doc's
+amendment A1 forbids reordering, so order is data, not renderer logic.
+Entries render client-side (`renderChangelog`/`loadChangelog` in app.js,
+inside the existing zoom-engine IIFE — no new JS files, matching the
+file's single-file convention) into `[data-changelog]` containers.
+
+**Renderer lives in app.js, not a new file.** The zoom engine fetches the
+*next* page's raw HTML and swaps it into `#stage`; a separate script tag
+on the fetched page never executes. Any changelog-rendering code has to
+run from the currently-loaded script, so it belongs in the same file that
+already owns page-swap lifecycle (`swapStage`, `zoomIn`, `finalizeIn`,
+popstate). This is also why cache-busting (below) had to land on `app.js`
+specifically: a stale edge-cached copy would break changelog rendering on
+every client-side navigation into a cloud page, not just on a hard load.
+
+**`shots` is schema-reserved but ships empty on every entry this pass.**
+The copy doc's SHOT specs (capture framing, "demo-tenant content only",
+sanitization notes) are internal build instructions, not site copy, and
+`changelog.json` is a publicly fetchable file. Transcribing them would
+leak unshipped work and the screenshot-sanitization approach to anyone
+who requests the JSON. The screenshot embed component (`.entry-shot`,
+soft backlight via `--istar-active-glow`) ships now, `hidden` + `is-hidden`
+on every instance, so its testid exists ahead of the Playwright rebuild
+per the checklist, with zero visible output (amendment A2).
+
+**One approved copy amendment:** the dual-path-network entry's SOLUTION
+section reads "NPM to Kong to services" in the source doc. On a public
+engineering page "NPM" reads as the Node package manager, inverting the
+sentence for its target audience; shipped as "Nginx Proxy Manager to Kong
+to services" instead. Every other string in every entry is verbatim.
+
+**`<details>`/`<summary>` for drill-in**, not a JS-driven disclosure — the
+site already styles `details` generically (recognition/notes blocks);
+entries neutralize the generic border/padding inside `.entry` and layer
+card styling on top. Native keyboard and assistive-tech behavior for
+free, no click-handler wiring, consistent with progressive-enhancement
+posture even though the entries themselves are JS-rendered.
+
+**Single-column grid** (`.changelog { display: grid; gap: 16px }`, no
+multi-column) — the page column is 720px and entries are text-heavy
+prose blocks; a second column would cramp line length below comfortable
+reading width.
+
+**Cache-busting convention adopted: `?v=N` query string**, not
+content-hashed filenames. No dependency/asset changes across all 11
+pages' `<link>`/`<script>` tags: `/style.css?v=1`, `/app.js?v=1`. The
+fetched JSON uses the same scheme (`/muchane-cloud/changelog.json?v=1`,
+the version literal lives in `app.js`'s `loadChangelog()`). Rationale:
+content-hashed filenames need a rename on every edit across every
+referencing HTML file, which is hostile to a hand-authored, no-build-step
+repo; a manual `?v=` bump on every file that references the changed asset
+is the boring option that needs no tooling. Assumes the Cloudflare zone
+is on the Standard cache level (query string is part of the cache key) —
+if it turns out to be set to "Ignore query string," this convention is
+inert and the fallback is content-suffixed filenames. `starfield.js` is
+untouched this pass and stays bare; the convention applies to it starting
+from its next edit, not retroactively.
+
+**Converted both Muchane Cloud L0 satellites** (Career Command Center,
+Self-Hosted Infra) from informational pills (`node__satellite--info`,
+non-interactive) to navigable chain-zoom links
+(`node__satellite--link`, `data-zoom="chain"`), now that their L2 pages
+exist — per the conversion recipe already documented in style.css. Landed
+as its own commit, separate from the mechanical `?v=` bumps, because it
+is a real navigation behavior change and should be revertable
+independently.
+
+**"Ops log" heading label**, not the doc's all-caps "OPS LOG" — rendered
+through the existing `.page h2` styling (accent-underlined), consistent
+with every other `<h2>` on the site. Each of the two changelog `<section>`
+containers on `/muchane-cloud/self-hosted-infra` carries its own
+`<noscript>` fallback note, so with JS disabled the "Ops log" heading
+never sits above an empty region (it sits above its own note instead);
+the resulting duplicate note text across the two sections in that
+degraded mode is accepted.
+
+**`page__meta` and meta-description text for the two new L2 pages** were
+not specified in the copy doc. Used `Muchane Cloud &middot; 2025 –
+Present` (matches the L1 page's meta grammar) and the first sentence of
+each page's PITCH paragraph as the meta description (consistent with how
+existing pages source their `<meta name="description">` from their own
+lead copy).
+
+**Date verification (checklist item 1) is incomplete by design.** Four
+entries (`ats-ingestion-feed-complete`, `kanban-status-history`,
+`backup-integrity`, `dual-path-network`) ship with `date_verified: false`
+and the copy doc's display strings, because their real dates live in the
+Career Command Center app repo / VPS workflow history — outside this
+repo's governed workspace. Real dates land in a follow-up commit only
+after Michael confirms them himself; deploy stays blocked on this per
+amendment A5, independent of everything else in this pass.
