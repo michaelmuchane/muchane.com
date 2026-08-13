@@ -4,13 +4,14 @@
 <head data-testid="document-head">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Muchane Cloud — Michael Muchane</title>
-    <link rel="stylesheet" href="/style.css">
+    <title>Career Command Center — Muchane Cloud — Michael Muchane</title>
+    <meta name="description" content="Linear for job search: a dark, information-dense, keyboard-first command center at a private subdomain.">
+    <link rel="stylesheet" href="/style.css?v=1">
     <noscript><style>.drawer{position:static;transform:none;visibility:visible;width:auto;border-right:0;border-bottom:1px solid var(--border-color)} .drawer__children[hidden]{display:flex}</style></noscript>
     <script src="/starfield.js" defer></script>
 </head>
 
-<body data-depth="1">
+<body data-depth="2">
     <canvas id="starfield" data-testid="starfield" aria-hidden="true"></canvas>
 
     <nav class="drawer" data-testid="overlay-menu" aria-label="Site sections">
@@ -50,17 +51,17 @@
         </div>
     </header>
 
-    <main id="stage" data-depth="1" tabindex="-1" data-testid="stage">
+    <main id="stage" data-depth="2" tabindex="-1" data-testid="stage">
         <div class="page">
-            <a class="up-link" data-zoom="out" href="/" data-testid="up-link">← Star map</a>
-            <h1 data-testid="page-heading">Muchane Cloud</h1>
-            <p class="page__meta" data-testid="page-meta">Personal Project &middot; 2025 – Present</p>
+            <a class="up-link" data-zoom="out" href="/muchane-cloud" data-testid="up-link">← Muchane Cloud</a>
+            <h1 data-testid="page-heading">Career Command Center</h1>
+            <p class="page__meta" data-testid="page-meta">Muchane Cloud &middot; 2025 – Present</p>
 
-        <p data-testid="pitch">A self-hosted AI platform I architected, built, and operate solo: ~21 Docker services on one VPS, one Postgres source of truth, and a standing rule that deterministic code handles everything mechanical while LLMs are reserved for judgment. Agents author plans and code; I hold every merge, push, deploy, and SQL execution. Below is the release history: each entry is a problem, the decision made, and what the decision cost or proved.</p>
+            <p data-testid="pitch">Linear for job search: a dark, information-dense, keyboard-first command center at a private subdomain. A triage table, a kanban that logs every state transition, per-company intelligence with pure-SQL analytics, and an AI tailoring pipeline that edits my resume per job under controls that make silent failure hard. Entries below are the releases that earned their keep. No document leaves the system without my review.</p>
 
-        <section class="changelog" data-changelog="/muchane-cloud" data-testid="changelog-grid">
-            <noscript><p class="note">Release entries require JavaScript to render.</p></noscript>
-        </section>
+            <section class="changelog" data-changelog="/muchane-cloud/career-command-center" data-testid="changelog-grid">
+                <noscript><p class="note">Release entries require JavaScript to render.</p></noscript>
+            </section>
         </div>
     </main>
 
@@ -70,7 +71,7 @@
         <span class="telemetry__zone" data-testid="telemetry-right"><span class="telemetry__dot" aria-hidden="true"></span><span data-telemetry="right">AI PIPELINES</span></span>
     </div>
 
-    <script src="/app.js"></script>
+    <script src="/app.js?v=1"></script>
 </body>
 
 </html>
