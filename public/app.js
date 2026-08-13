@@ -359,6 +359,15 @@ renderTelemetry(TELEMETRY);
         var body = document.createElement('div');
         body.className = 'entry__body';
         body.dataset.testid = 'entry-body-' + entry.slug;
+        if (entry.sections.sequencing != null) {
+            var seqLabel = document.createElement('h3');
+            seqLabel.className = 'entry__label';
+            seqLabel.textContent = 'Sequencing';
+            var seqP = document.createElement('p');
+            seqP.textContent = entry.sections.sequencing;
+            body.appendChild(seqLabel);
+            body.appendChild(seqP);
+        }
 
         [['problem', 'Problem'], ['solution', 'Solution']].forEach(function (pair) {
             var label = document.createElement('h3');

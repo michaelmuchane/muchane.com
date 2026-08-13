@@ -1457,3 +1457,73 @@ Career Command Center app repo / VPS workflow history — outside this
 repo's governed workspace. Real dates land in a follow-up commit only
 after Michael confirms them himself; deploy stays blocked on this per
 amendment A5, independent of everything else in this pass.
+
+## Changelog v2 re-transcription; sequencing field; validation script
+
+**Re-transcribed every `title`/`summary`/`sections.*` string in `changelog.json` and the
+three Muchane Cloud pitch paragraphs from `muchane_changelog_copy_v2.md`**, verbatim
+(transform format only). v2 is a prose pass: colon-joined clauses split into short sentences
+throughout. Three entry titles changed: `muchane-com` ("This site: zero dependencies on
+purpose" → "This site, zero dependencies on purpose"), `tailoring-quality-triad` ("Tailoring
+under control: grounding, growth caps, model-per-task" → "Tailoring under control"),
+`companies-surface` ("/companies: intelligence, funnel, and staleness in one surface" →
+"Company intelligence in one surface"). `career-command-center`'s pitch now carries v2's
+human-gate sentences ("Nothing is ever submitted anywhere automatically. Every document gets
+my review before it goes out."), superseding the shipped A4 variant. `dates`, `tags`,
+`metric`, `compact`, `page`, `shots` untouched (v2 didn't change them; date model itself is a
+separate pass, below).
+
+**New nullable field `sections.sequencing`** (string|null) added to all 10 full entries,
+shipped `null` on every one this pass, including entries where v2 supplies real SEQUENCING
+prose (e.g. `tailoring-quality-triad`, `char-budget-gate`) — the fill lands in a follow-up
+commit once Michael confirms it. Renderer support in `buildEntryCard` (`app.js`): when
+non-null, an `h3.entry__label` reading "Sequencing" + its `p` render immediately above the
+Problem block, same element grammar as the other labeled sections. Proved both branches live
+before committing: temporarily set `tailoring-quality-triad.sections.sequencing` to
+`"PROBE-SEQ"`, confirmed it rendered first in the drill-in with the correct label ordering
+(`Sequencing, Problem, Solution, Implementation, Iteration`), confirmed a still-null sibling
+entry rendered without the label, then reverted (`git diff` confirmed zero remnant) before
+staging anything.
+
+**Editorial-instruction stripping (builder-facing text embedded in v2 copy fields).** v2, unlike
+v1, sometimes runs a build instruction into the copy field itself rather than keeping it on a
+separate NOTE line. One instance found: `kanban-status-history`'s SUMMARY ended "Promote to a
+full entry once git log supplies the date and counts." — stale (the date resolved this pass)
+and addressed to the builder, not the reader. Stripped; the shipped summary ends "...compute
+from real events rather than a mutable column." Every other field was scanned for the same
+pattern (`OPS LOG`, `(compact card)`, `[SEQ-FILL]`/`[SEQ-CONFIRM]`) and none were copy-field
+leaks — those all sit in the doc's own structural annotations, never inside a transcribed
+string. Codified as a permanent gate in `scripts/validate-changelog.mjs`.
+
+**`dual-path-network`'s SOLUTION reapplies the standing "NPM → Nginx Proxy Manager" amendment.**
+v2's source text still reads "NPM to Kong to services" literally — the same Node-package-manager
+misreading risk on a public engineering page that motivated the original v1-era approved
+amendment. v2 didn't fix this ambiguity, so the standing decision is reapplied rather than
+re-litigated (Commandment 10: decide cosmetics once, no ping-ponging): shipped as "Nginx Proxy
+Manager to Kong to services."
+
+**Meta-description convention extended for v2's punchier lead sentences.** The established rule
+("meta description = first sentence of the pitch") assumed a single, descriptive first
+sentence, matching v1's colon-joined style. v2 restructures both L2 pitches into a short
+fragment-like lead sentence ("Linear for job search." / "The platform under everything.")
+followed immediately by the descriptive clause that carries the actual content. Taking only
+the literal first sentence would ship a near-content-free meta description, diverging from
+the original mapping (which captured the full descriptive scope). Applied the first TWO
+sentences in both cases instead, preserving the same descriptive scope as before under the new
+prose style — not a new convention, the same one adapted to v2's sentence-length shift.
+
+**Validation script created at `scripts/validate-changelog.mjs`** (none existed in the repo
+before this pass, despite the task description assuming one to extend). Node built-ins only,
+zero deps, lives outside `public/` (never served). Checks: top-level/page-reference shape,
+per-entry field presence and types, full-vs-compact `sections` shape (now including
+`sequencing`), the editorial-instruction leak pattern above, and the banned-string gates
+(`iapply`, `NIIFTY`, em dash, ⚠, `[SEQ`). Date-field checks (`date_display` format vs.
+`week_start`, Monday-only weeks, no day-precision display when `week_start` is null) are
+included and were run against this commit's state expecting exactly the pre-existing
+`date`/no-`date_display` shape to fail (45 failures, all date-field-only, zero shape/banned-
+string/editorial-leak failures) — confirming this transcription pass introduced nothing else
+wrong ahead of the week-dating commit that actually adds `date_display`/`week_start`.
+
+**`.gitignore` widening to `muchane_changelog_copy*.md` was already committed by Michael**
+ahead of this pass (verified via `git check-ignore -v` on both `muchane_changelog_copy.md` and
+`muchane_changelog_copy_v2.md`); this pass made no `.gitignore` edit.
