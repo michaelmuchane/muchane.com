@@ -931,8 +931,8 @@ renderTelemetry(TELEMETRY);
     history.replaceState({ via: 'load', depth: Number(stage.dataset.depth || '0') }, '');
 
     window.addEventListener('popstate', function () {
-        var target = location.pathname;
-        var targetDepth = pathDepth(target);
+        var target = location.pathname + location.hash;
+        var targetDepth = pathDepth(location.pathname);
         var currentDepth = Number(stage.dataset.depth || '0');
 
         if (inflight) {
