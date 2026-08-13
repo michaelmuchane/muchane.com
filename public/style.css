@@ -469,6 +469,17 @@ main {
     aspect-ratio: 12 / 7;
     max-width: var(--constellation-max-width);
     margin: 0 auto;
+    /* Transformed (scale()) descendant of .constellation-wrap paints as its
+       own stacking context, above the sibling .istars layer in DOM order —
+       its transparent border-box was intercepting hover/click for any
+       indexed star whose --x/--y fell inside this rect (WFU-2019, IAPLY-26,
+       MC-25). Remove it from hit-testing and restore hit-testing only on
+       the interactive .node children; zero paint-order/visual change. */
+    pointer-events: none;
+}
+
+.constellation .node {
+    pointer-events: auto;
 }
 
 /* Constellation scale wrapper: reserves the SCALED flow height so the page
