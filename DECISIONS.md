@@ -1697,3 +1697,14 @@ cached-promise loader.
 
 
 
+## Home page hero copy rewrite
+
+Replaced the `hero__copy` paragraph on `public/index.html` verbatim with Michael's new
+self-introduction text (in-chat instruction, not sourced from a copy doc). Convention-covered
+micro-decision made alongside it: synced `<meta name="description">` to the new paragraph's
+lead sentences, per the standing rule that the meta description mirrors a page's own lead copy
+(established `index.html:1447`, extended for short-lead-sentence pages at `index.html:1505`).
+Applied the same split as the outgoing text used — first two sentences (opener + capability
+list), excluding the trailing "I want to keep doing that…" sentence — since that mirrors how
+the prior meta description excluded its own trailing "I'm looking for…" sentence. Not a new
+convention; the same one applied to new copy.
