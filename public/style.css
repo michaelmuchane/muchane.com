@@ -7,7 +7,9 @@
     --teaser-fade: 160ms;
     --drawer-slide: 400ms;
     --star-highlight: 200ms;
-    --contact-pulse: 900ms;
+    --contact-pulse: 2400ms;
+    --copy-note: 900ms; /* "Address copied" note timing — split from --contact-pulse when the pulse hold grew to 2400ms */
+    --email-unfurl: 320ms;
 
     /* LAYOUT TUNABLES — gate 5 (no-scroll) retired 2026-08-12; approved design
        frame is 1440×1360 and L0 is allowed to scroll. Scale floor 0.9 (below
@@ -209,8 +211,8 @@ body[data-depth="0"] .header__logo {
    "nothing visible happened." */
 @keyframes contact-pulse {
     0%   { box-shadow: 0 0 0 0 transparent; }
-    20%  { box-shadow: 0 0 0 3px var(--accent-color); }
-    70%  { box-shadow: 0 0 0 3px var(--accent-color); }
+    8%   { box-shadow: 0 0 0 3px var(--accent-color); }
+    89%  { box-shadow: 0 0 0 3px var(--accent-color); }
     100% { box-shadow: 0 0 0 3px transparent; }
 }
 
@@ -223,9 +225,8 @@ body[data-depth="0"] .header__logo {
 }
 
 /* "Address copied" confirmation for the email icon's clipboard fallback
-   (app.js). Fade timing derives from the --contact-pulse tunable
-   (900/4.5 = 200ms) so it retunes with the pulse family; visible
-   duration is JS-timed at 2x --contact-pulse. */
+   (app.js). Fade timing derives from the --copy-note tunable
+   (900/4.5 = 200ms); visible duration is JS-timed at 2x --copy-note. */
 .email-copied {
     position: absolute;
     top: calc(100% + 8px);
@@ -241,13 +242,37 @@ body[data-depth="0"] .header__logo {
     pointer-events: none;
     opacity: 0;
     visibility: hidden;
-    transition: opacity calc(var(--contact-pulse) / 4.5), visibility 0s linear calc(var(--contact-pulse) / 4.5);
+    transition: opacity calc(var(--copy-note) / 4.5), visibility 0s linear calc(var(--copy-note) / 4.5);
 }
 
 .email-copied.is-visible {
     opacity: 1;
     visibility: visible;
-    transition: opacity calc(var(--contact-pulse) / 4.5), visibility 0s;
+    transition: opacity calc(var(--copy-note) / 4.5), visibility 0s;
+}
+
+/* EMAIL UNFURL — persistent, selectable address revealed by clicking the mail
+   icon (mailto dead-end fallback; handler detection is impossible, so this
+   fires on every click and is simply hidden behind a real mail client). */
+.email-reveal {
+    display: flex;
+    align-items: center;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.8rem;
+    color: var(--text-color);
+    white-space: nowrap;
+    user-select: text;
+    visibility: hidden;
+    opacity: 0;
+    clip-path: inset(0 0 0 100%);
+    transition: clip-path var(--email-unfurl) ease-out, opacity var(--email-unfurl) ease-out, visibility 0s linear var(--email-unfurl);
+}
+
+.email-reveal.is-open {
+    visibility: visible;
+    opacity: 1;
+    clip-path: inset(0);
+    transition: clip-path var(--email-unfurl) ease-out, opacity var(--email-unfurl) ease-out, visibility 0s;
 }
 
 /* DRAWER */
@@ -504,6 +529,25 @@ main {
     margin-top: 24px;
     max-width: 62ch;
     font-size: 1.1rem;
+}
+
+/* In-copy contact trigger (L0 hero) — a button, not a link (no page behind it);
+   activation is shared with the drawer's Contact wayfinder (app.js). */
+.hero__contact-trigger {
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    vertical-align: baseline;
+    line-height: inherit;
+    color: var(--accent-color);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+}
+
+.hero__contact-trigger:hover {
+    background: var(--hover-bg);
 }
 
 /* CONSTELLATION */
@@ -1227,6 +1271,11 @@ main.is-zooming {
 
     .email-copied,
     .email-copied.is-visible {
+        transition: none;
+    }
+
+    .email-reveal,
+    .email-reveal.is-open {
         transition: none;
     }
 

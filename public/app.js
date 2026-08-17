@@ -51,43 +51,55 @@
         });
     }
 
-    /* CONTACT WAYFINDER — the drawer's Contact item is a button, not a link
-       (there is no /contact page behind it): close the drawer, move focus to
-       the first contact icon, and pulse the group so the end state is never
-       "nothing visible happened." A glow alone is useless to keyboard/screen-
-       reader users — the focus move is the actual affordance. */
+    /* CONTACT WAYFINDER — shared by the drawer's Contact item and the L0 hero's
+       in-copy "get in touch" trigger (both are buttons; there is no /contact page):
+       move focus to the first contact icon and pulse the group so the end state is
+       never "nothing visible happened." A glow alone is useless to keyboard/screen-
+       reader users — the focus move is the actual affordance. The header is
+       position:sticky top:0, so it is always in the viewport; no scrolling needed. */
+    function pulseContactLinks() {
+        if (headerEmail) headerEmail.focus();
+        if (!headerContact) return;
+
+        if (REDUCED.matches) {
+            headerContact.classList.add('is-pulse-static');
+            var pulseMs = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--contact-pulse')) || 2400;
+            var cleared = false;
+            var onFocusOut = function (e) {
+                if (!headerContact.contains(e.relatedTarget)) clear();
+            };
+            function clear() {
+                if (cleared) return;
+                cleared = true;
+                headerContact.classList.remove('is-pulse-static');
+                headerContact.removeEventListener('focusout', onFocusOut);
+            }
+            headerContact.addEventListener('focusout', onFocusOut);
+            setTimeout(clear, pulseMs);
+        } else {
+            headerContact.classList.remove('is-pulsing');
+            void headerContact.offsetWidth; // restart the animation if re-triggered mid-pulse
+            headerContact.classList.add('is-pulsing');
+            headerContact.addEventListener('animationend', function handler() {
+                headerContact.classList.remove('is-pulsing');
+                headerContact.removeEventListener('animationend', handler);
+            });
+        }
+    }
+
     if (contactBtn) {
         contactBtn.addEventListener('click', function () {
             setMenu(false);
-            if (headerEmail) headerEmail.focus();
-            if (!headerContact) return;
-
-            if (REDUCED.matches) {
-                headerContact.classList.add('is-pulse-static');
-                var pulseMs = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--contact-pulse')) || 900;
-                var cleared = false;
-                var onFocusOut = function (e) {
-                    if (!headerContact.contains(e.relatedTarget)) clear();
-                };
-                function clear() {
-                    if (cleared) return;
-                    cleared = true;
-                    headerContact.classList.remove('is-pulse-static');
-                    headerContact.removeEventListener('focusout', onFocusOut);
-                }
-                headerContact.addEventListener('focusout', onFocusOut);
-                setTimeout(clear, pulseMs);
-            } else {
-                headerContact.classList.remove('is-pulsing');
-                void headerContact.offsetWidth; // restart the animation if re-triggered mid-pulse
-                headerContact.classList.add('is-pulsing');
-                headerContact.addEventListener('animationend', function handler() {
-                    headerContact.classList.remove('is-pulsing');
-                    headerContact.removeEventListener('animationend', handler);
-                });
-            }
+            pulseContactLinks();
         });
     }
+
+    /* HERO CONTACT TRIGGER — delegated on document (same pattern as the zoom
+       engine's CLICK WIRING) because swapStage replaces #stage innerHTML on every
+       client-side navigation; a per-element binding would die on the first zoom. */
+    document.addEventListener('click', function (e) {
+        if (e.target.closest('[data-testid="hero-contact-trigger"]')) pulseContactLinks();
+    });
 
     /* EMAIL COPY FALLBACK — a mailto silently no-ops for visitors with no OS
        mail client (most webmail users). Alongside the native mailto (never
@@ -101,12 +113,13 @@
        Degrades silently to mailto-only when the Clipboard API is
        unavailable, permission is denied, or a client actually opened. */
     var EMAIL_COPY_FOCUS_CHECK_DELAY = 150;
+    var EMAIL = 'michaelmuchane@gmail.com';
     if (headerEmail && headerContact) {
         var copyNote = null;
         var copyTimer = null;
         headerEmail.addEventListener('click', function () {
             if (!(navigator.clipboard && navigator.clipboard.writeText)) return;
-            navigator.clipboard.writeText('michaelmuchane@gmail.com').then(function () {
+            navigator.clipboard.writeText(EMAIL).then(function () {
                 setTimeout(function () {
                     if (document.hidden || !document.hasFocus()) return; // a client opened; stay silent
                     if (!copyNote) {
@@ -119,12 +132,52 @@
                     }
                     clearTimeout(copyTimer);
                     copyNote.classList.add('is-visible');
-                    var pulseMs = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--contact-pulse')) || 900;
+                    var pulseMs = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--copy-note')) || 900;
                     copyTimer = setTimeout(function () {
                         copyNote.classList.remove('is-visible');
                     }, pulseMs * 2);
                 }, EMAIL_COPY_FOCUS_CHECK_DELAY);
             }).catch(function () { /* silent: the mailto already fired */ });
+        });
+
+        /* EMAIL UNFURL — persistent, selectable address; see DECISIONS.md.
+           Unconditional on click: there is no way to detect a registered mail
+           handler, so visitors WITH one see their client take focus over this. */
+        var reveal = document.createElement('span');
+        reveal.className = 'email-reveal';
+        reveal.setAttribute('data-testid', 'header-email-reveal');
+        reveal.setAttribute('aria-live', 'polite');
+        reveal.tabIndex = 0;
+        headerContact.insertBefore(reveal, headerEmail);
+        var revealOpen = false;
+        var revealClearTimer = null;
+        function setReveal(open) {
+            revealOpen = open;
+            reveal.classList.toggle('is-open', open);
+            clearTimeout(revealClearTimer);
+            if (open) {
+                reveal.textContent = EMAIL; // (re)assign AFTER opening: a mutation inside the now-visible polite region announces reliably
+            } else {
+                // visibility:hidden does not collapse the layout box while text
+                // remains — clearing immediately would snap the clip-path
+                // animation short, so wait for it to finish (0ms under reduced
+                // motion, where there is no animation to protect). Guarded by
+                // revealOpen in case a rapid re-open fires before this runs.
+                var delay = REDUCED.matches ? 0 : (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--email-unfurl')) || 320);
+                revealClearTimer = setTimeout(function () {
+                    if (!revealOpen) reveal.textContent = '';
+                }, delay);
+            }
+        }
+        headerEmail.addEventListener('click', function () {
+            if (!matchMedia('(min-width: 600px)').matches) return; // narrow treatment deferred to the mobile pass
+            setReveal(!revealOpen); // second icon click toggles closed
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && revealOpen) setReveal(false);
+        });
+        document.addEventListener('click', function (e) {
+            if (revealOpen && !headerContact.contains(e.target)) setReveal(false);
         });
     }
 
@@ -245,7 +298,7 @@ renderTelemetry(TELEMETRY);
     function loadChangelog() {
         if (changelogData) return Promise.resolve(changelogData);
         if (!changelogPromise) {
-            changelogPromise = fetch('/muchane-cloud/changelog.json?v=2')
+            changelogPromise = fetch('/muchane-cloud/changelog.json?v=3')
                 .then(function (res) {
                     if (!res.ok) throw new Error('changelog fetch failed: ' + res.status);
                     return res.json();
@@ -935,6 +988,18 @@ renderTelemetry(TELEMETRY);
             }
         } else if (link.dataset.zoom === 'chain') {
             chainZoom(href, link);
+        } else if (link.dataset.zoom === 'home') {
+            if (location.pathname === '/') return;   // wordmark is display:none at L0; guard kept as defense against a stale or unset depth attribute
+            if (inflight) return;
+            if (history.state && history.state.via === 'zoom' && history.state.from === '/') {
+                history.back();                       // same one-entry shortcut as the up-link above
+            } else if (Number(stage.dataset.depth || '0') === 1) {
+                zoomOut('/');                         // animated single-level return; zoomOut has its own REDUCED branch
+            } else {
+                loadPage('/').then(function (data) {  // depth >= 2: the popstate multi-level recipe below, plus push
+                    finalizeIn('/', data, true);
+                }).catch(function () { location.href = '/'; });
+            }
         }
     });
 
