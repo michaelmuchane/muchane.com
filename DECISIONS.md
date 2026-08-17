@@ -1708,3 +1708,106 @@ Applied the same split as the outgoing text used — first two sentences (opener
 list), excluding the trailing "I want to keep doing that…" sentence — since that mirrors how
 the prior meta description excluded its own trailing "I'm looking for…" sentence. Not a new
 convention; the same one applied to new copy.
+
+## L0 hero + header pass: metadata subheader, contact trigger, mailto finding, MENU/wordmark reorder, email unfurl
+
+**Hero restructure.** `public/index.html`'s hero gained a `.page__meta`-styled subheader
+(`data-testid="hero-meta"`, "Technical Product Manager · Raleigh, NC") reused verbatim from the
+L1 pattern — no new CSS class. The intro paragraph was replaced with new copy whose final phrase
+"get in touch" is an in-paragraph `<button data-testid="hero-contact-trigger">`, not a link (no
+`/contact` page exists behind it). No `aria-label` on the trigger: its visible text is already
+the accessible name; the drawer's Contact button needed one only because "Contact" alone read as
+terse. Measured 4 rendered lines at 1440px/62ch max-width (3.998 line-heights, zero headroom) —
+the acceptance gate for not editing the copy further.
+
+**Shared activation, extracted.** The drawer Contact button's pulse-and-focus logic was pulled
+into `pulseContactLinks()` (first IIFE, `app.js`) so the hero trigger reuses the identical
+mechanism rather than duplicating it. The hero trigger is bound via **document-level
+delegation** (`document.addEventListener('click', ...)` on
+`[data-testid="hero-contact-trigger"]`), matching the zoom engine's own CLICK WIRING pattern —
+`swapStage()` replaces `#stage.innerHTML` on every client-side navigation, so a per-element
+listener bound at load time would die on the first zoom.
+
+**`--contact-pulse` 900ms → 2400ms** (+1.5s, the requested "1–2 seconds longer" hold). Keyframe
+plateau reshaped `20%/70%` → `8%/89%` to keep the attack/decay near their original absolute
+timings (192ms in / 264ms out vs. the old 180ms/270ms) while the extra hold lives in the
+plateau. **New `--copy-note: 900ms` token, split off `--contact-pulse`** — the email
+"Address copied" note previously read the same shared token; leaving it coupled would have
+silently stretched the note from 1800ms visible/200ms fade to 4800ms/533ms, an unrequested
+behavior change. This explicitly reverses the "note retunes with the pulse family" decision
+made when `--contact-pulse` was first introduced (see the C6 entry above) — three independent
+motion behaviors now read three independent tokens (`--contact-pulse`, `--copy-note`, and the
+new `--email-unfurl` below).
+
+**Header mailto blank-tab report — diagnosed, not a repo defect.** Michael observed the header
+mail icon opening a blank new tab instead of a mail client. Diagnosis: the anchor
+(`<a href="mailto:...">`, no `target`, no `rel`) is byte-identical across all 10 pages;
+`target=` and `window.open` occur zero times anywhere in `public/`; the only JS touching it is
+the (unchanged) clipboard-copy listener, which never navigates or calls `preventDefault`. **Case
+B: browser-side** — no registered OS mail handler, or the browser's own new-tab-for-external-
+scheme behavior. Nothing in the repo was changed for this finding; it cannot be fixed here.
+
+**Email unfurl — the product answer to the mailto dead-end.** Clicking the mail icon (≥600px
+viewports only) now unfurls the address to its left as persistent, selectable text
+(`data-testid="header-email-reveal"`), created once in JS (`app.js`'s EMAIL COPY FALLBACK
+block) rather than authored into all 10 headers — keeps the feature to two files. **Handler
+detection is impossible**: no API exposes a registered mail handler, a mailto navigation
+reports neither success nor failure, and the browser's blank tab cannot be prevented or
+detected after the fact — so the unfurl fires unconditionally on every click; visitors with a
+working mail client simply never see it, hidden behind their client's own window. **Persists
+until dismissed** (Escape, an outside click, or a second icon click) rather than timing out,
+because a mail client stealing focus can outlive any timeout — that mismatch is exactly how the
+original blank-tab report happened (the confirmation model this replaces assumed success was
+detectable). Animated via `clip-path: inset()` + opacity, not layout width or `scaleX` — the
+contact group is the right-anchored child of the header's `space-between` flex row, so its own
+width growing extends leftward without moving the wordmark or MENU button (verified: their
+rects are pixel-identical open vs. closed, at both a hidden-wordmark depth and a visible-
+wordmark depth); `scaleX` would have distorted the glyphs, and a `width` transition would have
+thrashed layout every frame. Collapsed end state is `visibility: hidden` (not `display: none`,
+which cannot transition, and not `width: 0` with content still present, which would leave a
+hidden tab stop) — this doubles as the tab-order/screen-reader exclusion, so no `tabindex`
+juggling is needed. **New `--email-unfurl: 320ms` token** (distinct from `--contact-pulse` and
+`--copy-note` — see above). Reduced motion is a real branch (`transition: none` in the existing
+MOTION SAFETY block), not a shortened duration: state flips instantly on open and dismiss.
+
+**Real bug caught in verification, fixed before commit:** the initial implementation never
+cleared `reveal.textContent` on dismiss. `visibility: hidden` does not collapse an element's
+layout box while it still has content, so `.header__contact` stayed permanently ~185px wider
+after the *first* open — silently shifting the "Address copied" note's `left: 0` anchor away
+from the icons for the rest of the session. Fixed by clearing the text after the close
+transition completes (0ms under reduced motion, since there's no animation to protect;
+otherwise the `--email-unfurl` duration), guarded by the current open/closed flag so a rapid
+re-open before the timer fires is not clobbered. Verified: `.header__contact`'s rect returns to
+its exact original width after every one of the three dismissal paths.
+
+**Header reorder: MENU before the wordmark; wordmark links home on L1/L2 only.** All 10 pages'
+`.header__left` now orders the MENU button first, the wordmark second — a plain DOM reorder
+(never flex `order`/`row-reverse`, which would desync keyboard tab order from the visual
+order). The wordmark stays **hidden at L0** (`body[data-depth="0"] .header__logo { display:
+none }`, unchanged) — the H1 already carries the name there, so showing both would render it
+twice; the wordmark is a home affordance on L1/L2 only. Clicking it is wired through the zoom
+engine's own CLICK WIRING (`data-zoom="home"`, new branch) rather than a fresh listener, so it
+inherits the existing modifier-key guards (cmd/ctrl-click still opens a native tab) and
+`preventDefault` ordering for free. No single "go home from any depth" function existed in the
+engine; the branch composes two already-shipped paths instead of inventing one: the up-link's
+own single-level shortcut (`history.back()` when the current history state's `via/from` match,
+else the animated `zoomOut('/')`) for depth 1, and the popstate handler's own multi-level
+recipe (`loadPage` + `finalizeIn(..., true)`, non-animated — the engine's four-animation zoom is
+documented as single-level-only) for depth ≥2. A `location.pathname === '/'` guard makes the
+branch a no-op at L0 even though the wordmark is unreachable there by construction — cheap
+defense against a stale or unset `data-depth` attribute, not load-bearing today.
+
+**Known constraint, not a defect, for the mobile pass:** the hero trigger is an inline-block
+button and cannot break across lines — at narrow widths "get in touch" wraps to its own line as
+a single unit. Recorded here so the eventual mobile layout pass inherits this as an existing
+constraint rather than rediscovering and "fixing" intentional behavior. Separately: the email
+unfurl is gated to ≥600px viewports; below that, today's mailto + "Address copied" behavior is
+untouched — narrow-width email reveal is explicitly deferred to the same mobile pass, which is
+still undesigned.
+
+**Cache-bust:** `style.css`/`app.js` both changed content this pass, so every `?v=2` reference
+bumped to `?v=3` — 20 HTML references (`style.css` **and** `app.js`, each linked from all 10
+pages — the prior assumption that only `index.html` linked `app.js` was wrong; every page has
+its own `<script>` tag) plus one previously-untracked reference, `app.js`'s own
+`fetch('/muchane-cloud/changelog.json?v=2')` call, for 21 total. `starfield.js` stays bare
+(untouched this pass).
