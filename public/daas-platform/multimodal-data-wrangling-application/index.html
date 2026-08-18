@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Multimodal Data Wrangling Application — DaaS Platform — Michael Muchane</title>
     <meta name="description" content="Designed and prototyped a data-wrangling application implementing a guided seven-step import-to-export pipeline for time-series motion-sensor and audio data, with human sign-off gates on every high-risk transformation. Prototype; production build in progress.">
-    <link rel="stylesheet" href="/style.css?v=5">
+    <link rel="stylesheet" href="/style.css?v=6">
     <noscript><style>.drawer{position:static;transform:none;visibility:visible;width:auto;border-right:0;border-bottom:1px solid var(--border-color)} .drawer__children[hidden]{display:flex}</style></noscript>
     <script src="/starfield.js" defer></script>
 </head>
@@ -71,6 +71,11 @@
                 <li>Human-in-the-loop AI: ML-proposed alignment paired with confidence scoring and evidence, keeping privacy and human oversight first-class.</li>
             </ul>
 
+            <figure class="entry-shot" data-testid="shot-alignment-gate">
+                <img src="/media/alignment-approval-gate.webp" width="1600" height="1000" loading="lazy" decoding="async" alt="Alignment review screen showing a segment list with per-segment confidence scores, an evidence panel plotting two signal streams with a 124 ms offset marked between their peaks, and approve and reject controls behind an approval gate.">
+                <figcaption>Alignment approval gate, prototype, fictional data.</figcaption>
+            </figure>
+
         </div>
     </main>
 
@@ -80,7 +85,7 @@
         <span class="telemetry__zone" data-testid="telemetry-right"><span class="telemetry__dot" aria-hidden="true"></span><span data-telemetry="right">AI PIPELINES</span></span>
     </div>
 
-    <script src="/app.js?v=5"></script>
+    <script src="/app.js?v=6"></script>
 </body>
 
 </html>

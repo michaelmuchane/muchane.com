@@ -1993,3 +1993,38 @@ pre-change baseline).
 call), re-derived by fresh grep at execution time, not carried forward from planning.
 `starfield.js` stays bare (untouched).
 
+## DaaS Platform node, complete pass: copy revisions, two figures, caption/glow styling, satellite relabel, cache v6
+
+**First binary assets in the repo.** `public/media/` created as the served home for two
+pre-optimized `.webp` screenshots (1600x1000), mode 644 to match every other file under
+`public/` (the provided files arrived at 600, browser-download default). Never colocated
+inside route directories. `.entry-shot figcaption` reuses the existing mono stack
+(`'JetBrains Mono', 'Fira Code', monospace`) and `--meta-color`; no new custom properties,
+no new classes beyond the one rule. The shared `.entry-shot` glow widened
+`0 0 48px -12px` to `0 0 72px -6px` (same `--istar-active-glow` token, single shadow),
+shared with the changelog shot renderer; visual check on a temporarily-unhidden
+`/muchane-cloud` entry is part of this pass's Verification (V5), not claimed here.
+
+**Child page pitch/meta relationship after the copy pass.** The pitch and meta description
+both open "Designed and prototyped..." (kept in sync, mirroring the site's usual
+meta-echoes-lead convention) but their trailing sentences intentionally diverge: the pitch
+gets two new sentences about the alignment-approval-gate prototype and production status;
+the meta gets a shorter "Prototype; production build in progress." tail. Do not re-sync the
+tails. Known cosmetic artifact, left as authored (audit-final copy): the pitch now has two
+adjacent sentences opening on the same verb ("Designed and prototyped... Prototyped..."),
+flagged for a possible later reword pass, not fixed here.
+
+**Satellite label "Wrangling" -> "Datasets", orbit geometry (A=156) unchanged.** Measured
+live on the pristine served site before editing (`sat.childNodes[0].textContent` set
+including the real trailing-whitespace text node, per the original derivation's method):
+"Wrangling" 106.84px (exact match to the prior derivation), "Datasets" 99.67px, narrower,
+so every existing clearance proof holds with strictly more margin. Resulting margins at
+1280: card clearance 8.08px (was 4.49px), viewport 31.42px (was 27.83px). No CSS changed;
+`orbit-tsdp` keyframes, the 912px perimeter, and the four waypoints are untouched. Teaser
+copy (`satellite__teaser-title/-meta/-accent`) replaced to describe the pipeline instead of
+repeating the destination heading; `aria-label` stays the full destination name.
+
+**Cache-bust `?v=5` -> `?v=6`:** 23 references (22 across the 11 HTML pages'
+`style.css`/`app.js` tags, plus `app.js`'s own `fetch('/muchane-cloud/changelog.json?v=5')`
+call), re-derived by fresh grep at execution time and matching the pre-execution estimate.
+`starfield.js` stays bare (untouched).

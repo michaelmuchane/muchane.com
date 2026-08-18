@@ -1121,13 +1121,21 @@ a.entry--link {
     margin: 20px 0 4px;
     border: 1px solid var(--border-color);
     background: var(--bg-color);
-    box-shadow: 0 0 48px -12px var(--istar-active-glow);
+    box-shadow: 0 0 72px -6px var(--istar-active-glow);
 }
 
 .entry-shot img {
     display: block;
     width: 100%;
     height: auto;
+}
+
+.entry-shot figcaption {
+    padding: 8px 12px;
+    border-top: 1px solid var(--border-color);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.75rem;
+    color: var(--meta-color);
 }
 
 /* CONTENT BLOCKS */
