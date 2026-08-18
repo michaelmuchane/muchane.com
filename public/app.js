@@ -265,7 +265,24 @@ renderTelemetry(TELEMETRY);
     // already updated location — by then location.pathname is the target,
     // not the page we're leaving, so it can't be used to find the outgoing
     // node on a fetched parent page's origin lookup.
-    var currentPath = location.pathname;
+    var currentPath = normalizePath(location.pathname);
+    // Canonicalize the initial history entry — required, not cosmetic: nginx
+    // serves a trailing-slash directory path (e.g. /daas-platform/) as a 200
+    // with no redirect, so a hard load can leave the address bar and
+    // history.state on a non-canonical URL. Authored hrefs are always
+    // slash-less; without this, the up-link's one-entry back-shortcut
+    // (history.state.from === href) and finalizeOut's origin lookups both
+    // miss on a Back to this entry.
+    if (currentPath !== location.pathname) {
+        history.replaceState(history.state, '', currentPath + location.search + location.hash);
+    }
+
+    // Single normalization convention for a trailing-slash pathname (see the
+    // currentPath comment above) — used at boot and by the popstate handler,
+    // the only two sites that read location.pathname directly.
+    function normalizePath(p) {
+        return p.replace(/\/+$/, '') || '/';
+    }
 
     function pathDepth(path) {
         return path.split('/').filter(Boolean).length;
@@ -1007,8 +1024,9 @@ renderTelemetry(TELEMETRY);
     history.replaceState({ via: 'load', depth: Number(stage.dataset.depth || '0') }, '');
 
     window.addEventListener('popstate', function () {
-        var target = location.pathname + location.hash;
-        var targetDepth = pathDepth(location.pathname);
+        var path = normalizePath(location.pathname);
+        var target = path + location.hash;
+        var targetDepth = pathDepth(path);
         var currentDepth = Number(stage.dataset.depth || '0');
 
         if (inflight) {
