@@ -1872,3 +1872,124 @@ entry said "10 pages / 21 refs" — that was stale even at write time relative t
 current 11-page structure; re-derived by fresh grep this pass, not carried forward.)
 `starfield.js` stays bare (untouched).
 
+## Mobile L0 — Timeline spine (design-refs 1d)
+
+Narrow-viewport (≤600px) L0 built per `design-refs/L0-mobile/mobile-l0-directions.html` frame
+`#1d` — the constellation's connecting line becomes a vertical accent spine; the four career
+stops hang off it as full-width link cards in reverse-chronological order (NOW at top, 2015 at
+bottom). Desktop (≥601px) is byte-for-byte unchanged — verified numerically (0px rect delta on
+every measured node/satellite/hero/telemetry/header rect at 1280×900 and 601×900, and the
+polyline's screen coordinates are byte-identical pre/post-change), not eyeballed.
+
+**Q2 — stop-card footer counts: JS-derived (option b), not hardcoded.** Each card's `.node__foot`
+carries an empty `.node__count[data-noun]` span; `bindStopFooters()` (new, `app.js`) counts each
+node's `.node__satellite` children (present in the DOM, `display:none` at narrow) and writes
+`"{n} {NOUN}{S if n≠1}"`. One source of truth — a new satellite added to a node updates the count
+with no markup edit. **JS-off degrades sanely**, confirmed via `Emulation.setScriptExecutionDisabled`:
+the count span stays empty, the footer reads bare `OPEN ›` (chevron is CSS `content`, not JS),
+and the card is a real `<a href>` — navigation intact. "OPEN ›" is static text inside an
+already-a-link card (`aria-hidden` footer), not a disclosure control.
+
+**Q3 — landscape 844×390: no second breakpoint; the existing desktop constellation is the
+answer.** `(max-width: 600px)` alone gates the spine layout; at 844×390 that query never matches,
+so landscape phones render exactly today's desktop constellation. Measured before AND after this
+change at 844×390: zero node-card overlaps, zero horizontal overflow (`scrollWidth` 844 both
+times), rect-for-rect identical to the pre-change baseline. Two pre-existing warts observed and
+left untouched (not introduced or worsened here): satellite pills are sub-44px touch targets at
+every viewport, and the DaaS satellite pill clips past the left edge at its far-left orbit phase
+at 844px width. Both exist today independent of this pass and are out of scope.
+
+**Istar docking deferred.** Istars stay `display:none` at narrow (unchanged from the prior
+interim rule). Their function — highlight a node on a 2D map — is redundant on a linear,
+already-labeled timeline; docking them to the spine as tappable era markers (per the mockup's own
+"tradeoff" note) would add a new interaction for decorative payoff. Revisit post-launch if
+wanted.
+
+**Era labels ("NOW" / "2015") are decorative but shipped as real markup**, not CSS
+`content:`, because Commandment 9 requires a `data-testid` on structural elements and
+pseudo-elements can't carry one. `aria-hidden="true"` — the chronology is already conveyed
+accessibly by each card's tenure line. "2015" is Education's real start year (already-rendered
+copy), not an invented fact.
+
+**Token mapping (no new hardcoded colors, no new tokens needed):** spine + connector stub =
+`var(--accent-color)` at `opacity:0.55` (matches the desktop polyline's own
+`stroke-opacity:.55`); dot glow = `var(--istar-active-glow)` (`#B07FFF8c`); footer divider =
+`var(--constellation-line)` (`#262626`, the repo's existing in-card divider token); count text =
+`var(--istar-label)` (`#6b6b7a`); era label text = `var(--faint-color)` (`#525252`, same
+sub-4.5:1 decorative-marker register as `.istar__label`, both `aria-hidden`); terminal dot at the
+spine's foot = `var(--border-color)` (`#333`). Geometry (25/31/38/56px, 13px dot, 18px stub) is
+chosen so dot centers sit exactly on the spine's centerline — measured 0px delta at both 390px
+and 360px.
+
+**Header controls bumped to 44px at narrow** (`.menu-trigger` height, `.header__icon`
+width/height) to clear the WCAG tap-target floor. Measured header band height before and after:
+**80px → 80px, no growth** — the header's `align-items:center` inside its fixed 80px band
+absorbs the 38px→44px icon bump with room to spare. Verified at the tightest case (360px: three
+44px icons + the MENU control) with zero horizontal overflow. The one measured tap-target
+shortfall at narrow is `hero-contact-trigger-narrow` (96×27, min dimension 27px) — an in-copy
+text button, accepted under the WCAG 2.5.8 inline-text-link exception, same treatment as the
+desktop hero's existing trigger.
+
+**Telemetry: two zones at narrow**, not hidden entirely (superseding the prior interim
+`display:none` rule). The middle metrics zone (`21 CONTAINERS · 47 COMMITS · LAST DEPLOY 6H AGO`
+— static placeholder copy already flagged for a future rewrite, not designed around here) is
+hidden; the left (MUCHANE CLOUD) and right (AI PIPELINES) identity zones stay, confirmed visible
+(`display:flex`/`display` on the zone spans) at 390px.
+
+**Narrow rail sequence is pure DOM order — no flex `order` property anywhere.** The plan's first
+draft used `.node--{tsdp,mc,wd,edu} { order: N }` on top of the existing tsdp/wd/mc/edu DOM
+order; that was rejected before implementation because it would make visual order (NOW→2025→
+2019→2015) diverge from keyboard tab order (same standing rule as the earlier header-reposition
+pass). Instead, `.node--mc`'s whole DOM block was moved to sit before `.node--wd` — final DOM
+order in `index.html` is `tsdp, mc, wd, edu`. Safe on desktop because nodes are absolutely
+positioned from their own `--x`/`--y` custom properties, independent of DOM order (confirmed:
+0px rect delta on all four cards at 1280×900/601×900, and the polyline's literal SVG point
+coordinates are untouched — its screen position is byte-identical pre/post-move). Verified: tab
+order at 390×844 reads DaaS Platform → Muchane Cloud → Workday → Education, matching the visual
+rail exactly.
+
+**The narrow hero is a separate paragraph, not a CSS truncation of the wide one.** Michael's
+final mobile wording is a rewrite (drops the second, implementation-depth sentence; compresses
+desktop's "with human review gates on AI in production" into the adjective "human gated"
+attached directly to "LLM pipelines" — no stronger a claim than the desktop copy or the résumé)
+rather than a subset of the desktop paragraph, so it cannot be produced by hiding spans inside
+one shared `<p>`. Two sibling `<p class="hero__copy">` elements now live in `index.html`
+(`--wide` / `--narrow` modifier classes, `display` swap — not `visibility`, per the
+known email-unfurl width-collapse defect class in this repo), toggled by the same
+`max-width:600px` query as the rest of this pass. **Consequence stated plainly: the hero copy
+now exists twice and must be edited in both places.** The two triggers
+(`hero-contact-trigger` / `hero-contact-trigger-narrow`) share one class,
+`.hero__contact-trigger`, which the pre-existing delegated click handler in `app.js` now matches
+(widened from a single `data-testid` selector) — one handler, one `pulseContactLinks()` path,
+confirmed firing from both triggers and confirmed still firing on the narrow trigger after a
+full L0→L1→L0 zoom round-trip (proves the delegation survives `swapStage`'s DOM replacement).
+
+Drift mitigation for the now-duplicated copy: **reciprocal HTML comments** sit immediately before
+each paragraph in `index.html` ("PAIRED COPY 1 of 2" / "2 of 2"), each naming the other and
+pointing back to this entry, so an editor touching one text sees the tripwire at the edit site.
+A **programmatic paired-copy drift check is deliberately deferred**, not built this pass:
+
+> Paired-copy drift check (unbuilt). The two hero paragraphs cannot be validated by diffing,
+> since they intentionally differ. The workable shape is a hash-pair check in scripts/
+> following the validate-changelog.mjs precedent: store a content hash of each paragraph plus
+> the date they were last reconciled, and fail loudly when either hash changes, with a message
+> telling the author to read both and re-record. It does not check that the copy is correct,
+> only that a human looked at the pair. Deferred because this pass is already 14 files, and
+> because a second script plus a stored hash file is its own small design. Revisit if a second
+> or third viewport-divergent string appears, which is the point at which comments stop being
+> sufficient.
+
+**Hero-copy measurements** (390×844 / 360×640, `npx serve public -l 4173`): H1 "Michael Muchane"
+renders 1 line at both widths (unaffected — H1 was not edited); `hero-meta` 1 line at both. With
+the CURRENT shipped desktop paragraph, CSS alone renders it at 10 lines (390px) / 11 lines
+(360px) — technically fits without a `<br>` or font-size change, but Michael ruled it too long
+for the mobile surface as a product call, not a measurement failure. The shipped narrow
+paragraph renders 5 lines at 390px, 6 lines at 360px. Desktop paragraph line counts are
+unaffected by this pass (unchanged at 5 lines/1280px, 7 lines/601px, confirmed against the
+pre-change baseline).
+
+**Cache-bust:** every `?v=4` reference bumped to `?v=5` — 23 total (22 across the 11 HTML pages'
+`style.css`/`app.js` tags, plus `app.js`'s own `fetch('/muchane-cloud/changelog.json?v=4')`
+call), re-derived by fresh grep at execution time, not carried forward from planning.
+`starfield.js` stays bare (untouched).
+

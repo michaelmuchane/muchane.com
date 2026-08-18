@@ -98,7 +98,7 @@
        engine's CLICK WIRING) because swapStage replaces #stage innerHTML on every
        client-side navigation; a per-element binding would die on the first zoom. */
     document.addEventListener('click', function (e) {
-        if (e.target.closest('[data-testid="hero-contact-trigger"]')) pulseContactLinks();
+        if (e.target.closest('.hero__contact-trigger')) pulseContactLinks();
     });
 
     /* EMAIL COPY FALLBACK — a mailto silently no-ops for visitors with no OS
@@ -315,7 +315,7 @@ renderTelemetry(TELEMETRY);
     function loadChangelog() {
         if (changelogData) return Promise.resolve(changelogData);
         if (!changelogPromise) {
-            changelogPromise = fetch('/muchane-cloud/changelog.json?v=4')
+            changelogPromise = fetch('/muchane-cloud/changelog.json?v=5')
                 .then(function (res) {
                     if (!res.ok) throw new Error('changelog fetch failed: ' + res.status);
                     return res.json();
@@ -648,6 +648,20 @@ renderTelemetry(TELEMETRY);
         });
     }
 
+    // Stop-card footer counts (narrow timeline layout): derived from the
+    // satellite elements so the hidden satellites stay the single source of
+    // truth. With JS off the count span stays empty and the footer reads as
+    // just "OPEN ›" — the card is a real link either way.
+    function bindStopFooters(root) {
+        root.querySelectorAll('.constellation .node').forEach(function (node) {
+            var slot = node.querySelector('.node__count');
+            if (!slot) return;
+            var count = node.querySelectorAll('.node__satellite').length;
+            if (!count) return;
+            slot.textContent = count + ' ' + (slot.dataset.noun || '') + (count === 1 ? '' : 'S');
+        });
+    }
+
     function swapStage(url, data, push) {
         stage.classList.remove('is-zooming');
         stage.style.minHeight = '';
@@ -663,6 +677,7 @@ renderTelemetry(TELEMETRY);
         bindRevealHeadings(stage);
         bindParallaxNodes(stage);
         bindSatelliteTeasers(stage);
+        bindStopFooters(stage);
         bindIndexedStars(stage);
         renderChangelog(stage, location.hash.slice(1));
         if (window.updateMenuActive) window.updateMenuActive(url);
@@ -1081,6 +1096,7 @@ renderTelemetry(TELEMETRY);
     bindRevealHeadings(stage);
     bindParallaxNodes(stage);
     bindSatelliteTeasers(stage);
+    bindStopFooters(stage);
     bindIndexedStars(stage);
 
     // Initial direct load of a changelog page: render immediately (fetch

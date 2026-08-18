@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Michael Muchane</title>
     <meta name="description" content="Technical Product Manager, Raleigh, NC. I've been an engineer and a PM, and I build for technical users: REST APIs at enterprise scale, LLM pipelines under real cost and reliability constraints, with human review gates on AI in production.">
-    <link rel="stylesheet" href="/style.css?v=4">
+    <link rel="stylesheet" href="/style.css?v=5">
     <noscript><style>.drawer{position:static;transform:none;visibility:visible;width:auto;border-right:0;border-bottom:1px solid var(--border-color)} .drawer__children[hidden]{display:flex}</style></noscript>
     <script src="/starfield.js" defer></script>
 </head>
@@ -70,12 +70,25 @@
         <section class="hero" data-testid="hero">
             <h1 data-testid="hero-heading">Michael Muchane</h1>
             <p class="page__meta" data-testid="hero-meta">Technical Product Manager &middot; Raleigh, NC</p>
-            <p class="hero__copy" data-testid="hero-copy">I've been an engineer and a PM, and I build for technical users: REST APIs at enterprise scale, LLM pipelines under real cost and reliability constraints, with human review gates on AI in production. If your users are technical and you want a PM who can credibly dive into implementation with engineers while delivering on the product vision, <button class="hero__contact-trigger" data-testid="hero-contact-trigger">get in touch</button>.</p>
+            <!-- PAIRED COPY 1 of 2: desktop hero. Its narrow counterpart is the next
+                 paragraph (hero-copy-narrow), shown below 600px. The two intentionally
+                 differ in wording, so they cannot be diffed. If you edit this text,
+                 read the other one and decide whether it still says what you want.
+                 See DECISIONS.md, mobile L0 timeline spine entry. -->
+            <p class="hero__copy hero__copy--wide" data-testid="hero-copy">I've been an engineer and a PM, and I build for technical users: REST APIs at enterprise scale, LLM pipelines under real cost and reliability constraints, with human review gates on AI in production. If your users are technical and you want a PM who can credibly dive into implementation with engineers while delivering on the product vision, <button class="hero__contact-trigger" data-testid="hero-contact-trigger">get in touch</button>.</p>
+            <!-- PAIRED COPY 2 of 2: narrow hero, shown at or below 600px. Its desktop
+                 counterpart is the paragraph above (hero-copy). Deliberately shorter:
+                 drops the second sentence and compresses the AI review claim. If you
+                 edit this text, read the other one and decide whether it still says
+                 what you want. See DECISIONS.md, mobile L0 timeline spine entry. -->
+            <p class="hero__copy hero__copy--narrow" data-testid="hero-copy-narrow">Engineer, then PM. I build for technical users: REST APIs at enterprise scale, human gated LLM pipelines under real cost and reliability constraints. <button class="hero__contact-trigger" data-testid="hero-contact-trigger-narrow">Get in touch</button>.</p>
         </section>
 
         <section class="constellation-section" data-testid="constellation-section">
             <div class="constellation-wrap" data-testid="constellation-wrap">
                 <div class="constellation" data-testid="constellation">
+                    <span class="timeline-spine" data-testid="timeline-spine" aria-hidden="true"></span>
+                    <span class="spine-era" data-testid="spine-era-now" aria-hidden="true">NOW</span>
                     <svg class="constellation__svg" viewBox="0 0 1200 700" preserveAspectRatio="none" aria-hidden="true" data-testid="constellation-svg">
                         <polyline points="190,105 330,500 790,240 1095,605"></polyline>
                     </svg>
@@ -85,6 +98,7 @@
                             <div class="node__inner">
                                 <span class="node__title">DaaS Platform</span>
                                 <span class="node__meta">2025 – Present</span>
+                                <span class="node__foot" aria-hidden="true" data-testid="node-foot-daas-platform"><span class="node__count" data-noun="PROJECT" data-testid="node-count-daas-platform"></span><span class="node__open" data-testid="node-open-daas-platform">OPEN</span></span>
                             </div>
                         </a>
                         <a class="node__satellite node__satellite--link" href="/daas-platform/multimodal-data-wrangling-application" data-zoom="chain" style="--s: 0; --rest-x: 0px; --rest-y: -72px" data-testid="satellite-daas-platform-1" aria-label="Multimodal Data Wrangling Application">Wrangling
@@ -96,11 +110,36 @@
                         </a>
                     </div>
 
+                    <div class="node node--mc" style="--x:65.8%; --y:34.3%">
+                        <a class="node__card" href="/muchane-cloud" data-zoom="in" data-testid="node-muchane-cloud">
+                            <div class="node__inner">
+                                <span class="node__title">Muchane Cloud</span>
+                                <span class="node__meta">2025 – Present</span>
+                                <span class="node__foot" aria-hidden="true" data-testid="node-foot-muchane-cloud"><span class="node__count" data-noun="PROJECT" data-testid="node-count-muchane-cloud"></span><span class="node__open" data-testid="node-open-muchane-cloud">OPEN</span></span>
+                            </div>
+                        </a>
+                        <a class="node__satellite node__satellite--link" href="/muchane-cloud/career-command-center" data-zoom="chain" style="--s: 0; --rest-x: 0px; --rest-y: -72px" data-testid="satellite-muchane-cloud-1" aria-label="Career Command Center">Career Command Center
+                            <span class="satellite__teaser" data-testid="teaser-muchane-cloud-1" aria-hidden="true">
+                                <span class="satellite__teaser-title">Career Command Center</span>
+                                <span class="satellite__teaser-meta">Live ATS API ingestion · on-demand research</span>
+                                <span class="satellite__teaser-accent">human-gated AI artifacts</span>
+                            </span>
+                        </a>
+                        <a class="node__satellite node__satellite--link" href="/muchane-cloud/self-hosted-infra" data-zoom="chain" style="--s: 0.5; --rest-x: 0px; --rest-y: 72px" data-testid="satellite-muchane-cloud-3" aria-label="Self-Hosted Infra">Self-Hosted Infra
+                            <span class="satellite__teaser" data-testid="teaser-muchane-cloud-3" aria-hidden="true">
+                                <span class="satellite__teaser-title">Self-Hosted Infra</span>
+                                <span class="satellite__teaser-meta">Containerized services on a single VPS</span>
+                                <span class="satellite__teaser-accent">built, deployed, operated solo</span>
+                            </span>
+                        </a>
+                    </div>
+
                     <div class="node node--wd" style="--x:27.5%; --y:71.4%">
                         <a class="node__card" href="/workday" data-zoom="in" data-testid="node-workday">
                             <div class="node__inner">
                                 <span class="node__title">Workday</span>
                                 <span class="node__meta">2019 – 2025</span>
+                                <span class="node__foot" aria-hidden="true" data-testid="node-foot-workday"><span class="node__count" data-noun="ROLE" data-testid="node-count-workday"></span><span class="node__open" data-testid="node-open-workday">OPEN</span></span>
                             </div>
                         </a>
                         <a class="node__satellite node__satellite--link" href="/workday/senior-product-quality-engineer" data-zoom="chain" style="--s: 0; --rest-x: 0px; --rest-y: -72px" data-testid="satellite-workday-1" aria-label="Senior PQ Engineer">Senior PQ Engineer
@@ -126,34 +165,12 @@
                         </a>
                     </div>
 
-                    <div class="node node--mc" style="--x:65.8%; --y:34.3%">
-                        <a class="node__card" href="/muchane-cloud" data-zoom="in" data-testid="node-muchane-cloud">
-                            <div class="node__inner">
-                                <span class="node__title">Muchane Cloud</span>
-                                <span class="node__meta">2025 – Present</span>
-                            </div>
-                        </a>
-                        <a class="node__satellite node__satellite--link" href="/muchane-cloud/career-command-center" data-zoom="chain" style="--s: 0; --rest-x: 0px; --rest-y: -72px" data-testid="satellite-muchane-cloud-1" aria-label="Career Command Center">Career Command Center
-                            <span class="satellite__teaser" data-testid="teaser-muchane-cloud-1" aria-hidden="true">
-                                <span class="satellite__teaser-title">Career Command Center</span>
-                                <span class="satellite__teaser-meta">Live ATS API ingestion · on-demand research</span>
-                                <span class="satellite__teaser-accent">human-gated AI artifacts</span>
-                            </span>
-                        </a>
-                        <a class="node__satellite node__satellite--link" href="/muchane-cloud/self-hosted-infra" data-zoom="chain" style="--s: 0.5; --rest-x: 0px; --rest-y: 72px" data-testid="satellite-muchane-cloud-3" aria-label="Self-Hosted Infra">Self-Hosted Infra
-                            <span class="satellite__teaser" data-testid="teaser-muchane-cloud-3" aria-hidden="true">
-                                <span class="satellite__teaser-title">Self-Hosted Infra</span>
-                                <span class="satellite__teaser-meta">Containerized services on a single VPS</span>
-                                <span class="satellite__teaser-accent">built, deployed, operated solo</span>
-                            </span>
-                        </a>
-                    </div>
-
                     <div class="node node--edu" style="--x:91.3%; --y:86.4%">
                         <a class="node__card" href="/education" data-zoom="in" data-testid="node-education">
                             <div class="node__inner node__inner--center">
                                 <span class="node__title">Education</span>
                                 <span class="node__meta">2015 – 19 · 2021 – 23</span>
+                                <span class="node__foot" aria-hidden="true" data-testid="node-foot-education"><span class="node__count" data-noun="SCHOOL" data-testid="node-count-education"></span><span class="node__open" data-testid="node-open-education">OPEN</span></span>
                             </div>
                         </a>
                         <span class="node__satellite node__satellite--info" tabindex="0" style="--s: 0; --rest-x: 0px; --rest-y: -72px" data-testid="satellite-education-1" aria-label="BU">BU
@@ -169,6 +186,7 @@
                             </span>
                         </span>
                     </div>
+                    <span class="spine-era spine-era--end" data-testid="spine-era-end" aria-hidden="true">2015</span>
                 </div>
             </div>
         </section>
@@ -181,7 +199,7 @@
         <span class="telemetry__zone" data-testid="telemetry-right"><span class="telemetry__dot" aria-hidden="true"></span><span data-telemetry="right">AI PIPELINES</span></span>
     </div>
 
-    <script src="/app.js?v=4"></script>
+    <script src="/app.js?v=5"></script>
 </body>
 
 </html>

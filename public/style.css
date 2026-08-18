@@ -669,6 +669,14 @@ a.node:focus-visible .node__inner {
     margin-top: 6px;
 }
 
+/* TIMELINE SPINE + NARROW HERO (narrow-only; see the max-width:600px block) */
+.timeline-spine,
+.spine-era,
+.node__foot,
+.hero__copy--narrow {
+    display: none;
+}
+
 .node__satellite {
     position: absolute;
     left: 50%;
@@ -1285,7 +1293,8 @@ main.is-zooming {
     }
 }
 
-/* Desktop-first; real mobile constellation treatment is a later pass. */
+/* Narrow (mobile) — L0 becomes the timeline spine (design-refs 1d).
+   Desktop ≥601px is untouched by everything in this block. */
 @media (max-width: 600px) {
     .header,
     .page,
@@ -1295,13 +1304,148 @@ main.is-zooming {
         padding-right: 20px;
     }
 
+    /* Narrow hero: swap the paragraphs. display (not visibility) — a
+       populated but hidden layout box is a known defect class here (the
+       email-unfurl width bug). */
+    .hero__copy--wide {
+        display: none;
+    }
+
+    .hero__copy--narrow {
+        display: block;
+    }
+
+    /* Tap-target floor (44px) for the fixed header controls. */
+    .menu-trigger {
+        height: 44px;
+    }
+
+    .header__icon {
+        width: 44px;
+        height: 44px;
+    }
+
+    /* Constellation reflows from a 2D map into a vertical timeline. */
+    .constellation-wrap {
+        height: auto;
+    }
+
+    .constellation-wrap .constellation {
+        transform: none;
+    }
+
     .constellation {
         aspect-ratio: auto;
-        min-height: 520px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .constellation__svg {
+        display: none;
+    }
+
+    .timeline-spine {
+        display: block;
+        position: absolute;
+        left: 31px;
+        top: 0;
+        bottom: 26px;
+        width: 1px;
+        background: var(--accent-color);
+        opacity: 0.55;
+    }
+
+    .spine-era {
+        display: block;
+        padding: 0 0 8px 56px;
+        font-family: 'JetBrains Mono', 'Fira Code', monospace;
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        color: var(--faint-color);
+    }
+
+    .spine-era--end {
+        position: relative;
+        padding: 0 0 0 56px;
+    }
+
+    .spine-era--end::before {
+        content: '';
+        position: absolute;
+        left: 27px;
+        top: 5px;
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: var(--border-color);
     }
 
     .node {
-        max-width: 220px;
+        position: relative;
+        left: auto;
+        top: auto;
+        transform: none;
+        max-width: none;
+        padding: 0 0 22px 56px;
+    }
+
+    /* Filled dot on the spine + horizontal connector stub. */
+    .node::before {
+        content: '';
+        position: absolute;
+        left: 25px;
+        top: 16px;
+        width: 13px;
+        height: 13px;
+        border-radius: 50%;
+        background: var(--accent-color);
+        box-shadow: 0 0 10px 3px var(--istar-active-glow);
+    }
+
+    .node::after {
+        content: '';
+        position: absolute;
+        left: 38px;
+        top: 22px;
+        width: 18px;
+        height: 1px;
+        background: var(--accent-color);
+        opacity: 0.55;
+    }
+
+    .node__inner {
+        padding: 16px 18px;
+    }
+
+    .node__inner--center {
+        text-align: left;
+    }
+
+    .node__foot {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 12px;
+        padding-top: 11px;
+        border-top: 1px solid var(--constellation-line);
+        font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    }
+
+    .node__count {
+        font-size: 10.5px;
+        letter-spacing: 0.06em;
+        color: var(--istar-label);
+    }
+
+    .node__open {
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        color: var(--accent-color);
+    }
+
+    .node__open::after {
+        content: '\203A';
+        margin-left: 6px;
     }
 
     .node__satellite {
@@ -1312,7 +1456,14 @@ main.is-zooming {
         display: none;
     }
 
-    body[data-depth="0"] .telemetry {
+    /* Telemetry: two zones at narrow — the middle metrics zone (static
+       placeholder copy, being rewritten before launch) is hidden, the
+       left/right identity zones stay. */
+    .telemetry {
+        padding: 0 20px;
+    }
+
+    .telemetry__metrics {
         display: none;
     }
 }
