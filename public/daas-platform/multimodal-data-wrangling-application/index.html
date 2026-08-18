@@ -4,14 +4,14 @@
 <head data-testid="document-head">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DaaS Platform — Michael Muchane</title>
-    <meta name="description" content="Product lead for a pre-seed data platform. Took eight months of founder ideation to a scoped MVP, a fundable business case, and a working multimodal data application with human oversight built into the pipeline.">
+    <title>Multimodal Data Wrangling Application — DaaS Platform — Michael Muchane</title>
+    <meta name="description" content="Designed and built a data-wrangling application implementing a guided seven-step import-to-export pipeline for time-series motion-sensor and audio data, with human sign-off gates on every high-risk transformation.">
     <link rel="stylesheet" href="/style.css?v=3">
     <noscript><style>.drawer{position:static;transform:none;visibility:visible;width:auto;border-right:0;border-bottom:1px solid var(--border-color)} .drawer__children[hidden]{display:flex}</style></noscript>
     <script src="/starfield.js" defer></script>
 </head>
 
-<body data-depth="1">
+<body data-depth="2">
     <canvas id="starfield" data-testid="starfield" aria-hidden="true"></canvas>
 
     <nav class="drawer" data-testid="overlay-menu" aria-label="Site sections">
@@ -22,7 +22,7 @@
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
         </button>
         <div class="drawer__children" hidden>
-            <a href="/two-sided-data-platform" data-testid="menu-link-two-sided-data-platform">DaaS Platform</a>
+            <a href="/daas-platform" data-testid="menu-link-daas-platform">DaaS Platform</a>
             <a href="/muchane-cloud" data-testid="menu-link-muchane-cloud">Muchane Cloud</a>
             <a href="/workday" data-testid="menu-link-workday">Workday</a>
         </div>
@@ -54,43 +54,23 @@
         </div>
     </header>
 
-    <main id="stage" data-depth="1" tabindex="-1" data-testid="stage">
+    <main id="stage" data-depth="2" tabindex="-1" data-testid="stage">
         <div class="page">
-            <a class="up-link" data-zoom="out" href="/" data-testid="up-link">← Star map</a>
-            <p class="page__role" data-testid="page-role">Technical Product Manager</p>
-            <h1 data-testid="page-heading">DaaS Platform</h1>
-            <p class="page__meta" data-testid="page-meta">Raleigh, NC &middot; 2025 – Present</p>
+            <a class="up-link" data-zoom="out" href="/daas-platform" data-testid="up-link">← DaaS Platform</a>
+            <h1 data-testid="page-heading">Multimodal Data Wrangling Application</h1>
 
-            <p class="company-line" data-testid="company-line">A pre-seed data-as-a-service platform matching data supply and demand in a two-sided market. Client identity confidential.</p>
+            <p data-testid="pitch">Designed and built a data-wrangling application implementing a guided seven-step import-to-export pipeline for time-series motion-sensor and audio data, with human sign-off gates on every high-risk transformation.</p>
 
-            <p data-testid="pitch">Product lead for a pre-seed data platform. Took eight months of founder ideation to a scoped MVP, a fundable business case, and a working multimodal data application with human oversight built into the pipeline.</p>
+            <p data-testid="narrative">The hard problem was drawing the boundary between what automation should do and what a human must approve. Early versions conflated validation with alignment, which made the workflow untrustworthy: a user could not tell whether an anomaly was real signal or an artifact of bad preprocessing. I separated the pipeline into deterministic stages (validate, pre-process) and judgment stages (alignment plan, review), and made the ML-proposed cross-stream alignment a proposal, never an action. Every proposed offset carries a confidence score, the method used, and its supporting evidence, behind an explicit approval gate, and flagged segments hard-block export. The bet is that for high-stakes data transformation, an AI product earns trust through explainability and reversibility rather than accuracy claims.</p>
 
-            <ul class="stat-row" data-testid="stat-row">
-                <li>8 months → 3 sprints</li>
-                <li>$500K raise</li>
-                <li>160K+ addressable users</li>
-            </ul>
-
-            <p data-testid="narrative">The client had a compelling vision and eight months of unstructured ideation, but no MVP definition, no delivery plan, and a hardware dependency that could sink v0 before it started. I converted the ideation backlog into a prioritized delivery plan across three sprints, framed the business case supporting a $500K raise, and drove the sensor decision by evaluating vendors on synchronization fidelity rather than marketing claims, because cross-stream sync was the one requirement that could not be shortcut.</p>
-
-            <aside class="decision-callout" data-testid="decision-callout">The tradeoff I held firm on was shipping clean, structured raw datasets first and deferring analytical insights entirely.</aside>
-
-            <p data-testid="narrative-continued">Insights required data science capacity the venture did not have and would have delayed proof of the core value.</p>
-
-            <h2 data-testid="shipped">Shipped</h2>
+            <h2 class="reveal-heading" data-testid="shipped">Shipped</h2>
             <ul>
-                <li>Framed market opportunity and product vision into a founder-ready business case in preparation for a $500K raise, aligning target audiences and monetization strategy.</li>
-                <li>Designed opt-in consent and rights-management workflows, strengthening data privacy compliance across a serviceable addressable market of 160K+ end users.</li>
-                <li>Translated 8 months of pre-existing ideation into a detailed delivery plan in 3 sprints.</li>
-                <li>Authored initial technical specifications and proof-of-concept requirements enabling an MVP to demonstrate market viability.</li>
-                <li>Led hardware sensor evaluation, including IMU synchronization tradeoffs and vendor negotiation under NDA, and delivered a v0 recommendation with written rationale.</li>
+                <li>Seven-step pipeline: Import, Validate, Pre-process, Alignment Plan, Process, Review, Export, with written decision rationale for each stage boundary.</li>
+                <li>Stack: React, Supabase.</li>
+                <li>Guardrail architecture: explicit sign-off gates, flagged-segment hard stops before export, audit trails across the input-to-output lifecycle, anonymization before any downstream AI interaction.</li>
+                <li>Human-in-the-loop AI: ML-proposed alignment paired with confidence scoring and evidence, keeping privacy and human oversight first-class.</li>
             </ul>
 
-        <div class="children" data-testid="children">
-            <a class="child-card" href="/two-sided-data-platform/multimodal-data-wrangling-application" data-zoom="in" data-testid="child-link-multimodal-data-wrangling-application">
-                <span class="node__title">Multimodal Data Wrangling Application</span>
-            </a>
-        </div>
         </div>
     </main>
 
