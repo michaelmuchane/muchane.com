@@ -1811,3 +1811,64 @@ pages — the prior assumption that only `index.html` linked `app.js` was wrong;
 its own `<script>` tag) plus one previously-untracked reference, `app.js`'s own
 `fetch('/muchane-cloud/changelog.json?v=2')` call, for 21 total. `starfield.js` stays bare
 (untouched this pass).
+
+## Route rename /two-sided-data-platform → /daas-platform, Career map label, trailing-slash normalization
+
+**Route rename: /two-sided-data-platform → /daas-platform.** Completes the earlier
+display-only rename (the node title already read "DaaS Platform"); the URL now matches it.
+`git mv public/two-sided-data-platform public/daas-platform`; every menu-drawer link (all 11
+pages), the L0 node card and its `data-star-target`, the satellite/teaser pair, the child
+card, and the L2 up-link href moved with it. Slug-embedding testids renamed alongside the
+route: `node-`, `menu-link-`, `satellite-daas-platform-1`, `teaser-daas-platform-1`, and the
+`data-star-target` value. Abbreviation-based names that don't embed the full slug —
+`indexed-star-tsdp-25` (and its "TSDP-25" label) and the `.node--tsdp` CSS class — were
+deliberately left as-is; neither `app.js` nor `style.css` needed to change for the rename
+itself. The L2 child kept its own slug, `multimodal-data-wrangling-application` (deliberately
+deferred/unpopulated content), and moved only as a consequence of its parent moving —
+`/daas-platform/multimodal-data-wrangling-application`.
+
+**No redirects.** The old path was deliberately left with no stub, no rewrite rule, and no
+redirect: the site has never been publicly reachable (Cloudflare Access has gated it
+throughout this build), so no external or indexed links to `/two-sided-data-platform` exist to
+break. `/two-sided-data-platform` now 404s, which is correct — a 200 there would mean a stale
+artifact was left behind. **This reasoning expires the moment the site goes public** — any
+future route rename after that point will need real redirects, and this decision should not be
+cited as precedent past that point.
+
+**Up-link label: "← Star map" → "← Career map".** Plainer, more literal language for the same
+affordance on all 4 L1 pages (education, muchane-cloud, workday, daas-platform); byte-identical
+anchor markup across all 4. L2 up-links carry their parent's role/company name (e.g.
+"← Workday", "← DaaS Platform") and are untouched — they never said "Star map" to begin with.
+The starfield/constellation **visual system** and its internal naming (the `#starfield` canvas,
+`.istar`/`indexed-star-*` elements, `starfield.js`, the "TSDP-25" etc. designations) are
+deliberately unchanged — only the one user-facing label moved to plainer language; the metaphor
+stays. The muchane.com changelog entry's "problem" field, which used the same "star map" phrase
+in its own prose ("...ship a framework payload to render a star map."), was changed to "career
+map" for consistency and synced into its source copy doc
+(`muchane_changelog_copy_v2.md`, gitignored); this is what forced the cache bump below, since
+`changelog.json` content changed.
+
+**Trailing-slash normalization in `app.js`.** Production nginx serves
+`try_files $uri $uri/index.html =404` with no directory redirect, so a trailing-slash path like
+`/daas-platform/` is a real, reachable 200 — byte-identical to `/daas-platform` — that a typed
+or externally-constructed URL can produce. Unnormalized, this broke two things: the up-link's
+one-history-entry back shortcut (`history.state.from === href`, comparing against a slash-less
+authored href) missed and fell through to `zoomOut`'s push, growing the history stack on every
+up-click; and `finalizeOut`'s `[href=leavingPath]` origin lookups missed, so the zoom-out
+animation fell back to an unanchored scroll-to-top instead of tracking back to the originating
+card. Fixed with one shared `normalizePath(p)` helper (strips trailing slashes, `'/'` stays
+`'/'`) used at the two sites that read `location.pathname` directly — the module-scope
+`currentPath` boot assignment and the `popstate` handler. `history.replaceState` at boot
+canonicalizes the initial history entry (preserving `location.search` and `location.hash`) —
+required, not cosmetic, since a Back to that entry would otherwise reintroduce the
+non-canonical slash into both the address bar and every `history.state` comparison downstream.
+Authored hrefs remain slash-less as the one canonical form; no href was rewritten, and nginx
+was not touched.
+
+**Cache-bust:** `changelog.json` and `app.js` both changed content this pass, so every `?v=3`
+reference bumped to `?v=4` — 23 total: `style.css?v=3` and `app.js?v=3` on all 11 pages (22)
+plus `app.js`'s own `fetch('/muchane-cloud/changelog.json?v=3')` call. (The prior pass's tail
+entry said "10 pages / 21 refs" — that was stale even at write time relative to this repo's
+current 11-page structure; re-derived by fresh grep this pass, not carried forward.)
+`starfield.js` stays bare (untouched).
+
