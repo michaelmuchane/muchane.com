@@ -75,7 +75,7 @@
       "compact": false,
       "sections": {
         "sequencing": null,
-        "problem": "A portfolio claiming engineering judgment shouldn't ship a framework payload to render a star map.",
+        "problem": "A portfolio claiming engineering judgment shouldn't ship a framework payload to render a career map.",
         "solution": "Vanilla HTML, CSS, and JavaScript. No build step, no remote script origins. What makes it worth reading is the rejection ledger. No frameworks. No GSAP, because WAAPI covers the zoom. No WebGL, because Canvas 2D covers the starfield. Each rejected for a stated reason rather than by taste.",
         "implementation": [
           "Path-based routing renders hard on direct load and animates the zoom on click-through. Back pops one zoom level.",
