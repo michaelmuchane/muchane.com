@@ -2478,3 +2478,94 @@ intended).
 **Cache-bust `?v=10` -> `?v=11`:** 23 references (11 HTML pages plus `app.js`'s own
 `fetch('/muchane-cloud/changelog.json?v=10')`), re-derived by fresh grep at execution time,
 matching every prior pass's count exactly. `starfield.js` stays bare.
+
+## Workday recognition restructure, spelled-out role cards, cache v12
+
+**Recognition-strip removed as duplication.** `<ul class="recognition-strip">`'s three
+list items restated verbatim what the four detail blocks below already said. The strip's
+own `border-top` (`style.css:1235`, pre-edit) was the grey horizontal rule the audit
+flagged; deleting the element removed the rule with no separate CSS edit needed. The purple
+rule under the Recognition h2 is a different, unrelated rule (`.page h2`'s
+`border-bottom`) and stays untouched. Grep-proved zero remaining `recognition-strip`
+references after the HTML removal (`grep -rn 'recognition-strip' public/` returned only the
+two now-dead `style.css` rules, which were then also removed).
+
+**Case-only correction, not a wording correction, on the security heading.** The audit
+brief described the second recognition heading changing from "for Workday Student" to
+", Workday Student" alongside the case change. The h3 already read
+`SECURITY ADVOCATE, WORKDAY STUDENT` (comma form) pre-edit; the "for Workday Student"
+variant existed only in the strip list item being deleted, not in the heading itself. The
+heading edit applied is case-only: `SECURITY ADVOCATE, WORKDAY STUDENT` ->
+`Security Advocate, Workday Student`.
+
+**Recognition-heading style scoped by a dedicated class, `.page .recognition-title`, not
+by coupling to `.reveal-heading` or `h3.reveal-heading`.** `.reveal-heading` is shared
+purely as the per-character reveal animation hook (`style.css:1290-1297`, consumed by
+`bindRevealHeadings` in `app.js:553`) and also carries the Shipped/Built h2 heading on the
+three sibling Workday detail pages plus the DaaS data-wrangling child. A dedicated class
+cannot reach those headings because they never carry it, a structural guarantee rather than
+one that happens to hold because of element-type coincidence (which `h3.reveal-heading`
+would rely on, and would silently break if a future h3 elsewhere gained the reveal
+animation). Selector is `.page .recognition-title` (specificity 0,2,0), not a bare
+`.recognition-title` (0,1,0): `.page h3` (`style.css:466-469`, specificity 0,1,1) already
+sets `font-size: 1.05rem` on every h3 inside `.page`, and a single-class rule alone loses
+that cascade battle, silently keeping the old size while weight/color still applied. Rule:
+
+```css
+.page .recognition-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--accent-color);
+}
+```
+
+Verified: the four recognition h3s compute exactly `font-size: 16px`, `font-weight: 600`,
+`color: rgb(176, 127, 255)` (same value as `.page h2`'s color) post-edit. The
+`/workday/product-management-rotation` Shipped h2 (`h2.reveal-heading`) computed
+`font-size: 22.4px`, `font-weight: 700`, `color: rgb(176, 127, 255)` identically before and
+after the CSS change, confirming the shared animation hook was untouched.
+
+**Correction to a stale project-memory claim.** A prior session's memory summary described
+a light/dark theme toggle with a light accent of `#7C3AED`. No such toggle, `data-theme`
+attribute, or light theme exists anywhere in `public/style.css` or `public/app.js`;
+`starfield.js:72` states directly, "Dark-only site, no theme branching, single sprite."
+`--accent-color` is a single value, `#B07FFF`. The C3 verification's planned light-theme
+spot-check was skipped as inapplicable; the primary C3 assertions (exact computed values,
+byte-identical Shipped heading) fully cover the scoping requirement without it.
+
+**B2 card-geometry measurement (spelling out "PM Rotation" -> "Product Management
+Rotation" and "Senior PQE" -> "Senior Product Quality Engineer").** Measured at
+1920/1440/1280/900/700/375px, before and after, real DOM rects plus
+`.node__title`'s `getClientRects().length` for line counts:
+
+| width | PQE lines (unchanged) | PM Rotation lines before -> after | Senior PQE lines before -> after | intersection violations | new bounds violations | hscroll | endpoint delta |
+|---|---|---|---|---|---|---|---|
+| 1920 | 1 | 1 -> 2 | 1 -> 4 | none | none | none | 0.009px (unchanged) |
+| 1440 | 1 | 1 -> 2 | 1 -> 4 | none | none | none | 0.009px (unchanged) |
+| 1280 | 1 | 1 -> 2 | 1 -> 4 | none | none | none | 0.009px (unchanged) |
+| 900 | 1 | 1 -> 2 | 1 -> 4 | none | none | none | 0.009px (unchanged) |
+| 700 | 1 | 1 -> 2 | 1 -> 4 | none | none | none | 0.013px (unchanged) |
+| 375 | 2 | 1 -> 3 | 1 -> 2 | none | none | none | N/A, sub-SVG hidden below 600px by design |
+
+Both spelled-out titles wrap, exactly as the brief predicted ("Senior Product Quality
+Engineer" against the 240px cap). Zero pairwise card-rect intersections and zero new
+container-bounds violations at any width; card centers (pinned by `--x`/`--y` +
+`translate(-50%,-50%)`) stayed fixed within 0.013px of the polyline endpoints at every
+width where the sub-SVG renders, confirming wrapping grows each card symmetrically around
+its unmoved center rather than shifting it. One PRE-EXISTING bounds condition, unrelated to
+this edit: the unchanged "Product Quality Engineer" card's left edge sits 6-9.5px left of
+`.constellation--sub`'s container box at every width from 700px through 1920px; the same
+deviation, at the identical pixel values, is present in the BEFORE capture (this card's
+title was never touched), so it predates this pass and is out of scope to fix here
+(Commandment 12). `--x`/`--y`, the 16/10 aspect-ratio, and the 240px node cap were not
+touched.
+
+**Pull-quote attributions trimmed and corrected.** Both citations drop their trailing
+year. `pull-quote-2`'s attribution is also corrected from "Product Manager, Workday Career
+Hub" to "Senior Product Manager, Workday Career Hub"; quote text in both blockquotes is
+unchanged.
+
+**Cache-bust `?v=11` -> `?v=12`:** 23 references across the same 12 files as the prior
+pass (11 HTML pages' `style.css`/`app.js` tags plus `app.js`'s own
+`fetch('/muchane-cloud/changelog.json?v=11')`), re-derived by fresh grep at execution time.
+`starfield.js` stays bare.
