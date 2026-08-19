@@ -965,6 +965,15 @@ a.node:focus-visible .node__inner {
     margin: 32px 0;
 }
 
+.children--single {
+    grid-template-columns: minmax(min-content, 360px);
+    justify-content: center;
+}
+
+.children--single .child-card {
+    text-align: center;
+}
+
 .child-card {
     display: block;
     text-decoration: none;

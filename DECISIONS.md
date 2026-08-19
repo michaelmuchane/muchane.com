@@ -2118,3 +2118,49 @@ each at the 280px teaser width (previously the meta wrapped to two lines, "Conta
 services" / "on a single VPS" - `text-wrap: balance` kept both words of the "single VPS" pair
 together but did not achieve a true one-line fit). No other satellite's copy changed.
 
+## DaaS child card moved above narrative, centered; cache v8
+
+**Correction: `/workday` never used `.children`.** A brief for this pass claimed "/workday also
+uses `.children` with THREE cards" as the hard constraint motivating a scoped CSS approach.
+Verified false by grep: `class="children"`/`.child-card` markup exists at exactly ONE place
+site-wide, `public/daas-platform/index.html`. `/workday`'s three-card block is
+`<div class="constellation constellation--sub">` with `a.node` cards, a structurally separate
+mechanism (different class, different card markup, different CSS rules). The requested hard
+constraint (Workday unaffected) was therefore already structurally guaranteed before this pass
+touched anything; the modifier-class approach below is still the right call regardless, since
+it also protects a hypothetical future second `.children` page from inheriting the centered
+single-card treatment.
+
+**Child card relocated from page-bottom to between stat-row and narrative.** Previously the
+lone child card sat after the sensor-evaluation figure, at the very end of the page, reading as
+an afterthought. Moved (markup byte-identical) to sit immediately after `[data-testid=
+"stat-row"]` and before `[data-testid="narrative"]`, so it now reads as navigation offered
+right after the headline stats, before the reader commits to the full narrative. New page order:
+stat-row -> children -> narrative -> decision-callout -> narrative-continued -> figure (last).
+
+**Centered single-card treatment via `.children--single` modifier class**, added to the DaaS
+instance only (`class="children children--single"`, testid unchanged/reused). Chosen over
+`:has()`/`:only-child` scoping: a modifier class states intent directly in the markup, has no
+browser-support degradation path (`:has()` support gaps would silently fall back to the
+full-width banner look), and is directly assertable by a future Phase E spec. Base `.children`
+rule untouched - a future multi-child `.children` page still gets the plain full-width grid.
+`grid-template-columns: minmax(min-content, 360px); justify-content: center;` plus
+`text-align: center` on `.child-card` within it. 360px sized so the card reads as a pointer
+(~56% of the 640px prose column) rather than a banner, while comfortably clearing the card's
+own max-content width; `minmax(min-content, 360px)` clamps to the container at narrow
+viewports, verified zero overflow at 375 (grid track cannot exceed its container). Text
+centered to avoid a left-aligned title reading lopsided inside a centered box - Michael's call
+to revert if he prefers left-aligned; only the `.children--single .child-card` rule need change.
+
+**DaaS vs. Workday placement now deliberately differ**, logged so the divergence is not mistaken
+for an oversight: Workday's three children are the page's main content (a browsable roster) and
+stay in their existing mid-page position; DaaS's single child is a pointer to one deeper page,
+so moving it earlier reads as "here's where this goes" before the prose commitment. Whether
+Workday's own children block should ever move is Michael's call, not decided here.
+
+**Cache-bust `?v=7` -> `?v=8`:** 23 references (22 across the 11 HTML pages' `style.css`/
+`app.js` tags, plus `app.js`'s own `fetch('/muchane-cloud/changelog.json?v=7')` call),
+re-derived by fresh grep at execution time, matching the prior pass's count exactly.
+`starfield.js` stays bare (untouched).
+
+
