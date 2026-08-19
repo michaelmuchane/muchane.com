@@ -2028,3 +2028,42 @@ repeating the destination heading; `aria-label` stays the full destination name.
 `style.css`/`app.js` tags, plus `app.js`'s own `fetch('/muchane-cloud/changelog.json?v=5')`
 call), re-derived by fresh grep at execution time and matching the pre-execution estimate.
 `starfield.js` stays bare (untouched).
+
+## DaaS child route rename to data-wrangling-pipeline, content revision, Shipped section dropped
+
+**Route rename** `/daas-platform/multimodal-data-wrangling-application` ->
+`/daas-platform/data-wrangling-pipeline` via `git mv`. Exactly two hrefs updated (parent
+child card, L0 satellite). No redirect, no stub, no meta refresh: same basis as the
+`/two-sided-data-platform` rename above (site never publicly reachable). No sitemap.xml or
+robots.txt exists (confirmed by directory listing, not assumed).
+
+**Correcting the record:** the task brief claimed no testid embeds the slug; false. The
+child card carried `data-testid="child-link-multimodal-data-wrangling-application"`. Renamed
+to `child-link-data-wrangling-pipeline` to keep the repo-wide `child-link-<route-slug>`
+convention (cf. the three /workday child links) and to leave zero old-slug strings in
+`public/`. Safe now precisely because no test suite exists yet (Phase E deferred); after
+Phase E lands, testid renames become breaking changes.
+
+**Destination-name sync:** the child card's visible title and the L0 satellite `aria-label`
+both updated to "Data Wrangling Pipeline", per the standing convention that the satellite
+`aria-label` is the full destination name (see the satellite relabel entry above). Satellite
+visible label stays "Datasets"; teaser copy untouched.
+
+**Parent page:** Shipped h2 + five-item list removed; the narrative paragraphs now carry
+that content (delivery plan, $500K raise framing reworded to "for a planned $500K raise",
+consent/rights workflows and MVP scoping moved into narrative-continued). The
+sensor-evaluation figure did not move: deleting the list left it exactly between
+narrative-continued and .children, byte-identical.
+
+**Child page, partial revert of the prior pass:** the "production build in progress" claim
+is removed from BOTH the pitch and the meta description. Pitch and meta now differ only in
+the pitch's trailing alignment-gate sentence; both still open "Designed and prototyped".
+This supersedes the "do not re-sync the tails" note in the prior pass entry. Title and h1
+renamed to "Data Wrangling Pipeline" (comma-separated title, no em dashes; the page's only
+two em dashes lived in the old title, so its count drops 2 -> 0). "The bet is" ->
+"The rationale is" in the narrative. Stack line now names React, Vite, Tailwind, PostgreSQL
+with an ML alignment step proposing cross-stream offsets; no specific alignment method was
+supplied, and no placeholder token was considered (Commandment 5).
+
+**No cache bump.** HTML-only pass; HTML carries no version query and is served fresh.
+`?v=6`, style.css, app.js, starfield.js all untouched.
