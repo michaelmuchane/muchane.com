@@ -315,7 +315,7 @@ renderTelemetry(TELEMETRY);
     function loadChangelog() {
         if (changelogData) return Promise.resolve(changelogData);
         if (!changelogPromise) {
-            changelogPromise = fetch('/muchane-cloud/changelog.json?v=6')
+            changelogPromise = fetch('/muchane-cloud/changelog.json?v=7')
                 .then(function (res) {
                     if (!res.ok) throw new Error('changelog fetch failed: ' + res.status);
                     return res.json();
@@ -641,6 +641,30 @@ renderTelemetry(TELEMETRY);
                     sat.classList.add('teaser-below');
                 } else {
                     sat.classList.remove('teaser-below');
+                }
+                // Horizontal viewport clamp: the teaser is centered on the pill
+                // (left: 50%, translateX(-50%)) inside a scaled transform context,
+                // and the pill itself can sit near either viewport edge at some
+                // orbit phases — edge-anchoring (a horizontal analog of
+                // teaser-below) is insufficient here because some pills already
+                // clip the viewport themselves (see DECISIONS.md), so a teaser
+                // anchored to any pill edge would still overflow. Measured at
+                // reveal, same rationale as the vertical flip above.
+                var teaser = sat.querySelector('.satellite__teaser');
+                if (teaser) {
+                    teaser.style.transform = '';
+                    var tr = teaser.getBoundingClientRect();
+                    var cw = document.documentElement.clientWidth;
+                    var dx = 0;
+                    if (tr.left < 8) {
+                        dx = 8 - tr.left;
+                    } else if (tr.right > cw - 8) {
+                        dx = (cw - 8) - tr.right;
+                    }
+                    if (dx) {
+                        teaser.style.transform = 'translateX(calc(-50% + ' + dx.toFixed(2) +
+                            'px)) scale(calc(1 / var(--constellation-scale)))';
+                    }
                 }
             };
             sat.addEventListener('mouseenter', update);

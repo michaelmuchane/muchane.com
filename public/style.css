@@ -796,7 +796,7 @@ a.node:focus-visible .node__inner {
     border: 1px solid var(--border-color);
     padding: 10px 14px;
     width: max-content;
-    max-width: 230px;
+    max-width: 280px;
     white-space: normal;
     text-align: left;
     display: flex;
@@ -825,14 +825,17 @@ a.node:focus-visible .node__inner {
 
 .satellite__teaser-title {
     color: var(--text-color);
+    text-wrap: balance;
 }
 
 .satellite__teaser-meta {
     color: var(--meta-color);
+    text-wrap: balance;
 }
 
 .satellite__teaser-accent {
     color: var(--accent-color);
+    text-wrap: balance;
 }
 
 /* INDEXED BACKGROUND STARS — ~6 tiny mono designations, always visible but
