@@ -1119,6 +1119,7 @@ a.entry--link {
    visible output until real captures exist. */
 .entry-shot {
     margin: 20px 0 4px;
+    margin-inline: max(calc((100% - 1040px) / 2), calc((100% + 80px - 100vw) / 2));
     border: 1px solid var(--border-color);
     background: var(--bg-color);
     box-shadow: 0 0 72px -6px var(--istar-active-glow);
@@ -1128,6 +1129,10 @@ a.entry--link {
     display: block;
     width: 100%;
     height: auto;
+}
+
+.entry-shot__full {
+    display: block;
 }
 
 .entry-shot figcaption {
@@ -1310,6 +1315,10 @@ main.is-zooming {
     .constellation-section {
         padding-left: 20px;
         padding-right: 20px;
+    }
+
+    .entry-shot {
+        margin-inline: 0;
     }
 
     /* Narrow hero: swap the paragraphs. display (not visibility) — a
