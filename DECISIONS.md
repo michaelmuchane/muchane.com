@@ -2089,3 +2089,32 @@ supplied, and no placeholder token was considered (Commandment 5).
 **Satellite JS-dispatched-click landmine, logged.** The satellite pills orbit under a continuous CSS animation (`animation-play-state: running` at rest), so Puppeteer's element-stability check before a `.click()` never settles and the call times out. Every automated click on a `.node__satellite` in this repo (browser-tool verification, and eventually Phase E) must use a JS-dispatched click (`element.click()` via `page.evaluate`), never Puppeteer's native `ElementHandle.click()`.
 
 **Cache-bust `?v=6` -> `?v=7`:** 23 references (22 across the 11 HTML pages' `style.css`/`app.js` tags, plus `app.js`'s own `fetch('/muchane-cloud/changelog.json?v=6')` call), re-derived by fresh grep at execution time and matching the pre-execution estimate. `starfield.js` stays bare (untouched).
+
+## Teaser separator/hyphen glue, Self-Hosted Infra copy shortening
+
+**Non-breaking space before every teaser "·" separator.** Teaser copy uses " · " between
+clauses (`satellite__teaser-meta`/`-accent` spans). The ordinary space before the separator is
+a valid break opportunity, so a line could begin with a bare "·" (observed on the Career
+Command Center teaser: "Live ATS API ingestion" / "· on-demand research"). Fixed by replacing
+the space immediately before each "·" with `&nbsp;` in all 4 affected spans (5 occurrences);
+the space after "·" stays ordinary and remains the intended break point. Typographic glue only,
+rendered text is byte-identical to a reader. Two "·" instances elsewhere in `index.html` (the
+hero meta's `&middot;` entity, `node__meta`'s tenure line, the telemetry strip) are untouched -
+out of teaser scope.
+
+**Non-breaking hyphen via nowrap span, not U+2011.** The PM Rotation accent's "3-release" could
+break after the hyphen. Considered U+2011 NON-BREAKING HYPHEN as a drop-in character swap, but
+the site loads no webfonts (Commandment 2: no remote origins), so the teaser's
+`'JetBrains Mono', 'Fira Code', monospace` stack resolves to whatever each visitor's OS
+provides; U+2011 glyph coverage in an arbitrary visitor's generic monospace fallback cannot be
+verified from this machine, and a missing glyph would ship a tofu box. Used a
+`.teaser__nobr { white-space: nowrap; }` span around exactly the token `3-release` instead -
+deterministic on every browser, mirrors the existing `.hero__nobr` precedent (`style.css:557`).
+Only "3-release" is glued; a break between "3-release" and "roadmap" remains valid.
+
+**Self-Hosted Infra teaser meta shortened.** "Containerized services on a single VPS" ->
+"Containerized services on a VPS" so both the meta and accent spans render on exactly one line
+each at the 280px teaser width (previously the meta wrapped to two lines, "Containerized
+services" / "on a single VPS" - `text-wrap: balance` kept both words of the "single VPS" pair
+together but did not achieve a true one-line fit). No other satellite's copy changed.
+

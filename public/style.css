@@ -838,6 +838,10 @@ a.node:focus-visible .node__inner {
     text-wrap: balance;
 }
 
+.teaser__nobr {
+    white-space: nowrap;
+}
+
 /* INDEXED BACKGROUND STARS — ~6 tiny mono designations, always visible but
    heavily muted so they read as grain; click one to highlight its related
    constellation node. First child of main#stage so they zoom away with the
