@@ -2200,18 +2200,18 @@ re-derived by fresh grep at execution time, matching the prior pass's count exac
 **Two PM Rotation teaser copy corrections.** Meta: "Career Hub mentorship experience" ->
 "Career Hub opportunity types" (mentorship read as a program the venture didn't run; scope
 is discovery/opportunity mapping). Accent: reordered and pluralized from "discovery&nbsp;·
-PRD&nbsp;· 3-release roadmap" to "discovery&nbsp;· 3-release roadmap&nbsp;· PRDs" — moves
+PRD&nbsp;· 3-release roadmap" to "discovery&nbsp;· 3-release roadmap&nbsp;· PRDs", which moves
 the fragile `.teaser__nobr` token out of the string's tail, and pluralizes since multiple
 PRDs were authored across the three-release span. Both separators keep their `&nbsp;` glue.
 
 **Teaser `max-width` raised 290px -> 310px** to fit the Senior PQE meta
 ("REST API platform&nbsp;· 3M+ student records", nowrap width 279.48px, unchanged text) on
-one line — it needed a wider box than the 290px pass closed. Derived via live-DOM stepping
+one line: it needed a wider box than the 290px pass closed. Derived via live-DOM stepping
 (300/310/320/330/340px), not assumed: 300px still left the meta at 2 lines; 310px was the
-first step where all three targets (Senior PQE meta, PM Rotation meta, PM Rotation accent —
+first step where all three targets (Senior PQE meta, PM Rotation meta, PM Rotation accent,
 the latter two already fit at 290px post copy-edit) held at 1 line. Verified directly at
 310px: all 8 titles stay 1 line, zero regressions across every other span versus its 290px
-baseline (daas-platform-1 meta/accent stay 2/2, muchane-cloud-1 meta stays 2 — both
+baseline (daas-platform-1 meta/accent stay 2/2, muchane-cloud-1 meta stays 2, both
 pre-existing and untouched), zero lines begin with a "&middot;" separator (checked all 4
 separator-bearing spans), and the "3-release" token stays unbroken (1 client rect). No
 further copy changes were made to reach this fit.
@@ -2220,5 +2220,139 @@ further copy changes were made to reach this fit.
 `app.js` tags, plus `app.js`'s own `fetch('/muchane-cloud/changelog.json?v=9')` call),
 re-derived by fresh grep at execution time, matching the prior pass's count exactly.
 `starfield.js` stays bare (untouched).
+
+**Correction to the entry above: the "content width" figures recorded in this session's
+plan and B1 measurements were wrong.** The plan stated "content width = max-width - 30" as
+a fixed offset and reported "content@290 = 258px", derived by reading a specific teaser's
+`clientWidth` at that moment, not the box's true capacity. `.satellite__teaser` uses
+`width: max-content` with `max-width` as a cap, so the box always shrinks to fit whatever
+content it currently holds; its rendered `clientWidth` reflects that content's width, not
+the ceiling before wrapping. 258px was the actual rendered width of a *different* span's
+content at max-width 290, not the maximum capacity at 290. The real content-width ceiling
+is computed from box-sizing alone (`border-box`: max-width minus 28px padding minus 2px
+border), independent of what content currently occupies the box: 280.000px at the current
+310px max-width, confirmed via `getComputedStyle` on the live page. The Senior PQE meta's
+real nowrap content width is 279.484px (Range-measured, cross-checked against `scrollWidth`
+at 279px), so the true one-line margin at 310px is 280.000 - 279.484 = **0.516px**, not the
+~20px the flawed arithmetic implied. This span is genuinely at the edge of the budget: it
+will stop fitting on one line if its text changes at all, or if a visitor's font fallback
+renders marginally wider than JetBrains Mono/Fira Code on this machine. Every other measured
+width and every pass/fail verdict from that session (B2's stepped-width derivation, B3's
+line-count table, B4's hard-stop check) was unaffected, since none of them depended on the
+flawed "content@290" number; only the descriptive "content width" framing was wrong.
+
+**Em-dash gate scope, clarified after this pass's own violation.** The gate counts em dashes
+in prose newly added to a file in the commit's pathspec; each committed file's count must
+match its pre-pass baseline. It applies to prose written for the commit, including new
+DECISIONS.md entries: an entry that introduces its own em dashes is a gate failure, not an
+exemption, and this pass found and fixed exactly that (see the "harness failure modes"
+correction context below). The one carve-out: verbatim quoted historical material (a past
+commit message, a filename, a technical string such as a literal command that would stop
+describing what it does if edited) is exempt from the count and must be identified as such
+at the point it lands, since altering it would falsify the record or break the reference.
+This entry contains one such case: the git-show-and-grep command quoted two paragraphs below,
+which must show the literal em-dash character it searches for to remain accurate. That is
+the only verbatim-exempt instance in this file to date; every other drift found so far has
+been prose and was corrected by editing the prose.
+
+## Em-dash gate false-flat incident (commit 3e5f68f)
+
+The hand-back for commit 3e5f68f reported the em-dash gate as "flat across all 14 committed
+files" while, in the same sentence, citing a "+4" change to DECISIONS.md. Both cannot be
+true; flat means zero delta. Checked against the git objects directly
+(`git show <ref>:DECISIONS.md | grep -o '—' | wc -l`): af3f2df (the commit before) held 343,
+3e5f68f held 347, a real +4 that the hand-back should have reported as a gate failure. The
+Step 0 baseline that session was measured fresh from the working tree via the same grep
+command, not carried forward from a prior hand-back, and it correctly recorded 343 (matching
+af3f2df exactly). The fault was not the baseline capture; it was the final summary sentence
+describing a 14-file result as "flat" while one of those 14 files had a known, just-stated
+nonzero delta. Checked every commit from bf0e6c6 through af3f2df (the six passes preceding
+3e5f68f): DECISIONS.md held at exactly 343 in every one, so those passes' "flat" claims were
+accurate and this is the only confirmed instance of the drift-while-reporting-flat pattern
+in this repo's visible git history. All four added em dashes were traced to this session's
+own new prose (none were inside quoted historical material) and have been removed in this
+commit; DECISIONS.md is back to 343.
+
+## Satellite verification harness: known failure modes
+
+Every entry below produced a green (passing) result from the clamp/hover sweep used to
+verify teaser and satellite behavior across orbit phases, and every one was caught only by
+manual inspection of the underlying data, not by the sweep's own pass/fail logic. Recorded
+together here so Phase E's harness rebuild does not rediscover each independently.
+
+1. **`animationDelay` set on an already-running animation seeks from real elapsed time
+   since page load, not from the requested phase.** The resulting position is
+   non-deterministic between runs. Correct method: `animation: 'none'` on the target, force
+   a reflow, then restore `animation-name`, `animation-delay`, and
+   `animation-play-state: paused` together in one batched style write, so the animation is
+   created already paused at the intended phase rather than redirected mid-flight.
+
+2. **`animation: 'none'` also clears `animation-name`.** Restoring only `animation-delay`
+   and `animation-play-state` after killing the shorthand leaves every satellite frozen at
+   its rest position, since there is no longer a named animation for the delay to apply to.
+   Capture each satellite's real `animation-name` via `getComputedStyle` before killing it,
+   and restore that name together with the delay and paused state.
+
+3. **A synthetic `mouseenter` event fires the JS listener but does not trigger the CSS
+   `:hover` reveal.** `bindSatelliteTeasers`'s clamp math runs on the JS event regardless,
+   but the teaser can still be measured at `opacity: 0`, silently recording its unclamped
+   rest position instead of the real hovered, clamped one. Assert
+   `getComputedStyle(teaser).opacity === '1'` before recording any rect from a hover check.
+
+4. **Under uniform-phase forcing (all satellites moved to the same phase for one sweep),
+   satellites sharing an orbit ring occlude each other**, and real mouse hover always lands
+   on whichever one is last in DOM order. A sweep can report a large number of clean pairs
+   while never once landing on the satellite actually under test; this is what happened on
+   the 3e5f68f verification pass, where the two just-edited teasers (workday-1, workday-2)
+   were occluded by workday-3 in every uniform-phase sweep and were only genuinely verified
+   after a system advisory caught the gap. Isolate the target instead: hide every sibling
+   satellite (`visibility: hidden`), force only the target's own animation, and hover it
+   alone.
+
+5. **`document.elementFromPoint` returns `null` for any coordinate outside the current
+   viewport**, which reads identically to real occlusion in a naive check. Forced-phase
+   positions in this layout can sit below a 900px-tall viewport. Use a viewport at least as
+   tall as the page's content at its most extreme forced phase (1600px has been sufficient
+   for the L0 constellation) for any interaction sweep; this only affects tooling, since
+   width-only clamp math does not depend on viewport height.
+
+**General lesson:** every one of these five failure modes produced a fully green sweep
+result on its own. A passing sweep is evidence that the harness measured what it claims to
+have measured only once that has been independently confirmed (e.g. by checking `opacity`,
+by checking which element is actually at the hovered point, by checking that a forced
+phase's position differs from the rest position); a green result alone is not sufficient
+proof.
+
+## Teaser one-line character budget
+
+Recorded so future teaser copy can be checked against a number instead of discovered to be
+too long after the fact, the failure mode of the last three passes.
+
+- **Teaser content width at the current 310px max-width: 280.000px.** Computed from the box
+  model directly (`border-box` sizing: 310px max-width minus 28px total padding minus 2px
+  total border), not from any specific span's rendered width, and confirmed live via
+  `getComputedStyle`. This is the hard ceiling; it does not depend on which content
+  currently occupies the box (see the correction above).
+- **Font stack: `"JetBrains Mono", "Fira Code", monospace`, at 0.72rem (11.52px) for title,
+  meta, and accent alike.** Measured across 678 characters sampled from every teaser's
+  title/meta/accent span (Range-based nowrap width divided by character count, per span):
+  every span produced the same per-character advance to within 0.001px, confirming the
+  stack renders as genuinely monospace at this size, so a single constant applies rather
+  than a true average across varying glyph widths.
+- **Measured character advance: 7.166px.**
+- **One-line character budget: 39 characters.** `floor(280.000 / 7.166) = 39`, confirmed
+  directly rather than only computed: the Senior PQE meta is exactly 39 characters
+  ("REST API platform&nbsp;· 3M+ student records", counting the `&nbsp;` and `·` each as one
+  character) and renders at 279.484px, a margin of 0.516px under the 280px cap. 40
+  characters would need 286.648px, 6.648px over the cap, and would wrap.
+
+**Live risk: the Senior PQE meta is the span currently sitting at the edge of this budget.**
+It fits today with 0.516px to spare, sub-pixel margin. It will stop fitting on one line if
+that string changes by even a single character, or if a visitor's browser falls back past
+JetBrains Mono and Fira Code to a system monospace font that renders fractionally wider than
+this machine's. No other current teaser span is within single digits of the 39-character
+cap. Any future edit to this specific string should be checked against the 39-character
+budget before it ships, not measured after the fact.
+
 
 
