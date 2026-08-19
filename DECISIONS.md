@@ -2356,3 +2356,50 @@ budget before it ships, not measured after the fact.
 
 
 
+## Workday node content pass, map accent singular PRD
+
+**External copy audit, transcribed verbatim across all four Workday pages plus one map
+preview label.** Two audit strings were reviewed and overruled at the point they landed,
+both logged here per Commandment 11 rather than silently corrected:
+
+- **Recognition strip date line kept explicit, not "six years."** The audit proposed
+  compressing `/workday`'s third recognition line to "across six years at Workday," but the
+  19 recognitions actually span October 2019 to June 2024, which is not six years. Kept the
+  existing explicit-date phrasing ("19 peer and manager recognitions logged, 2019 to 2024")
+  unchanged; only the first line ("Subject matter expert, Recruiting and Admissions" ->
+  "REST API subject matter expert") and the sme sub-heading text changed.
+- **"Shipped" heading retained over the audit's "Delivered."** Both Workday child pages
+  (`product-management-rotation`, `senior-product-quality-engineer`) keep the existing
+  `Shipped` `<h2>` for sitewide consistency with the DaaS and Muchane Cloud satellite
+  pages, which all use the same heading. The `[data-testid="shipped"]`/`shipped-compact`
+  testids are unchanged.
+
+**New elements added to two pages that previously lacked them, matching sibling shape.**
+`/workday` had no page-level pitch (unlike its three children and the other three L0
+nodes); added `<p data-testid="pitch">` immediately after `page-meta` and before the
+`constellation--sub` children block. `/workday/product-quality-engineer` had a pitch but no
+narrative (unlike its two siblings, PM Rotation and Senior PQE); added
+`<p data-testid="narrative">` between `pitch` and `shipped-compact`. Both reuse the exact
+element shape (plain `<p>`, no class) and testid convention already used elsewhere on the
+node; no new CSS.
+
+**De-duplication: the 30% setup-time figure now lives in exactly one place.** The new PQE
+narrative states "cut setup time 30% for the development organization"; the pre-existing
+`shipped-compact` item 2 said the same thing in different words. Replaced item 2 with a
+non-overlapping sentence (compliance-ready data frameworks enabling cross-team customer
+emulation) rather than leaving the figure duplicated on a page this short. Similarly, the
+40% sprint-rollover figure now appears exactly once sitewide, in the PQE narrative (the
+role that formally held the Scrum Lead title); the Senior PQE page's shipped-list item 3
+was rewritten to describe the backup-Scrum-Lead ceremonies without repeating the 40% number.
+
+**Terminology: "REST API program" standardized to "REST API platform" throughout the
+node.** Matches the L0 map label ("REST API platform &middot; 3M+ student records") which
+already used "platform." Changed on `/workday` (new pitch), `/workday/senior-product-
+quality-engineer` (pitch, meta description, narrative closing line, shipped item 4).
+Verified zero remaining "API program" hits site-wide after the pass.
+
+**Map preview accent pluralization corrected: "PRDs" -> "PRD."** One PRD was written across
+the three-release PM Rotation roadmap, not several; the teaser-workday-2 accent span's
+trailing word corrected to singular. The `.teaser__nobr` span around "3-release" and both
+`&nbsp;` separator glues are unchanged.
+
