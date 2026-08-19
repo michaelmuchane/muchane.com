@@ -1158,7 +1158,7 @@ blockquote {
     font-size: 1.15rem;
 }
 
-.stat-row {
+ul.stat-row {
     list-style: none;
     display: flex;
     flex-wrap: wrap;
@@ -1172,7 +1172,7 @@ blockquote {
     font-size: 0.8rem;
     color: var(--meta-color);
     border: 1px solid var(--border-color);
-    padding: 6px 12px;
+    padding: 6px 9px;
 }
 
 blockquote cite {
