@@ -2164,3 +2164,34 @@ re-derived by fresh grep at execution time, matching the prior pass's count exac
 `starfield.js` stays bare (untouched).
 
 
+## Teaser copy corrections, one-line accent fix, cache v9
+
+**Two teaser copy corrections.** Product Quality Engineer meta: "Admissions & recruiting
+suites" -> "Admissions & Recruiting suites" (capitalization only). Senior Product Quality
+Engineer meta: "REST API program" -> "REST API platform" (the nbsp before the separator kept).
+The platform string is longer and now renders on two lines at 1280, which is within the
+existing two-line allowance for meta spans.
+
+**`text-wrap: balance` removed from `.satellite__teaser-accent` only**, kept on `-title` and
+`-meta`. Measured first: both target accents (Senior PQE "release lead, largest UX initiative",
+PM Rotation "discovery &middot; PRD &middot; 3-release roadmap") have a natural single-line
+width of 250.83px and 250.81px against a 250px content box at the then-current 280px teaser
+width, roughly 0.8px over: a genuinely marginal case, not the clean "balance forces an
+unnecessary wrap" signature the hypothesis predicted. Removing balance from the accent class
+alone was tested directly (not inferred from the nowrap number): both target accents remained
+at 2 lines, and none of the other 4 accents or 8 titles regressed. The accent-only removal was
+kept anyway since it was harmless; `-title`/`-meta` were left unchanged since no title ever
+wrapped and metas are exactly where balance's even-split behavior helps.
+
+**Teaser `max-width` raised 280px -> 290px** to close the remaining ~0.8px gap. Verified
+directly at 290px (not by further inference): both target accents render on exactly one line
+(`element.getClientRects().length === 1`), all 8 titles stay at 1 line, all 6 accents and 8
+metas stay at their prior line counts or better (zero regressions), zero lines begin with a
+"&middot;" separator, and the "3-release" token stays unbroken (1 client rect). No teaser copy
+was edited to make this fit, and no accent span was set to `nowrap`.
+
+**Cache-bust `?v=8` -> `?v=9`:** 23 references (22 across the 11 HTML pages' `style.css`/
+`app.js` tags, plus `app.js`'s own `fetch('/muchane-cloud/changelog.json?v=8')` call),
+re-derived by fresh grep at execution time, matching the prior pass's count exactly.
+`starfield.js` stays bare (untouched).
+
