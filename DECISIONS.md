@@ -2569,3 +2569,27 @@ unchanged.
 pass (11 HTML pages' `style.css`/`app.js` tags plus `app.js`'s own
 `fetch('/muchane-cloud/changelog.json?v=11')`), re-derived by fresh grep at execution time.
 `starfield.js` stays bare.
+
+## Workday recognition rewrite, testid rename, cache v12 unchanged
+
+**`recognition-security` testid renamed to `recognition-advocate`.** The item's copy no
+longer covers only the Security Advocate role (it now spans three named advocacy roles:
+Security, Web Service, Persisted Data), so a testid scoped to "security" was no longer
+accurate. This rename is safe now because no test suite exists yet in this repo (Phase E is
+deferred per AGENTS.md 8); it stops being a safe rename once Phase E lands and a suite
+starts asserting against this testid by name. The other three recognition testids
+(`recognition-sme`, `recognition-mentorship`, `recognition-peer`) are unchanged.
+
+**Explicit recognition dates ("October 2019 to June 2024") dropped again, deliberately.**
+A prior pass restored these explicit dates specifically because "across six years" was
+judged imprecise against the real span. This pass drops them again on instruction from a
+newer external copy audit: the Recognition section now sits directly beneath the page's own
+tenure-establishing content, so "across six years" reads correctly in context without needing
+the explicit range restated a second time. The audit also corrected "leadership" to
+"learning" in the same sentence, matching the actual badge name in Workday's internal
+feedback system, not a copy-tightening choice. This is a deliberate reversal of the prior
+restoration, not an oversight - a future pass MUST NOT restore the explicit dates a third
+time without a fresh audit source overriding this entry.
+
+No CSS or cache change in this commit; `?v=12` stays at 23 references across the same 12
+files.
