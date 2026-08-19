@@ -2403,3 +2403,78 @@ the three-release PM Rotation roadmap, not several; the teaser-workday-2 accent 
 trailing word corrected to singular. The `.teaser__nobr` span around "3-release" and both
 `&nbsp;` separator glues are unchanged.
 
+
+## Teaser box width tracks widest rendered line; cache v11
+
+**Symptom confirmed by measurement, not assumed.** Hovering all 8 satellite teasers at
+1280px before any code change: `daas-platform-1` (meta 61 chars, accent 64 chars, both over
+the 39-character one-line budget) rendered at the full 310px cap with a widest line of
+236.48px, a 43.5px empty gap; `muchane-cloud-1` (the reported Career Command Center
+symptom, meta 43 chars over budget) rendered at 310px with a widest line of only 171.98px,
+a 108.0px gap. Every other teaser already hugged its widest span (gap effectively 0,
+including the Senior PQE meta sitting at its documented 0.516px one-line margin). This
+matched the diagnosis exactly: `width: max-content` resolves against the unwrapped
+intrinsic width once any span exceeds the budget, so the box pins at `max-width: 310px`
+regardless of how `text-wrap: balance` distributes the wrapped lines underneath it.
+
+**Chosen mechanism: measure the widest rendered line at reveal and set an explicit width,
+inside the existing `bindSatelliteTeasers` closure in `public/app.js`.** Rejected
+alternative: removing `text-wrap: balance` from `-meta`/`-title`. That candidate rests on a
+false premise, since `max-content` is the no-wrap intrinsic width, any over-budget span
+still pins the box at 310px regardless of wrapping mode; removing balance only fills the
+first line greedily (roughly 244px for the muchane-cloud-1 meta), which does not make the
+box track the widest rendered line and would strand a smaller but real gap while also
+sacrificing the balanced-meta behavior kept deliberately in an earlier pass. The chosen
+approach reuses the reveal-time measurement pattern the vertical side-flip and horizontal
+viewport clamp already use in the same closure (orbit paused while hovered, so measurement
+cannot go stale mid-hover), adding a helper (`teaserWidestLine`, per-span `Range` client
+rects unioned into lines by top-coordinate) and a `dataset.sized` guard so it runs once per
+teaser element. `style.css` is untouched; pill sizing, orbit keyframes, and the `A: 156`
+orbit-radius constant are untouched.
+
+**One corrective second measurement pass, capped, not a loop.** `text-wrap: balance`
+re-runs at the narrower width the first pass sets and can redistribute into a new, narrower
+widest line, stranding a fresh gap a single one-shot measurement would never close. The
+sizing block re-measures once immediately after setting the first-pass width and only
+narrows further if the second measurement is strictly smaller; measured directly against
+both affected teasers, the second pass computed the same widest line as the first in both
+cases (final width equalled the first-pass value exactly, `daas-platform-1` 267px,
+`muchane-cloud-1` 202px), so no teaser needed the second correction in practice, but the
+code path exists for the general case rather than assuming it.
+
+**Before/after teaser table (1280px, hover-revealed, opacity asserted 1 before each
+read):**
+
+| teaser | box before | widest | gap before | box after | gap after | title/meta/accent lines before | lines after |
+|---|---|---|---|---|---|---|---|
+| daas-platform-1 | 310.000 | 236.484 | 43.516 | 267.000 | 0.516 | 1/2/2 | 1/2/2 |
+| muchane-cloud-1 | 310.000 | 171.984 | 108.016 | 202.000 | 0.016 | 1/2/1 | 1/2/1 |
+| muchane-cloud-3 | 252.156 | 222.156 | 0 | 252.156 | 0 | 1/1/1 | 1/1/1 |
+| workday-1 | 309.484 | 279.484 | 0 | 309.484 | 0 | 1/1/1 | 1/1/1 |
+| workday-2 | 280.828 | 250.828 | 0 | 280.828 | 0 | 1/1/1 | 1/1/1 |
+| workday-3 | 266.484 | 236.484 | 0 | 266.484 | 0 | 1/1/1 | 1/1/1 |
+| education-1 | 151.828 | 121.828 | 0 | 151.828 | 0 | 1/1 | 1/1 |
+| education-2 | 187.656 | 157.656 | 0 | 187.656 | 0 | 1/1 | 1/1 |
+
+No title moved from 1 line to 2 anywhere; no span's line count increased anywhere;
+`workday-1` (the budget-edge Senior PQE meta) is byte-identical before and after, no inline
+width applied, confirming the gap-skip threshold left it untouched as intended.
+
+**Isolation clamp sweep** (hiding every sibling satellite and forcing only the target's own
+orbit animation through 8 phases each, per the documented uniform-phase-forcing failure
+mode) at 1280/1440/1920px, 1600px-tall viewport, real mouse to each pill center, opacity
+asserted 1 before every rect read: zero violations across all 8 satellites x 8 phases x 3
+widths. Worst-case margins: 1280px and 1440px both landed effectively at the clamp's own
+8px edge (sub-pixel, the clamp engaging precisely as designed for teasers near the
+viewport boundary); 1920px stayed comfortably clear (115.3px left, 58.4px right, clamp
+never needed at that width). Pill-vs-card sweep: 24/24 disjoint pairs at all 3 widths, zero
+violations, matching the prior pass. Full zoom navigation (L0 to Workday to each of the
+three children and back, twice) completed with correct path and heading at every step and
+zero console errors; re-hovering a Workday teaser after the second circuit's return to L0
+confirmed the fresh post-swap DOM re-sizes correctly (`muchane-cloud-1` teaser measured
+202px again on the new element instance, `dataset.sized` guard scoped per-element as
+intended).
+
+**Cache-bust `?v=10` -> `?v=11`:** 23 references (11 HTML pages plus `app.js`'s own
+`fetch('/muchane-cloud/changelog.json?v=10')`), re-derived by fresh grep at execution time,
+matching every prior pass's count exactly. `starfield.js` stays bare.

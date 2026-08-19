@@ -315,7 +315,7 @@ renderTelemetry(TELEMETRY);
     function loadChangelog() {
         if (changelogData) return Promise.resolve(changelogData);
         if (!changelogPromise) {
-            changelogPromise = fetch('/muchane-cloud/changelog.json?v=10')
+            changelogPromise = fetch('/muchane-cloud/changelog.json?v=11')
                 .then(function (res) {
                     if (!res.ok) throw new Error('changelog fetch failed: ' + res.status);
                     return res.json();
@@ -626,6 +626,33 @@ renderTelemetry(TELEMETRY);
     // measurement can't go stale mid-hover, and it works identically under
     // reduced motion (measures the static rest position).
     function bindSatelliteTeasers(root) {
+        // Widest rendered line inside a teaser, true CSS px (the teaser's
+        // counter-scale cancels --constellation-scale). Per-span Range rects,
+        // unioned per line by top-coordinate (4px tolerance) so the nested
+        // .teaser__nobr span's fragments don't split a line.
+        function teaserWidestLine(teaser) {
+            var widest = 0;
+            Array.prototype.forEach.call(teaser.children, function (span) {
+                var range = document.createRange();
+                range.selectNodeContents(span);
+                var rects = range.getClientRects();
+                var lines = [];
+                for (var i = 0; i < rects.length; i++) {
+                    if (!rects[i].width) continue;
+                    var line = null;
+                    for (var j = 0; j < lines.length; j++) {
+                        if (Math.abs(lines[j].top - rects[i].top) < 4) { line = lines[j]; break; }
+                    }
+                    if (!line) { line = { top: rects[i].top, left: rects[i].left, right: rects[i].right }; lines.push(line); }
+                    line.left = Math.min(line.left, rects[i].left);
+                    line.right = Math.max(line.right, rects[i].right);
+                }
+                for (var k = 0; k < lines.length; k++) {
+                    widest = Math.max(widest, lines[k].right - lines[k].left);
+                }
+            });
+            return widest;
+        }
         var sats = root.querySelectorAll('.node__satellite');
         sats.forEach(function (sat) {
             if (sat.dataset.teaserBound === 'true') return;
@@ -651,6 +678,26 @@ renderTelemetry(TELEMETRY);
                 // anchored to any pill edge would still overflow. Measured at
                 // reveal, same rationale as the vertical flip above.
                 var teaser = sat.querySelector('.satellite__teaser');
+                if (teaser && teaser.dataset.sized !== 'true') {
+                    teaser.dataset.sized = 'true';
+                    var widest = teaserWidestLine(teaser);
+                    // 30 = 28px padding + 2px border (border-box). Only intervene
+                    // when the max-content box exceeds its widest rendered line
+                    // (balance-wrapped content); snug one-line boxes, including
+                    // the budget-edge Senior PQE meta, are left untouched.
+                    if (widest && teaser.getBoundingClientRect().width - (widest + 30) > 1) {
+                        teaser.style.width = Math.min(310, Math.ceil(widest) + 30) + 'px';
+                        // text-wrap: balance redistributes at the narrower width and
+                        // can yield a new, narrower widest line; one corrective pass
+                        // only. Each pass can only narrow the box and line count is
+                        // fixed, so a bounded pass keeps the reveal path cheap and
+                        // predictable.
+                        var second = teaserWidestLine(teaser);
+                        if (second && Math.ceil(second) < Math.ceil(widest)) {
+                            teaser.style.width = Math.min(310, Math.ceil(second) + 30) + 'px';
+                        }
+                    }
+                }
                 if (teaser) {
                     teaser.style.transform = '';
                     var tr = teaser.getBoundingClientRect();
