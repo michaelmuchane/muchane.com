@@ -946,7 +946,7 @@ a.node:focus-visible .node__inner {
 }
 
 .constellation--sub .node {
-    max-width: 240px;
+    width: min(197px, 100%);
 }
 
 .constellation--sub .node__inner {
@@ -1419,6 +1419,11 @@ main.is-zooming {
         transform: none;
         max-width: none;
         padding: 0 0 22px 56px;
+    }
+
+    .constellation--sub .node {
+        width: auto;
+        max-width: 240px;
     }
 
     /* Filled dot on the spine + horizontal connector stub. */

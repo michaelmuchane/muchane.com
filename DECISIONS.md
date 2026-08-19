@@ -2593,3 +2593,57 @@ time without a fresh audit source overriding this entry.
 
 No CSS or cache change in this commit; `?v=12` stays at 23 references across the same 12
 files.
+
+## Sub-constellation card width fix, cache v13
+
+**Diagnosis confirmed by measurement, with per-card nuance.** `.constellation--sub .node`
+is `position: absolute; left: var(--x)` with no `right`, so an unset `width` shrink-to-fits
+within the containing block; `translate(-50%, -50%)` recenters afterward without affecting
+the layout box itself. At 1280 (container 640px wide, left 320): the 80% card (Senior PQE)
+measured computed width 128px, exactly the distance from its anchor to the container's
+right edge - a true available-width starvation, matching the original diagnosis exactly.
+The 50% card (PM Rotation) measured 240px, hitting the old `max-width: 240px` cap (its
+available space, 320px, exceeded the cap). The 16% card (PQE) measured 216.8px - its own
+natural content width, LESS than either the cap or its rightward available space - so its
+left-edge overflow (measured 6.0-9.2px past the container's left edge across widths) was a
+pure `translate(-50%)` centering artifact around an anchor close to the container edge, not
+a width-capping effect. All three mechanisms independently produce uneven, sometimes
+overflowing boxes; an explicit shared width resolves all three.
+
+**N = 197px, derived from measured geometry.** A card of width N centered at x% of
+container width W spans `(x/100)W ± N/2`. The 16% card's left-edge constraint (`N ≤
+0.32·W`) binds tighter than the 80% card's right-edge constraint (`N ≤ 0.40·W`), so N is
+solved against the SMALLEST measured container width. Measured `.constellation--sub`
+container width at viewport 700 is 620px (narrower than the ≥900px common width of 640px,
+because `.page`'s own content column narrows below that breakpoint) - `N =
+floor(0.32 × 620) − 1 = 197`. Verified against 640px-wide containers too (`0.32 × 640 =
+204.8 > 197`, non-binding). Applied as `.constellation--sub .node { width: min(197px,
+100%); }`, replacing `max-width: 240px` outright - once width is an explicit value
+strictly under 240px, that cap can never bind again, so keeping it would be dead weight.
+
+**Line counts equalized on the first try.** All three card titles ("Product Quality
+Engineer", "Product Management Rotation", "Senior Product Quality Engineer") render exactly
+2 lines at N=197 across all five checked widths (700/900/1280/1440/1920) - no decrement
+iteration was needed.
+
+**Mobile guard corrected mid-pass - the brief's own assumption was wrong, verified by
+direct comparison.** The planned guard was `.constellation--sub .node { width: auto; }`
+inside the existing `@media (max-width: 600px)` block, on the theory that mobile was
+previously unconstrained (`auto`) once the media query's `.node { max-width: none }` reset
+fired. That theory is false: `.constellation--sub .node { max-width: 240px }` (specificity
+0,2,0) already outranked the mobile reset's bare `.node { max-width: none }` (specificity
+0,1,0) BEFORE this pass, so mobile cards were always capped at a computed 240px, not auto.
+Confirmed by stashing the CSS edit and measuring live at 375px: true pre-edit computed
+width was 240px (`git stash push -- public/style.css`, measure, `git stash pop`). The
+planned `width: auto` guard alone would have rendered mobile cards at a computed 335px
+(full container width) - a real, undetected regression the plan's own reasoning would have
+shipped. Corrected guard: `.constellation--sub .node { width: auto; max-width: 240px; }`,
+which reproduces the exact prior cascade (auto width capped at 240px) since the desktop
+rule's `max-width: 240px` was removed sitewide by this same pass. Re-verified at 375:
+rects byte-identical to the true stashed-before capture on all three cards (left 20, widths
+240, unchanged top offsets).
+
+**Cache-bust `?v=12` -> `?v=13`:** 23 references across the same 12 files as the prior
+pass (11 HTML pages' `style.css`/`app.js` tags plus `app.js`'s own
+`fetch('/muchane-cloud/changelog.json?v=12')`), re-derived by fresh grep at execution time.
+`starfield.js` stays bare.
