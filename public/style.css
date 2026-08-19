@@ -520,7 +520,7 @@ main {
 }
 
 .hero h1 {
-    font-size: clamp(2.5rem, 7vw, 4.5rem);
+    font-size: clamp(2.5rem, 7.5vw, 5rem);
     letter-spacing: -0.03em;
     line-height: 1.05;
 }
@@ -529,6 +529,10 @@ main {
     margin-top: 24px;
     max-width: 62ch;
     font-size: 1.1rem;
+}
+
+.hero .page__meta {
+    font-size: 0.9rem;
 }
 
 /* In-copy contact trigger (L0 hero) — a button, not a link (no page behind it);
@@ -548,6 +552,10 @@ main {
 
 .hero__contact-trigger:hover {
     background: var(--hover-bg);
+}
+
+.hero__nobr {
+    white-space: nowrap;
 }
 
 /* CONSTELLATION */
