@@ -2195,3 +2195,30 @@ was edited to make this fit, and no accent span was set to `nowrap`.
 re-derived by fresh grep at execution time, matching the prior pass's count exactly.
 `starfield.js` stays bare (untouched).
 
+## Teaser copy corrections, width step, cache v10
+
+**Two PM Rotation teaser copy corrections.** Meta: "Career Hub mentorship experience" ->
+"Career Hub opportunity types" (mentorship read as a program the venture didn't run; scope
+is discovery/opportunity mapping). Accent: reordered and pluralized from "discovery&nbsp;·
+PRD&nbsp;· 3-release roadmap" to "discovery&nbsp;· 3-release roadmap&nbsp;· PRDs" — moves
+the fragile `.teaser__nobr` token out of the string's tail, and pluralizes since multiple
+PRDs were authored across the three-release span. Both separators keep their `&nbsp;` glue.
+
+**Teaser `max-width` raised 290px -> 310px** to fit the Senior PQE meta
+("REST API platform&nbsp;· 3M+ student records", nowrap width 279.48px, unchanged text) on
+one line — it needed a wider box than the 290px pass closed. Derived via live-DOM stepping
+(300/310/320/330/340px), not assumed: 300px still left the meta at 2 lines; 310px was the
+first step where all three targets (Senior PQE meta, PM Rotation meta, PM Rotation accent —
+the latter two already fit at 290px post copy-edit) held at 1 line. Verified directly at
+310px: all 8 titles stay 1 line, zero regressions across every other span versus its 290px
+baseline (daas-platform-1 meta/accent stay 2/2, muchane-cloud-1 meta stays 2 — both
+pre-existing and untouched), zero lines begin with a "&middot;" separator (checked all 4
+separator-bearing spans), and the "3-release" token stays unbroken (1 client rect). No
+further copy changes were made to reach this fit.
+
+**Cache-bust `?v=9` -> `?v=10`:** 23 references (22 across the 11 HTML pages' `style.css`/
+`app.js` tags, plus `app.js`'s own `fetch('/muchane-cloud/changelog.json?v=9')` call),
+re-derived by fresh grep at execution time, matching the prior pass's count exactly.
+`starfield.js` stays bare (untouched).
+
+

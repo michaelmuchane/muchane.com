@@ -796,7 +796,7 @@ a.node:focus-visible .node__inner {
     border: 1px solid var(--border-color);
     padding: 10px 14px;
     width: max-content;
-    max-width: 290px;
+    max-width: 310px;
     white-space: normal;
     text-align: left;
     display: flex;
