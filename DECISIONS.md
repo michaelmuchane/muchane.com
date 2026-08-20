@@ -2799,3 +2799,66 @@ bump covers the whole three-commit pass (this commit plus the later shots-render
 the site is never publicly served mid-pass, since deploy is a single `git pull` after every
 commit lands, so `app.js`'s and `changelog.json`'s later changes ride the same fresh token
 rather than forcing a second bump.
+
+## Media cache policy: measured state, proposal, three-pass stale history
+
+**Measured state (this pass, from this machine, anonymous requests only).** `curl -sI`
+against `https://muchane.com/media/sensor-evaluation-v0.webp` (twice) and
+`https://muchane.com/muchane-cloud/` all returned HTTP 302 to
+`muchane.cloudflareaccess.com`'s Access login, with
+`cache-control: private, max-age=0, no-store, no-cache, must-revalidate, post-check=0,
+pre-check=0`, `expires: Thu, 01 Jan 1970 00:00:01 GMT`, `server: cloudflare`, no
+`cf-cache-status` header. The whole site, `/media/` included, is still behind Cloudflare
+Access, so no unauthenticated client ever receives an asset. The authenticated-browser
+headers, which govern the actual staleness exposure today, could not be measured this pass:
+the browser relay to Michael's own Access-authenticated Chrome timed out (extension not
+connected or no matching tab). This is the one open prerequisite before the policy below can
+be confirmed against reality rather than inferred. One-liner Michael can run when convenient:
+`curl -sI -b "CF_Authorization=<token from an authenticated browser cookie>"
+https://muchane.com/media/sensor-evaluation-v0.webp`, or the equivalent directly on the VPS
+against the website container, reporting `cache-control`, `etag`, `last-modified`, `expires`,
+`age`.
+
+**Proposal: `Cache-Control: no-cache` on `/media/`, set at the origin nginx config.**
+`no-cache` (store allowed, every use revalidates; equivalent to `max-age=0,
+must-revalidate`) fits in-place replacement under stable filenames with no build step: the
+staleness window collapses to one conditional request per load, with no renaming and no
+reference rewriting to keep synchronized. Origin, not a Cloudflare dashboard rule, because
+browsers obey origin `Cache-Control` regardless of CDN, Cloudflare's default cache mode
+respects origin `Cache-Control` at the edge once the site is public, and a dashboard-only
+rule keeps the policy out of version control. Likely current behavior absent any directive
+[INFERENCE, unconfirmed by the measurement above]: nginx sends `ETag` and `Last-Modified` with
+no `Cache-Control`, so browsers fall back to heuristic freshness that lengthens as a file
+ages, which matches the pattern of a recurring stale-asset flag. Where: `location /media/ {
+add_header Cache-Control "no-cache"; }` in the website container's nginx config, kept
+alongside nginx's default `ETag`/`Last-Modified` handling so revalidations answer with a
+304. That config lives on the VPS outside this workspace; applying it is Michael's own
+gated pass, not this one.
+
+**Cost on a normal page load:** at most one lazy-loaded figure per page, and the four
+figures shipped in the shots-renderer pass sit inside closed `<details>` and load nothing
+until opened. A revalidation is one conditional GET answered 304, a few hundred bytes, one
+round trip, off the critical path behind `loading="lazy"`. Full transfer only happens when
+the asset actually changed.
+
+**Interaction with the pending deploy-time cache purge:** complementary, not redundant.
+`no-cache` at origin turns the purge into a latency optimization for Cloudflare's edge cache
+once the site is public and edge-cached, rather than a correctness requirement, and it
+protects browser caches, which no CDN purge reaches. If the purge lands first, `no-cache` is
+still wanted for the browser-cache half.
+
+**Sequencing: this policy needs to land before the Cloudflare Access flip, not after.** The
+Access-gating premise measured above is correct today and expires the moment the site goes
+public. Stale-cache exposure to real, uncontrolled clients only starts at that flip, and
+every asset added between now and then (four more shipped in this same pass, see the
+shots-renderer entry below) grows the blast radius if the policy is still unset when it
+happens.
+
+**Three-pass stale-cache flag history, sizes and dates.** `public/media/` assets are
+replaced in place under stable filenames, so this has now drawn a flag in three consecutive
+passes: created at 1600x1000 in `650e544` (2026-08-18); replaced in place to 2080x1300 in
+`dee6e29` (2026-08-20), flagged then as "any cache holding the old 1600x1000 versions serves
+them stale until it expires"; replaced in place to 2800x1750 in `8b8463c` (2026-08-20),
+flagged then as "the second consecutive in-place replacement", citing the pending purge;
+this pass (2026-08-20) is the third flag and is the one that turns the recurrence into a
+measured report and a concrete proposal instead of another line item.
