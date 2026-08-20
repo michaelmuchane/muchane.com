@@ -5,7 +5,8 @@
         "platform-overview",
         "muchane-com",
         "dual-path-network",
-        "tailoring-quality-triad"
+        "tailoring-quality-triad",
+        "ats-ingestion-feed-complete"
       ]
     },
     "/muchane-cloud/career-command-center": {
@@ -50,7 +51,7 @@
       "sections": {
         "sequencing": null,
         "problem": "Running real AI pipelines against personal data takes more than API keys. It needs a data layer, network isolation, and controls that survive automation running unattended.",
-        "solution": "Self-hosted Supabase (Postgres 15, Kong, GoTrue, Realtime, Storage) as the single source of truth, with a multi-tenant schema from day one. UUID keys, user_id and RLS on every table. Two production applications sit on top, a job-search command center and a document-rendering microservice.",
+        "solution": "Self-hosted Supabase (Postgres, Kong, GoTrue, Realtime, Storage) as the single source of truth, with a multi-tenant schema from day one. UUID keys, user_id and RLS on every table. Two production applications sit on top, a job-search command center and a document-rendering microservice.",
         "implementation": [
           "One heavily customized docker-compose runs the fleet on a 4 vCPU / 8GB VPS.",
           "Cloudflare Tunnel and Access sit in front of admin surfaces. Services find each other through Docker-internal DNS.",
@@ -89,7 +90,7 @@
     "tailoring-quality-triad": {
       "slug": "tailoring-quality-triad",
       "page": "/muchane-cloud/career-command-center",
-      "title": "Tailoring under control",
+      "title": "Tailoring that cannot invent claims",
       "date_display": "Week of Aug 3, 2026",
       "week_start": "2026-08-03",
       "date_verified": true,
@@ -97,13 +98,13 @@
         "ai",
         "pipeline"
       ],
-      "summary": "Three controls shipped together so tailored documents can't invent claims or bloat past two pages.",
+      "summary": "Three controls shipped together. Edits the profile does not support are rejected automatically, borderline ones escalate to me, and growth is bounded so two pages stays two pages.",
       "metric": "growth ≤ +78 chars",
       "compact": false,
       "sections": {
         "sequencing": null,
         "problem": "AI document tailoring fails three ways. Models invent qualifications, tailored text quietly pushes a two-page resume onto page three, and one model for every subtask either overspends or underperforms.",
-        "solution": "Three independent controls. A verification model at temperature 0 checks every proposed edit against my real profile, drops ungrounded claims, and keeps overclaims but flags them for my review. The asymmetry is deliberate. Fabrication is auto-rejected, exaggeration is a human judgment call. A growth ledger caps each bullet and the whole document, which makes tailoring a reallocation rather than accretion. And a cheap model generates while a stronger model evaluates.",
+        "solution": "Three independent controls. A verification model at temperature 0 checks every proposed edit against my real profile, drops ungrounded claims, and escalates borderline ones to me rather than deciding alone. The asymmetry is deliberate. An unsupported edit is rejected without a human in the loop, a borderline one is not. A growth ledger caps each bullet and the whole document, which makes tailoring a reallocation rather than accretion. And a cheap model generates while a stronger model evaluates.",
         "implementation": [
           "Document growth is bounded at 78 characters against a 6,360-character budget. No combination of legal per-bullet growth can breach the page limit.",
           "The evaluator was chosen empirically, by comparing models on score-band placement. Six distinct output values beat compressed bands.",
@@ -152,7 +153,7 @@
         "database"
       ],
       "summary": "~70 tracked companies with pure-SQL analytics. No analytics service, no ETL copy.",
-      "metric": "835 vitest · 103 e2e",
+      "metric": "~70 companies",
       "compact": false,
       "sections": {
         "sequencing": null,
@@ -160,7 +161,7 @@
         "solution": "One surface. Target cards in a carousel, tabbed detail pages, and an analytics tab computed entirely in SQL against the live schema. Staleness is measured rather than guessed, because a company_views table records every look, under RLS.",
         "implementation": [
           "The funnel with time-in-stage, response rate, posting velocity, comp bands, and fit-dimension distribution are all pure SQL.",
-          "The test suite grew from 719 to 835 vitest specs and 87 to 103 Playwright specs with zero failures.",
+          "The test suite grew past 800 vitest specs and 100 Playwright specs with zero failures.",
           "A rail-layout defect traced back to duplicated breakpoint values, so the breakpoint was hoisted into a single exported constant."
         ],
         "iteration": "The fit-score slot shipped null-tolerant so the surface renders before the upstream score exists. Display first, data later."
@@ -178,15 +179,15 @@
         "pipeline",
         "database"
       ],
-      "summary": "An adapter per ATS on staggered 4-hour schedules, with an invariant that makes lifecycle closure safe.",
-      "metric": "~1,949 postings / 4h",
+      "summary": "One invariant governs closure. No feed may kill a posting unless it can prove it saw everything.",
+      "metric": "~1,900 postings / 4h",
       "compact": false,
       "sections": {
         "sequencing": null,
         "problem": "Multi-ATS ingestion raises two hard problems. Dedup without fake placeholder keys, since Postgres treats NULL as unequal to NULL. And closure, because marking a posting dead requires knowing the feed you just read was complete. A partial feed treated as complete mass-closes live postings.",
         "solution": "Adapters per source feed a shared core, governed by one invariant. Any trigger path that is not a complete company feed must declare its feed incomplete, or the core will close everything it didn't see. Per-posting liveness checks lost on cost, since that approach spends a request per posting against rate-limited vendors.",
         "implementation": [
-          "Greenhouse runs every four hours and pulls roughly 1,949 postings per cycle with full content. Ashby follows ten minutes later, the retention sweep after that. The stagger keeps a 4-vCPU box out of contention.",
+          "Greenhouse runs every four hours and pulls roughly 1,900 postings per cycle with full content. Ashby follows ten minutes later, the retention sweep after that. The stagger keeps a 4-vCPU box out of contention.",
           "Sequential batch processing ahead of dedup checks prevents race-condition duplicates.",
           "A designed Lever adapter extends the invariant with a sentinel-probe completeness gate. The feed must prove it is complete before it may close anything."
         ],
@@ -301,19 +302,10 @@
         "database",
         "ops"
       ],
-      "summary": "The automation engine was persisting full execution data for every successful run, and the backups were hauling it.",
+      "summary": "3.65GB of success-run logs cut to 73MB by retention policy, with a manual test fired to prove failure debugging still captures everything.",
       "metric": "3.65GB → 73MB",
-      "compact": false,
-      "sections": {
-        "sequencing": null,
-        "problem": "Full execution data persisted for every successful run of three high-frequency ingestion workflows. The data volume reached 3.65GB on an 8GB VPS, and the backup pipeline was compressing and shipping about 3.36GB of dead logs every cycle.",
-        "solution": "Success-execution retention was set to none on the three ingestion workflows, keeping failure data for debugging. Periodic manual pruning lost because a treadmill fails open the week nobody runs it.",
-        "implementation": [
-          "The data volume dropped from 3.65GB to 72.75MB, about 98%, and backup archives fell from roughly 3.36GB to 385MB compressed.",
-          "The exemption that matters was verified rather than assumed. A manual test execution was fired specifically to prove hand-run debugging still captures full data."
-        ],
-        "iteration": "The verification step is the story. Positive evidence of the behavior you need, not absence of the behavior you don't."
-      },
+      "compact": true,
+      "sections": null,
       "shots": []
     },
     "agent-hardening": {
@@ -343,7 +335,7 @@
         "ops"
       ],
       "summary": "The VPS was running with zero swap and the OOM killer was firing immediately under pressure. 4GB provisioned, about 2GB in steady use.",
-      "metric": "0 OOM kills since",
+      "metric": "0 OOM kills since Aug 2026",
       "compact": true,
       "sections": null,
       "shots": []

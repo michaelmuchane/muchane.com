@@ -2728,3 +2728,74 @@ Overwriting tracked filenames in place means any cache holding an older-resoluti
 serves it stale until it expires. This is now the second consecutive in-place asset
 replacement (1600 to 2080, now 2080 to 2800), which strengthens the case for the pending
 deploy-time cache purge.
+
+## Muchane Cloud node content pass, changelog restructure, cache v16
+
+**Hub meta description added, deliberately does not mirror the pitch.** `/muchane-cloud`
+had no `<meta name="description">` while both children do. Added one in the same position
+as the children, but its text is NOT the pitch opening (unlike the sibling pattern) because
+the pitch now leads with agent/autonomy framing that reads better as body copy than as a
+search-result snippet. Do not "fix" this divergence in a later pass; it is intentional.
+
+**tailoring-quality-triad summary and Solution text reworded, twice.** The first-pass audit
+string ("Ungrounded claims die automatically, overclaims escalate to me") misread on a skim
+as a claim about the resume containing overclaims rather than about the model's proposed
+edits. Replaced with framing centered on the edit, not the document: "Edits the profile
+does not support are rejected automatically, borderline ones escalate to me." The Solution
+paragraph's matching clause was reworded the same way, replacing the
+auto-rejected/judgment-call framing with "an unsupported edit is rejected without a human in
+the loop, a borderline one is not."
+
+**Nginx Proxy Manager stays in dual-path-network's Solution.** The copy audit proposed
+genericizing it to "the web-facing proxy." Overruled: the entry already names Cloudflare,
+Kong, Postgres, Docker, and n8n by name, so removing one more brand reduces no real attack
+surface and costs specificity for no benefit.
+
+**"No mass-close incidents on record since" stays as written** in ats-ingestion-feed-complete's
+iteration. "On record" already reads as a claim about a log, not a promise about the future,
+so no rewording was needed.
+
+**Postgres 15 -> Postgres in platform-overview's Solution.** A version number attached to a
+named component turns a general advisory into a targeted candidate against a live
+internet-facing host. Swept `changelog.json` and all three Muchane Cloud page HTML files for
+any other component-attached version string; found none beyond the one changed (remaining
+numerics are dates, test/metric counts, a port number, and a heavily customized docker-compose
+VPS spec with no version attached to a named product).
+
+**n8n-bloat-surgery demoted to compact.** `compact: true`, `sections: null`, summary replaced
+with the retention-policy result. This permanently deletes its problem/solution/implementation/
+iteration text from the rendered site; the validator requires `sections` to be exactly `null`
+for a compact entry, so there is no way to demote while keeping the text hidden. Weighed and
+accepted: the summary alone ("3.65GB of success-run logs cut to 73MB by retention policy, with
+a manual test fired to prove failure debugging still captures everything.") carries the release
+note; the deeper narrative was judged not worth a permanent drill-in for this entry.
+
+**updated-at-phantom-writer stays full**, overruling the audit's proposed demotion to compact.
+Its Solution carries the node's strongest generalized lesson ("inventory triggers on every
+table that writes into the target, not just the target itself"), which a compact card cannot
+hold. No change made to this entry at all.
+
+**Hub grid grows to five cards.** `ats-ingestion-feed-complete` appended (not inserted) to
+`pages["/muchane-cloud"].grid`, after `tailoring-quality-triad`; the other four entries keep
+their order. This makes `ats-ingestion-feed-complete` the third entry rendered on two pages,
+alongside `tailoring-quality-triad` and `dual-path-network` (both already duplicated before
+this pass). `buildEntryCard` renders cross-page entries as stateless link cards
+(`entry.page !== pageKey`) regardless of how many pages reference the same slug, so a
+three-way duplicate needed no renderer change. `.changelog` is a single-column grid at every
+width (no `grid-template-columns`), so five cards simply stack one per row; verified at
+1920/1440/1280/900/375.
+
+**Entry/page-assignment count, verified from the file, not inferred.** Pre-edit: 15 entries,
+17 page assignments (`/muchane-cloud` grid = 4, career-command-center grid = 6, self-hosted-infra
+grid = 3 + ops_log = 4), two duplicated slugs (`tailoring-quality-triad`, `dual-path-network`).
+Michael's brief to the copy auditor described three duplicates; the file had two before this
+pass. Post-edit: 15 entries (unchanged), 18 assignments, three duplicated slugs (the two above
+plus `ats-ingestion-feed-complete`).
+
+**Cache-bust `?v=15` -> `?v=16`:** 23 references across the same 12 files as prior passes (11
+HTML pages' `style.css`/`app.js` tags plus `app.js`'s own
+`fetch('/muchane-cloud/changelog.json?v=15')`), re-derived by fresh grep at execution time. One
+bump covers the whole three-commit pass (this commit plus the later shots-renderer commit):
+the site is never publicly served mid-pass, since deploy is a single `git pull` after every
+commit lands, so `app.js`'s and `changelog.json`'s later changes ride the same fresh token
+rather than forcing a second bump.
