@@ -2973,3 +2973,40 @@ mechanism, so a rename-without-redirect window only ever closes cleanly before l
 after. This file's em-dash count drops from 2 to 0 as a direct, intentional consequence of
 the title rewrite (its only two em-dashes lived in the old em-dash-separated title); not a gate
 violation, and not to be "corrected" back.
+
+## Side-by-side drill-in figures at breakout widths
+
+**Scoping selector: `.entry__body .entry-shot`, not bare `.entry-shot`.** `.entry__body`
+exists only inside JS-built drill-ins (`app.js`'s `buildEntryCard`); it appears in zero
+static HTML files, where figures sit directly in `.page`. Link-card renderings of a
+cross-page entry never reach the shots code at all - `buildEntryCard`'s link branch returns
+before section/shots markup is built. So every new rule under this scope is structurally
+unreachable from the DaaS and Workday static-page figures, which keep their existing
+full-width treatment unchanged this pass.
+
+**1120px threshold, not the figure's own breakout formula.** At a 1120px viewport the
+existing breakout formula yields roughly a 1040px figure - the minimum width where a
+~820-900px image column and a readable (≥220px) caption panel can coexist without either
+becoming too cramped to serve its job. Below 1120px the figure stays stacked, image above
+caption, exactly as it rendered before this pass; no new rule fires there.
+
+**One DOM build; visibility of the "click for full size" hint is a pure CSS toggle off the
+same breakpoint that builds the two-column grid.** `app.js` always appends an
+`.entry-shot__hint` span inside every figcaption, for all four drill-in figures, with no
+branching on viewport width. The span is `display: none` by default and `display: block`
+only inside the same `@media (min-width: 1120px)` block that switches `.entry-shot` to
+`display: grid` - so there is never a second figcaption build, a resize listener, or a
+visibility state to fall out of sync with the layout it describes. No new testid on the
+hint (constraint: no new testids beyond the two child links added in the prior commit).
+
+**Caption panel: body-copy size, mono family retained, `--meta-color` retained.** The
+stacked/static caption voice (monospace, `--meta-color`) stays; only `font-size` moves from
+the compact `0.75rem` to `1rem`/`line-height: 1.55` to read as a body-copy side panel rather
+than a caption strip. The border moves from `border-top` to `border-left` so the pair reads
+as one bordered object rather than two stacked ones; the glow (`box-shadow` on `.entry-shot`
+itself) is untouched and still wraps the whole figure, not per column.
+
+**Cache bump `?v=16` -> `?v=17`.** `style.css`, `app.js`, and `changelog.json` (via
+B1-B12/A1/B3/C1/E1/E3 in the prior commit plus this commit's CSS/JS) all changed since the
+last bump; re-derived at 23 references across 12 files, matching the prior count exactly
+(same file set, same reference shape - no new cache-bearing file was added or removed).

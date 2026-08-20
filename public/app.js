@@ -315,7 +315,7 @@ renderTelemetry(TELEMETRY);
     function loadChangelog() {
         if (changelogData) return Promise.resolve(changelogData);
         if (!changelogPromise) {
-            changelogPromise = fetch('/muchane-cloud/changelog.json?v=16')
+            changelogPromise = fetch('/muchane-cloud/changelog.json?v=17')
                 .then(function (res) {
                     if (!res.ok) throw new Error('changelog fetch failed: ' + res.status);
                     return res.json();
@@ -470,7 +470,11 @@ renderTelemetry(TELEMETRY);
                 img.alt = shotData.alt;
                 shotLink.appendChild(img);
                 var figcaption = document.createElement('figcaption');
-                figcaption.textContent = shotData.caption;
+                figcaption.appendChild(document.createTextNode(shotData.caption));
+                var hint = document.createElement('span');
+                hint.className = 'entry-shot__hint';
+                hint.textContent = 'Click the image for full size.';
+                figcaption.appendChild(hint);
                 shot.appendChild(shotLink);
                 shot.appendChild(figcaption);
                 body.appendChild(shot);
