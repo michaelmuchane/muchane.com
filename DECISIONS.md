@@ -2697,3 +2697,19 @@ untouched by the fix.
 **Cache-bust `?v=13` -> `?v=14`:** 23 references across the same 12 files as the prior pass
 (11 HTML pages' `style.css`/`app.js` tags plus `app.js`'s own
 `fetch('/muchane-cloud/changelog.json?v=13')`), re-derived by fresh grep at execution time.
+
+## Standing rule: asset intrinsic width = 2x the maximum rendered CSS width
+
+Figure assets in `public/media/` must be exported at twice the widest CSS width they can
+render at. The `.entry-shot` breakout width is 1040px, so assets are 2080px wide. Any future
+change to the breakout width invalidates every asset in `public/media/` and requires
+re-export at the new 2x. This coupling is visible from neither the CSS side nor the asset
+side, and it already caused one silent regression: the DaaS assets were exported at 1600px
+(2.5x for the original 640px prose column) and were quietly reduced to 1.54x when the 1040px
+breakout shipped, below the 2x a retina display needs. This pass re-exported both at
+2080x1300 and added two new Workday figures at the same size.
+
+Two new Workday figures added this pass: `shot-mentor-funnel` (PM Rotation) and
+`shot-service-map` (Senior PQE), both 2080x1300, no cache-bust needed since `public/media/`
+assets carry no version query. Overwriting the two replaced filenames in place means any
+cache holding the old 1600x1000 versions serves them stale until it expires.
