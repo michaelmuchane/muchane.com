@@ -2647,3 +2647,12 @@ rects byte-identical to the true stashed-before capture on all three cards (left
 pass (11 HTML pages' `style.css`/`app.js` tags plus `app.js`'s own
 `fetch('/muchane-cloud/changelog.json?v=12')`), re-derived by fresh grep at execution time.
 `starfield.js` stays bare.
+
+## Sitewide label: "Shipped" -> "Delivered" (reversal)
+
+Reverses the prior pass's "'Shipped' heading retained over the audit's 'Delivered'" overrule.
+Per Michael's direction this pass, the vocabulary decision is now: **Delivered** sitewide (all
+three Workday role pages), **Built** stays on the DaaS data-wrangling child as the deliberate
+prototype exception, and the `[data-testid="shipped"]` testid remains the sitewide contract
+everywhere (no testid changes; `shipped-compact` was removed with its element when the PQE
+page gained a full Delivered section). A future pass must not re-litigate toward "Shipped".
