@@ -449,6 +449,43 @@ renderTelemetry(TELEMETRY);
             body.appendChild(p);
         });
 
+        if (entry.shots && entry.shots.length) {
+            entry.shots.forEach(function (shotData, i) {
+                var suffix = i === 0 ? '' : '-' + (i + 1);
+                var shot = document.createElement('figure');
+                shot.className = 'entry-shot';
+                shot.dataset.testid = 'entry-shot-' + entry.slug + suffix;
+                var shotLink = document.createElement('a');
+                shotLink.className = 'entry-shot__full';
+                shotLink.href = shotData.src;
+                shotLink.target = '_blank';
+                shotLink.rel = 'noopener';
+                shotLink.dataset.testid = 'entry-shot-full-' + entry.slug + suffix;
+                var img = document.createElement('img');
+                img.src = shotData.src;
+                img.width = shotData.width;
+                img.height = shotData.height;
+                img.loading = 'lazy';
+                img.decoding = 'async';
+                img.alt = shotData.alt;
+                shotLink.appendChild(img);
+                var figcaption = document.createElement('figcaption');
+                figcaption.textContent = shotData.caption;
+                shot.appendChild(shotLink);
+                shot.appendChild(figcaption);
+                body.appendChild(shot);
+            });
+        } else {
+            // the screenshot embed ships now (testid present) but always
+            // empty and hidden until an entry carries shots data.
+            var emptyShot = document.createElement('figure');
+            emptyShot.className = 'entry-shot is-hidden';
+            emptyShot.hidden = true;
+            emptyShot.setAttribute('aria-hidden', 'true');
+            emptyShot.dataset.testid = 'entry-shot-' + entry.slug;
+            body.appendChild(emptyShot);
+        }
+
         var implLabel = document.createElement('h3');
         implLabel.className = 'entry__label';
         implLabel.textContent = 'Implementation';
@@ -468,15 +505,6 @@ renderTelemetry(TELEMETRY);
         iterP.textContent = entry.sections.iteration;
         body.appendChild(iterLabel);
         body.appendChild(iterP);
-
-        // A2: the screenshot embed ships now (testid present) but always
-        // empty and hidden — zero visible output until captures exist.
-        var shot = document.createElement('figure');
-        shot.className = 'entry-shot is-hidden';
-        shot.hidden = true;
-        shot.setAttribute('aria-hidden', 'true');
-        shot.dataset.testid = 'entry-shot-' + entry.slug;
-        body.appendChild(shot);
 
         details.appendChild(summaryEl);
         details.appendChild(body);

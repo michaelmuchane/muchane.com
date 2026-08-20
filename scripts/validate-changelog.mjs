@@ -108,6 +108,34 @@ for (const [slug, entry] of Object.entries(entries)) {
   }
   if (!Array.isArray(entry.shots)) {
     fail(`${p}.shots must be an array`);
+  } else {
+    entry.shots.forEach((shot, i) => {
+      const sp = `${p}.shots[${i}]`;
+      if (!shot || typeof shot !== 'object') {
+        fail(`${sp} must be an object`);
+        return;
+      }
+      const shotKeys = Object.keys(shot).sort();
+      const expectedShotKeys = ['alt', 'caption', 'height', 'src', 'width'];
+      if (shotKeys.join(',') !== expectedShotKeys.join(',')) {
+        fail(`${sp} keys must be exactly ${expectedShotKeys.join(',')}, got: ${shotKeys.join(',')}`);
+      }
+      if (typeof shot.src !== 'string' || !shot.src.startsWith('/media/')) {
+        fail(`${sp}.src must be a string starting with /media/`);
+      }
+      if (!Number.isInteger(shot.width) || shot.width <= 0) {
+        fail(`${sp}.width must be a positive integer`);
+      }
+      if (!Number.isInteger(shot.height) || shot.height <= 0) {
+        fail(`${sp}.height must be a positive integer`);
+      }
+      if (typeof shot.alt !== 'string' || !shot.alt) {
+        fail(`${sp}.alt must be a non-empty string`);
+      }
+      if (typeof shot.caption !== 'string' || !shot.caption) {
+        fail(`${sp}.caption must be a non-empty string`);
+      }
+    });
   }
 
   // Full vs. compact sections shape.

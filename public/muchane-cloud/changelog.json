@@ -112,7 +112,15 @@
         ],
         "iteration": "A standing finding from the evals reshaped what the pipeline may claim about itself. The fit score measures resume-to-job fit, not tailoring quality, and honest paraphrase should not move an honest evaluator."
       },
-      "shots": []
+      "shots": [
+        {
+          "src": "/media/tailoring-pipeline.webp",
+          "width": 2800,
+          "height": 1750,
+          "alt": "Pipeline diagram with generate, verify, growth ledger, and human review stages, showing unsupported edits rejected automatically and borderline edits escalated to a person.",
+          "caption": "The tailoring pipeline. An unsupported edit is rejected automatically, a borderline one goes to a human."
+        }
+      ]
     },
     "paragraph-break-overlap": {
       "slug": "paragraph-break-overlap",
@@ -166,7 +174,15 @@
         ],
         "iteration": "The fit-score slot shipped null-tolerant so the surface renders before the upstream score exists. Display first, data later."
       },
-      "shots": []
+      "shots": [
+        {
+          "src": "/media/companies-surface.webp",
+          "width": 2800,
+          "height": 1750,
+          "alt": "Company intelligence grid showing six target companies with headcount, funding stage, a recent research finding, a freshness indicator, and an interest score.",
+          "caption": "Company intelligence surface, illustrative data."
+        }
+      ]
     },
     "ats-ingestion-feed-complete": {
       "slug": "ats-ingestion-feed-complete",
@@ -193,7 +209,15 @@
         ],
         "iteration": "The invariant hardened into system law. A planned single-URL ingest path is designed around it and forced to declare its feeds incomplete. No mass-close incidents on record since."
       },
-      "shots": []
+      "shots": [
+        {
+          "src": "/media/jobs-triage.webp",
+          "width": 2800,
+          "height": 1750,
+          "alt": "Job triage table with filter tabs, sortable columns, and twelve ingested postings showing company, status, posting age, title, team, office type, and location.",
+          "caption": "Triage table over ingested postings, illustrative data."
+        }
+      ]
     },
     "updated-at-phantom-writer": {
       "slug": "updated-at-phantom-writer",
@@ -262,7 +286,15 @@
         ],
         "iteration": "Every later pipeline shipped without needing a new network path. The NULL lesson became a standing rule to check existence before upserting on nullable fields."
       },
-      "shots": []
+      "shots": [
+        {
+          "src": "/media/dual-path-network.webp",
+          "width": 2800,
+          "height": 1750,
+          "alt": "Architecture diagram showing an application tier and a system tier that share one Postgres database with no route between them.",
+          "caption": "Two paths to one database. Application traffic under RLS, automation on an isolated internal network."
+        }
+      ]
     },
     "char-budget-gate": {
       "slug": "char-budget-gate",

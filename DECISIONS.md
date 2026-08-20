@@ -2862,3 +2862,56 @@ them stale until it expires"; replaced in place to 2800x1750 in `8b8463c` (2026-
 flagged then as "the second consecutive in-place replacement", citing the pending purge;
 this pass (2026-08-20) is the third flag and is the one that turns the recurrence into a
 measured report and a concrete proposal instead of another line item.
+
+## Shots renderer wired, four mockup figures
+
+**`entry.shots` rendered for the first time.** The field has been schema-reserved since it
+shipped; `buildEntryCard` always built one empty, hidden, `aria-hidden` figure regardless of
+what `shots` held, so nothing populated it ever rendered. `buildEntryCard` now branches: a
+non-empty `entry.shots` array builds one `<figure>` per shot (anchor to the full asset,
+`target="_blank"`, `rel="noopener"`; `<img>` with explicit `width`/`height`/`loading="lazy"`/
+`decoding="async"`/`alt`; `<figcaption>`), matching the static-page figure markup verbatim.
+An empty array keeps today's hidden placeholder figure byte-identical, comment updated to
+drop the now-inaccurate "always empty" claim.
+
+**Figure position: between Solution and Implementation, not after Iteration.** Verified by
+screenshotting both positions on a live entry (`dual-path-network`, DOM-moved live, no code
+change, for comparison only). Between Solution and Implementation reads clearly better: the
+diagram directly follows the paragraph it illustrates, so the reader sees the claim and its
+evidence together. After Iteration disconnects them by two full sections (Implementation's
+bullet list, then the Iteration paragraph), so a reader reaches the diagram only after
+everything else. Shipped position matches the plan; no disagreement to record.
+
+**Validator extended to check shot-object shape**, not just `Array.isArray(entry.shots)`.
+Each shot object now must have exactly the keys `alt`, `caption`, `height`, `src`, `width`;
+`src` must start with `/media/`; `width`/`height` must be positive integers; `alt`/`caption`
+must be non-empty strings. A malformed shot object used to ship silently; it now fails the
+validator with a per-field message in the same style as the existing section checks.
+
+**Four new mockup figures, purpose-built with invented data.** Not captures of the real
+application, so they are never called screenshots anywhere: not in alt text, not in
+captions, not here. `dual-path-network.webp`, `tailoring-pipeline.webp`, `jobs-triage.webp`,
+and `companies-surface.webp` shipped at 2800x1750 (2x the 1400px breakout width, per the
+standing asset-width rule above), moved into `public/media/` at mode 644 matching every
+other file there, and wired into the `shots` array of the four entries whose home page they
+illustrate: `dual-path-network` on self-hosted-infra, `tailoring-quality-triad`,
+`companies-surface`, and `ats-ingestion-feed-complete` on career-command-center. Their
+cross-page link-card renderings (all three of those entries also appear on the hub grid)
+carry no figure, by construction, since `buildEntryCard`'s link branch returns before the
+section/shots code ever runs.
+
+**`companies-surface.webp` shipped at 177.6KB, not the 144.6KB a prior brief cited.**
+Dimensions (2800x1750) and the per-asset 200KB weight cap both check out, so this was not
+treated as a preflight failure; recorded here in case the size delta traces back to a later
+re-export that should have superseded the cited figure rather than being a discrepancy to
+chase down.
+
+**Note on `public/app.js`'s em-dash count: 46 before this pass, 45 after, not flat.** Every
+other file's count held exactly flat across all three commits. This one dropped because the
+old placeholder-figure comment being replaced contained the character in the middle of its
+own sentence (describing the figure as "always empty and hidden" with a dash-joined clause
+after it), a character the comment no longer needed once it stopped describing an
+always-empty state. A decrease from removing a stale comment's own em-dash is not the
+false-flat failure mode the gate exists to catch (an undercount from a wrong grep pattern);
+it is a real, accounted-for reduction from touching the one line the gate's own file set
+says should be touched.
