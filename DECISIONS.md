@@ -2656,3 +2656,44 @@ three Workday role pages), **Built** stays on the DaaS data-wrangling child as t
 prototype exception, and the `[data-testid="shipped"]` testid remains the sitewide contract
 everywhere (no testid changes; `shipped-compact` was removed with its element when the PQE
 page gained a full Delivered section). A future pass must not re-litigate toward "Shipped".
+
+## Zoom-in scroll snap fix, in-layer land-aligned, cache v14
+
+**Symptom, measured before fixing.** Clicking a zoom-in target while scrolled produced a
+visible content jump exactly at the swap: the incoming page rendered offset by the click-time
+scroll S for the whole ~950ms animation, then snapped S pixels in a single frame when
+`finalizeIn`'s `scrollToInstant(0)` ran. Clicking from scroll-top produced zero discontinuity,
+confirming the mechanism: `.zoom-layer` is `top:0` inside `#stage`, so the layer paints as
+though the page were still scrolled to S right up until the swap resets scroll to 0.
+
+**Fix, zoom-in path only.** `zoomIn` now captures `scrollAtClick` and sets the incoming
+layer's `top` to that value, so its viewport position during the animation already matches
+where it lands after `scrollToInstant(0)`, with no discontinuity between the last animation frame
+and the first post-swap frame. The origin used for the incoming layer's `transformOrigin` is
+compensated by the same offset so the zoom still expands from the clicked card's on-screen
+centre. A commit-first restructure mirroring `zoomOut`'s architecture was rejected: it would
+change `pushState` timing and the preemption/popstate interplay, which is out of scope for a
+snap fix. `zoomOut`, `finalizeIn`, `finalizeOut`, `centerOrigin`, and `swapStage` are
+byte-untouched; the outgoing layer's origin assignment (`centerOrigin(originEl, stage)` and
+`outLayer.style.transformOrigin = origin`) is also untouched, so the outgoing half of the
+animation is provably unaffected. `prefers-reduced-motion` is unaffected (that branch returns
+before any layer exists).
+
+Verified: no snap on zoom-in from both scrolled and unscrolled starting states, at multiple
+depths, repeated; zoom-out scroll restoration unchanged; `.zoom-layer--out`/`--in`
+`transformOrigin` still land on the clicked card's centre.
+
+**Hash-targeted zoom-ins excluded from the land-align, caught during verification.**
+`buildEntryCard`'s cross-page changelog entry links render as `data-zoom="in"` with a
+`page#slug` href and route through this same `zoomIn`. `finalizeIn` lands those at
+`hashScrollY(target)`, not scrollY 0, so shifting the incoming layer by the click-time scroll
+would trade the plain-link snap for a different one on the hash path. `landShift` is 0 when
+`hash` is set and `scrollAtClick` otherwise, leaving the hash path exactly as it behaved
+before this pass (an existing, out-of-scope snap). Verified by clicking
+`entry-link-dual-path-network` from scrollY 250: `inLayer.style.top` stayed `0px` and its
+`transformOrigin` matched the outgoing layer's unshifted value, confirming the hash path is
+untouched by the fix.
+
+**Cache-bust `?v=13` -> `?v=14`:** 23 references across the same 12 files as the prior pass
+(11 HTML pages' `style.css`/`app.js` tags plus `app.js`'s own
+`fetch('/muchane-cloud/changelog.json?v=13')`), re-derived by fresh grep at execution time.

@@ -315,7 +315,7 @@ renderTelemetry(TELEMETRY);
     function loadChangelog() {
         if (changelogData) return Promise.resolve(changelogData);
         if (!changelogPromise) {
-            changelogPromise = fetch('/muchane-cloud/changelog.json?v=13')
+            changelogPromise = fetch('/muchane-cloud/changelog.json?v=14')
                 .then(function (res) {
                     if (!res.ok) throw new Error('changelog fetch failed: ' + res.status);
                     return res.json();
@@ -833,6 +833,21 @@ renderTelemetry(TELEMETRY);
 
             var origin = centerOrigin(originEl, stage);
 
+            var scrollAtClick = window.scrollY;
+            // finalizeIn lands non-hash zoom-ins at scrollY 0, but a
+            // hash-targeted zoom-in (changelog cross-page entry links,
+            // buildEntryCard) lands at hashScrollY(target) instead - an
+            // arbitrary nonzero position that can't be known until the
+            // incoming DOM exists post-swap. Land-aligning against the
+            // wrong landing spot would trade the plain-link snap for a
+            // different one on the hash path, so that path keeps its
+            // original (pre-existing, out of scope) unshifted behavior.
+            var landShift = hash ? 0 : scrollAtClick;
+            var oRect = originEl.getBoundingClientRect();
+            var sRect = stage.getBoundingClientRect();
+            var inOrigin = (oRect.left + oRect.width / 2 - sRect.left) + 'px ' +
+                (oRect.top + oRect.height / 2 - sRect.top - landShift) + 'px';
+
             // Freeze the document height before pulling content out of
             // flow: moving children into the outgoing layer collapses
             // #stage to its base min-height, which can shrink the document
@@ -840,7 +855,7 @@ renderTelemetry(TELEMETRY);
             // silently clamp scrollY — a jump indistinguishable from the
             // settle bug this pass already fixed, just at the other end of
             // the transition. swapStage (called by finalizeIn) clears this.
-            stage.style.minHeight = stage.offsetHeight + 'px';
+            stage.style.minHeight = Math.max(stage.offsetHeight, scrollAtClick + window.innerHeight) + 'px';
 
             var outLayer = document.createElement('div');
             outLayer.className = 'zoom-layer zoom-layer--out';
@@ -849,7 +864,16 @@ renderTelemetry(TELEMETRY);
 
             var inLayer = document.createElement('div');
             inLayer.className = 'zoom-layer zoom-layer--in';
-            inLayer.style.transformOrigin = origin;
+            // Land-aligned: shift the incoming layer down by the click-time
+            // scroll so its top edge sits exactly where the swapped-in page
+            // will sit after finalizeIn's scrollToInstant(0). The last
+            // animation frame and the first post-swap frame then paint
+            // identical pixels (no snap), and the origin's y is compensated
+            // by the same offset so the zoom still expands from the clicked
+            // card's on-screen centre. Skipped (landShift 0) for hash URLs,
+            // see the note above.
+            inLayer.style.top = landShift + 'px';
+            inLayer.style.transformOrigin = inOrigin;
             inLayer.style.opacity = '0';
             inLayer.innerHTML = data.mainHTML;
             renderChangelog(inLayer, hash);
