@@ -3,10 +3,7 @@
     "/muchane-cloud": {
       "grid": [
         "platform-overview",
-        "muchane-com",
-        "dual-path-network",
-        "tailoring-quality-triad",
-        "ats-ingestion-feed-complete"
+        "muchane-com"
       ]
     },
     "/muchane-cloud/career-command-center": {
@@ -271,7 +268,7 @@
         "security",
         "database"
       ],
-      "summary": "App traffic rides Kong under JWT-enforced RLS. Automation rides an isolated internal network. The tiers can't reach each other.",
+      "summary": "App traffic rides Kong under JWT-enforced RLS while automation rides an isolated internal network. The tiers cannot reach each other.",
       "metric": "5432 never public",
       "compact": false,
       "sections": {

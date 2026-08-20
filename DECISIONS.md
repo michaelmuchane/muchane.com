@@ -2915,3 +2915,61 @@ always-empty state. A decrease from removing a stale comment's own em-dash is no
 false-flat failure mode the gate exists to catch (an undercount from a wrong grep pattern);
 it is a real, accounted-for reduction from touching the one line the gate's own file set
 says should be touched.
+
+## Hub grid reverted to two entries, real child-card navigation, summary de-emphasis, Self-Hosted Infrastructure rename
+
+**Hub grid reverted from five cards to two.** The five-card curation (dual-path-network,
+tailoring-quality-triad, ats-ingestion-feed-complete added alongside platform-overview and
+muchane-com) is reversed: those three cross-page entry cards were visually indistinguishable
+from in-place drill-ins on their home pages, so a reader could not tell a hub card was
+*navigation* rather than a duplicate summary of content sitting one click away. The hub grid
+is now exactly `platform-overview` and `muchane-com`; navigation to the two child pages is a
+real `children`/`child-card` block instead, so navigation looks like navigation. Post-edit
+counts (from the file): 15 entries, 15 page assignments, zero duplicated slugs.
+
+**`.children--pair`: a second sizing modifier alongside `.children--single`.** The base
+`.children` grid sets no `grid-template-columns`, so two cards would stack in one column.
+Rather than touch the base rule (which the DaaS single-card page also depends on) or extend
+`.children--single`'s selector, a new modifier mirrors the `--single` convention: two
+`minmax(min-content, 360px)` tracks, centered, so the pair reads as deliberate rather than a
+coincidental two-item stack. `minmax(min-content, …)`, not `minmax(0, …)`, so a track never
+shrinks below its longest unbreakable word.
+
+**Below 600px the pair stacks single-column, not side-by-side.** The two-track layout would
+squeeze each card under ~165px on a narrow phone, well below where "Self-Hosted
+Infrastructure" can read as a deliberate pair rather than clipped text. The existing mobile
+block (`@media (max-width: 600px)`, already home to the entry-shot margin reset) resets
+`.children--pair` to `grid-template-columns: none; justify-content: normal` - exactly the
+values the base `.children` rule leaves at their CSS-initial default, so this is a true reset
+to "what the unmodified base class does," not a third hand-tuned layout. Both properties must
+reset together: leaving `justify-content: center` alone would center-shrink-wrap the single
+implicit column instead of matching the sitewide full-width mobile stack every other section
+uses. This corrects an earlier framing (in the sourcing brief for this pass) that expected
+the pair to stay side-by-side down to 375px; it does not, and should not be "fixed" back to
+side-by-side in a later pass without revisiting the 165px-column math above.
+
+**Entry-card summaries de-emphasized: regular weight, `--meta-color`, not italic.** Titles
+and summaries rendered at identical visual weight because `.entry__summary`'s span sat inside
+`<summary class="entry__card">`, which inherits the sitewide generic `details summary {
+font-weight: 600 }` rule. Setting `font-weight: 400` directly on the summary span needs no
+specificity fight - the 600 rule targets the `<summary>` element, not descendant spans, so
+the fix is additive to `.entry__summary`, not a competing override. Color: `--meta-color`
+(already used inside cards by `.entry__date`, documented ≥4.5:1 contrast), not a new token.
+`.entry__summary` is assigned only in `app.js`'s `buildEntryCard`; it appears in zero static
+HTML files, so the change cannot reach any static-page element. `text-wrap: pretty` added
+alongside as pure progressive enhancement.
+
+**Self-Hosted Infrastructure: display name expands, slug stays `self-hosted-infra`
+permanently.** The `<h1>` and `<title>` now read "Self-Hosted Infrastructure" (title uses
+comma separators, matching the one existing em-dash-free child title,
+`data-wrangling-pipeline`'s "Data Wrangling Pipeline, DaaS Platform, Michael Muchane" - the
+sibling child title, Career Command Center's, still uses em-dashes and is unchanged). The L0
+satellite's aria-label and hover-teaser title both become "Self-Hosted Infrastructure" per
+the standing rule that aria-label and teaser title carry the full destination name; the
+visible pill text stays "Self-Hosted Infra" because its width is load-bearing orbit geometry
+(the `A=156` derivation) - the DaaS precedent already established that pill labels may
+abbreviate their destination. The slug does not change and will not: the site has no redirect
+mechanism, so a rename-without-redirect window only ever closes cleanly before launch, never
+after. This file's em-dash count drops from 2 to 0 as a direct, intentional consequence of
+the title rewrite (its only two em-dashes lived in the old em-dash-separated title); not a gate
+violation, and not to be "corrected" back.

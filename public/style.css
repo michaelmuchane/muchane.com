@@ -973,6 +973,11 @@ a.node:focus-visible .node__inner {
     text-align: center;
 }
 
+.children--pair {
+    grid-template-columns: repeat(2, minmax(min-content, 360px));
+    justify-content: center;
+}
+
 .child-card {
     display: block;
     text-decoration: none;
@@ -1079,7 +1084,9 @@ a.entry--link {
 .entry__summary {
     display: block;
     margin-top: 8px;
-    color: var(--text-color);
+    font-weight: 400;
+    color: var(--meta-color);
+    text-wrap: pretty;
 }
 
 .entry__foot {
@@ -1334,6 +1341,11 @@ main.is-zooming {
 
     .entry-shot {
         margin-inline: 0;
+    }
+
+    .children--pair {
+        grid-template-columns: none;
+        justify-content: normal;
     }
 
     /* Narrow hero: swap the paragraphs. display (not visibility) — a
