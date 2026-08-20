@@ -2701,15 +2701,30 @@ untouched by the fix.
 ## Standing rule: asset intrinsic width = 2x the maximum rendered CSS width
 
 Figure assets in `public/media/` must be exported at twice the widest CSS width they can
-render at. The `.entry-shot` breakout width is 1040px, so assets are 2080px wide. Any future
+render at. The `.entry-shot` breakout width is 1400px, so assets are 2800px wide. Any future
 change to the breakout width invalidates every asset in `public/media/` and requires
 re-export at the new 2x. This coupling is visible from neither the CSS side nor the asset
 side, and it already caused one silent regression: the DaaS assets were exported at 1600px
 (2.5x for the original 640px prose column) and were quietly reduced to 1.54x when the 1040px
-breakout shipped, below the 2x a retina display needs. This pass re-exported both at
-2080x1300 and added two new Workday figures at the same size.
+breakout shipped, below the 2x a retina display needs. A later pass re-exported both at
+2080x1300 and added two new Workday figures at the same size, correctly 2x for the 1040px
+breakout of that time.
 
-Two new Workday figures added this pass: `shot-mentor-funnel` (PM Rotation) and
-`shot-service-map` (Senior PQE), both 2080x1300, no cache-bust needed since `public/media/`
-assets carry no version query. Overwriting the two replaced filenames in place means any
-cache holding the old 1600x1000 versions serves them stale until it expires.
+**Breakout raised to 1400px, assets re-exported to 2800x1750.** At 1040px the assets were
+correctly 2x yet rendered their content at roughly 65% of designed size, because each was
+authored on a 1600px canvas. Enlarging the display slot was the fix rather than re-authoring,
+since re-authoring at display scale would have meant cutting content to fit. All four figures
+(`shot-sensor-evaluation`, `shot-alignment-gate`, `shot-mentor-funnel`, `shot-service-map`)
+moved from 2080x1300 to 2800x1750 in the same pass as the CSS change, in place, same
+filenames.
+
+**Per-asset weight cap raised from 120KB to 200KB.** One figure per page, lazy-loaded, and
+the densest asset is a full application screen that does not compress below roughly 185KB at
+2800px without visible loss. Current weights, for the next pass's baseline: alignment-approval-gate
+184.6KB, rest-api-service-map 126.1KB, mentor-conversion-funnel 70.1KB, sensor-evaluation-v0
+59.5KB.
+
+Overwriting tracked filenames in place means any cache holding an older-resolution version
+serves it stale until it expires. This is now the second consecutive in-place asset
+replacement (1600 to 2080, now 2080 to 2800), which strengthens the case for the pending
+deploy-time cache purge.

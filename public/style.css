@@ -1142,7 +1142,7 @@ a.entry--link {
    visible output until real captures exist. */
 .entry-shot {
     margin: 20px 0 4px;
-    margin-inline: max(calc((100% - 1040px) / 2), calc((100% + 80px - 100vw) / 2));
+    margin-inline: max(calc((100% - 1400px) / 2), calc((100% + 80px - 100vw) / 2));
     border: 1px solid var(--border-color);
     background: var(--bg-color);
     box-shadow: 0 0 72px -6px var(--istar-active-glow);
