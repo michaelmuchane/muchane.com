@@ -3044,3 +3044,31 @@ concurrency control (the course's own term, not the MVCC acronym), and dimension
 schemas with ROLLUP aggregation. Item 4 changed "algorithmic paradigms" to "algorithm
 design techniques" per the same verification. The page still holds exactly four `<li>`
 items; no fifth item or ETL/OLTP/OLAP claim was added.
+
+## Figure caption panel narrowed to margin note, cache v18
+
+**Panel track fixed at 320px, image column flexible (`minmax(0, 1fr) 320px`).** Michael's
+feedback on the shipped side-by-side layout: the caption panel read too wide and its text
+too large. Measured against the longest replacement caption (`tailoring-quality-triad`,
+B2): image column renders 1078px at the 1400px figure cap (1920px+ viewports), 1038px at
+1440px, 718px at the 1120px threshold; panel holds flat at 320px across all three. The
+1078px figure at full breakout sits inside the 1020-1080px target and the panel sits at the
+top of the 260-320px target, reading as a margin note next to a dominant image rather than
+a co-equal column.
+
+**Caption font-size 0.84rem / line-height 1.6, hint untouched at 0.72rem.** Computed sizes:
+caption 13.44px, hint 11.52px, so the hint stays visibly smaller than the caption at every
+width. The 1120px side-by-side threshold and the base 0.75rem stacked figcaption size are
+unchanged; this pass only touches the two declarations inside the existing
+`@media (min-width: 1120px)` block.
+
+**Worst case held without raising the threshold.** B2 is the longest of the four
+captions. At the 1120px threshold the figcaption's `scrollHeight` matched its
+`clientHeight` exactly (449px each), meaning the grid-stretched caption cell holds the full
+text with no internal overflow and no scrollbar, so the pre-existing 1120px threshold from
+the prior pass needed no change.
+
+**Cache bump `?v=17` -> `?v=18`.** `style.css` (this pass) and `changelog.json` (prior
+commit, same day) both changed since the last bump; re-derived at 23 references across 12
+files, matching the prior count exactly (11 HTML files times two plus the one fetch call in
+`app.js`; same file set, same reference shape, no cache-bearing file added or removed).

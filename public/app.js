@@ -315,7 +315,7 @@ renderTelemetry(TELEMETRY);
     function loadChangelog() {
         if (changelogData) return Promise.resolve(changelogData);
         if (!changelogPromise) {
-            changelogPromise = fetch('/muchane-cloud/changelog.json?v=17')
+            changelogPromise = fetch('/muchane-cloud/changelog.json?v=18')
                 .then(function (res) {
                     if (!res.ok) throw new Error('changelog fetch failed: ' + res.status);
                     return res.json();

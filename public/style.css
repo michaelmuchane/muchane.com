@@ -1183,15 +1183,15 @@ a.entry--link {
 @media (min-width: 1120px) {
     .entry__body .entry-shot {
         display: grid;
-        grid-template-columns: minmax(0, 900px) minmax(220px, 1fr);
+        grid-template-columns: minmax(0, 1fr) 320px;
     }
 
     .entry__body .entry-shot figcaption {
         border-top: 0;
         border-left: 1px solid var(--border-color);
         padding: 16px 20px;
-        font-size: 1rem;
-        line-height: 1.55;
+        font-size: 0.84rem;
+        line-height: 1.6;
     }
 
     .entry__body .entry-shot .entry-shot__hint {
