@@ -3013,10 +3013,10 @@ last bump; re-derived at 23 references across 12 files, matching the prior count
 (same file set, same reference shape - no new cache-bearing file was added or removed).
 
 **Superseded: threshold later raised to 1280px.** The 1120px threshold recorded above was
-the value at the time of this pass. It was later raised to 1280px for caption headroom,
-documented in "Figure caption panel: margin-note track, threshold 1280, cache v19" and the
-commit that shipped it. That entry is the current source of truth for the threshold; the
-reasoning above for why 1120px was chosen originally remains accurate history.
+the value at the time of this pass. It was later raised to 1280px for caption headroom in
+commit `e50fa40`, documented in "Figure caption panel: margin-note track, threshold 1280,
+cache v19." That entry is the current source of truth for the threshold; the reasoning
+above for why 1120px was chosen originally remains accurate history.
 
 ## Audit-final Muchane Cloud prose, figure captions, Education revision
 
