@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" fill="#0a0a0a"/>
+  <rect x="2" y="2" width="60" height="60" fill="none" stroke="#B07FFF" stroke-width="4"/>
+  <text x="32" y="46" font-family="'JetBrains Mono','Fira Code',monospace" font-size="40" font-weight="700" fill="#B07FFF" text-anchor="middle">M</text>
+</svg>
