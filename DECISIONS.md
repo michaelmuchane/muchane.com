@@ -2994,7 +2994,8 @@ caption, exactly as it rendered before this pass; no new rule fires there.
 same breakpoint that builds the two-column grid.** `app.js` always appends an
 `.entry-shot__hint` span inside every figcaption, for all four drill-in figures, with no
 branching on viewport width. The span is `display: none` by default and `display: block`
-only inside the same `@media (min-width: 1120px)` block that switches `.entry-shot` to
+only inside the same `@media (min-width: 1120px)` block (the threshold value at the time
+this entry was written; see the superseding entry below) that switches `.entry-shot` to
 `display: grid` - so there is never a second figcaption build, a resize listener, or a
 visibility state to fall out of sync with the layout it describes. No new testid on the
 hint (constraint: no new testids beyond the two child links added in the prior commit).
@@ -3010,6 +3011,12 @@ itself) is untouched and still wraps the whole figure, not per column.
 B1-B12/A1/B3/C1/E1/E3 in the prior commit plus this commit's CSS/JS) all changed since the
 last bump; re-derived at 23 references across 12 files, matching the prior count exactly
 (same file set, same reference shape - no new cache-bearing file was added or removed).
+
+**Superseded: threshold later raised to 1280px.** The 1120px threshold recorded above was
+the value at the time of this pass. It was later raised to 1280px for caption headroom,
+documented in "Figure caption panel: margin-note track, threshold 1280, cache v19" and the
+commit that shipped it. That entry is the current source of truth for the threshold; the
+reasoning above for why 1120px was chosen originally remains accurate history.
 
 ## Audit-final Muchane Cloud prose, figure captions, Education revision
 
