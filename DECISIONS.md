@@ -3010,3 +3010,37 @@ itself) is untouched and still wraps the whole figure, not per column.
 B1-B12/A1/B3/C1/E1/E3 in the prior commit plus this commit's CSS/JS) all changed since the
 last bump; re-derived at 23 references across 12 files, matching the prior count exactly
 (same file set, same reference shape - no new cache-bearing file was added or removed).
+
+## Audit-final Muchane Cloud prose, figure captions, Education revision
+
+**External audit copy transcribed verbatim, no independent rewording.** Hub pitch agent
+sentence, Career Command Center pitch closing sentence, the `paragraph-break-overlap`
+iteration line, all four figure `caption` fields, and four Education page fields (title,
+meta description, model-selection line, coursework items 3 and 4) all replaced with
+audit-final strings, character for character. Five other one-liners the audit explicitly
+kept (platform-overview iteration, muchane-com solution, tailoring-quality-triad's
+asymmetry line, companies-surface's display-first line, char-budget-gate's constrain-
+generation line) were left untouched; confirmed by diffing `changelog.json` and finding
+changes only at the five edited fields.
+
+**Education `<title>` em-dash removed, comma substituted.** "Education, Michael Muchane"
+matches the audit's specified punctuation and drops this file's only literal em-dash glyph
+(the two `&mdash;` entities elsewhere in the file are HTML entities, not literal glyphs, and
+were never part of the em-dash gate count). File count: 1 -> 0, the one intentional delta
+in this pass; every other touched file's em-dash count stayed flat.
+
+**Model-selection line de-quoted by deleting `&ldquo;`/`&rdquo;` entities, no restyle
+needed.** Checked the markup before editing per the audit's instruction: the element is a
+plain `<p data-testid="model-selection-line">`, not a `blockquote` and not sharing a class
+with the Workday pull-quotes (those are `<blockquote data-testid="pull-quote-N">` elements
+with a `<cite>`). The quotation marks were character entities inside the paragraph text, so
+the fix was deleting the two entities; no re-tagging or CSS change was required. Quotation
+marks on this site stay reserved for the two Workday pull-quotes attributed to other
+people.
+
+**Coursework items 3 and 4 lengthened, not trimmed, after a course-record verification
+pass outside this repo.** Item 3 now spells out normalization, locking, multiversion
+concurrency control (the course's own term, not the MVCC acronym), and dimensional star
+schemas with ROLLUP aggregation. Item 4 changed "algorithmic paradigms" to "algorithm
+design techniques" per the same verification. The page still holds exactly four `<li>`
+items; no fifth item or ETL/OLTP/OLAP claim was added.

@@ -115,7 +115,7 @@
           "width": 2800,
           "height": 1750,
           "alt": "Pipeline diagram with generate, verify, growth ledger, and human review stages, showing unsupported edits rejected automatically and borderline edits escalated to a person.",
-          "caption": "The tailoring pipeline. An unsupported edit is rejected automatically, a borderline one goes to a human."
+          "caption": "The pipeline that edits my resume per job. A generation model proposes edits, a verification model at temperature 0 checks each one against my real profile, and a growth ledger caps total length. Note the two exit paths, an unsupported claim is dropped automatically while a borderline one escalates to me, because fabrication and exaggeration deserve different treatment. Diagram is real structure with illustrative data."
         }
       ]
     },
@@ -142,7 +142,7 @@
           "Two verification executions confirmed first-attempt renders with zero retries.",
           "The diagnostic method mattered as much as the fix. Structural log comparison was blind to the failure, and only walking the corpus with field extraction exposed it."
         ],
-        "iteration": "The investigation also exposed a contaminated control set. The \"applied\" labels included pre-strip operations, so the known-good corpus didn't prove what it claimed. The lesson stuck. Interrogate what a good label actually attests."
+        "iteration": "The investigation also exposed a contaminated control set. The \"applied\" labels included pre-strip operations, so the known-good corpus didn't prove what it claimed. The lesson that stuck was to interrogate what a good label actually attests."
       },
       "shots": []
     },
@@ -177,7 +177,7 @@
           "width": 2800,
           "height": 1750,
           "alt": "Company intelligence grid showing six target companies with headcount, funding stage, a recent research finding, a freshness indicator, and an interest score.",
-          "caption": "Company intelligence surface, illustrative data."
+          "caption": "The company intelligence grid, tracking roughly 70 companies with research findings, interest scores, and staleness measured from recorded views rather than guessed. Every number on this surface is computed in SQL against the live schema, no analytics service in between. Companies and data shown are invented."
         }
       ]
     },
@@ -212,7 +212,7 @@
           "width": 2800,
           "height": 1750,
           "alt": "Job triage table with filter tabs, sortable columns, and twelve ingested postings showing company, status, posting age, title, team, office type, and location.",
-          "caption": "Triage table over ingested postings, illustrative data."
+          "caption": "The triage table where ingested postings land, filtered by feed and status. Behind it, adapters pull from each applicant tracking system on a staggered cycle, and no feed may close a posting unless it can prove it saw everything. Postings and companies shown are invented."
         }
       ]
     },
@@ -289,7 +289,7 @@
           "width": 2800,
           "height": 1750,
           "alt": "Architecture diagram showing an application tier and a system tier that share one Postgres database with no route between them.",
-          "caption": "Two paths to one database. Application traffic under RLS, automation on an isolated internal network."
+          "caption": "Two tiers, one database, and no route between them. Application traffic enters through the web-facing proxy and API gateway, where row-level security scopes every query to the requesting user. Automation runs on an internal bridge the public tier cannot reach, which is why the database port never needs to be exposed. Structure is real, labels are illustrative."
         }
       ]
     },
