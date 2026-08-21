@@ -3045,30 +3045,43 @@ schemas with ROLLUP aggregation. Item 4 changed "algorithmic paradigms" to "algo
 design techniques" per the same verification. The page still holds exactly four `<li>`
 items; no fifth item or ETL/OLTP/OLAP claim was added.
 
-## Figure caption panel narrowed to margin note, cache v18
+## Figure caption panel: margin-note track, threshold 1280, cache v19
 
-**Panel track fixed at 320px, image column flexible (`minmax(0, 1fr) 320px`).** Michael's
-feedback on the shipped side-by-side layout: the caption panel read too wide and its text
-too large. Measured against the longest replacement caption (`tailoring-quality-triad`,
-B2): image column renders 1078px at the 1400px figure cap (1920px+ viewports), 1038px at
-1440px, 718px at the 1120px threshold; panel holds flat at 320px across all three. The
-1078px figure at full breakout sits inside the 1020-1080px target and the panel sits at the
-top of the 260-320px target, reading as a margin note next to a dominant image rather than
-a co-equal column.
+**Panel track fixed at 320px, image column flexible (`minmax(0, 1fr) 320px`).** Measured
+against the longest caption (`tailoring-quality-triad`): image column renders 1078px at the
+1400px figure cap (1920px viewport), 1038px at 1440px, and 878px at the 1280px threshold;
+panel holds flat at 320px across all three. Caption font-size 0.84rem, line-height 1.6;
+hint untouched at 0.72rem (computed 13.44px vs 11.52px, hint stays visibly smaller at every
+width).
 
-**Caption font-size 0.84rem / line-height 1.6, hint untouched at 0.72rem.** Computed sizes:
-caption 13.44px, hint 11.52px, so the hint stays visibly smaller than the caption at every
-width. The 1120px side-by-side threshold and the base 0.75rem stacked figcaption size are
-unchanged; this pass only touches the two declarations inside the existing
-`@media (min-width: 1120px)` block.
+**Threshold moved from 1120px to 1280px for caption headroom.** The prior pass judged the
+1120px threshold safe because the longest caption's figcaption `scrollHeight` matched its
+`clientHeight` exactly, 449px each. That metric is degenerate: `scrollHeight` floor-clamps
+to `clientHeight` whenever content fits, so an exact match cannot distinguish "no room
+left" from "fits with room to spare." Measuring the actual free space between the caption
+text's last line and the caption cell's bottom edge instead (rendered content bottom vs.
+cell bottom) puts the true headroom at 1120px at roughly 85px, not zero. That reading still
+left too little margin for a caption to grow by even a couple of sentences, so the
+threshold moved up regardless. Viewports from 1120px to 1279px now render stacked, verified
+directly at 1279px and 1200px: `display: block`, the base 0.75rem caption, hint hidden, no
+horizontal scroll.
 
-**Worst case held without raising the threshold.** B2 is the longest of the four
-captions. At the 1120px threshold the figcaption's `scrollHeight` matched its
-`clientHeight` exactly (449px each), meaning the grid-stretched caption cell holds the full
-text with no internal overflow and no scrollbar, so the pre-existing 1120px threshold from
-the prior pass needed no change.
+**The fixed track is deliberate; a wider panel at the threshold is accepted, not fixed.** A
+review observed the panel is 100px wider at the threshold than the prior variable track was
+(320px vs 220px). Accepted: the old `minmax(0, 900px) minmax(220px, 1fr)` track put the
+panel at its widest where the figure was widest (498px at the 1400px cap) and narrowest
+where space was tightest, the inverse of what a margin note needs. A fixed 320px column
+that stays the same width regardless of figure size is the intended behavior.
 
-**Cache bump `?v=17` -> `?v=18`.** `style.css` (this pass) and `changelog.json` (prior
-commit, same day) both changed since the last bump; re-derived at 23 references across 12
-files, matching the prior count exactly (11 HTML files times two plus the one fetch call in
-`app.js`; same file set, same reference shape, no cache-bearing file added or removed).
+**Measured headroom, the budget for future caption authors.** True free space below the
+last line of caption text at the 1280px threshold, by entry: `tailoring-quality-triad`
+(422 characters) 185px, room for roughly 240 more characters; `dual-path-network` (362
+characters) 228px, roughly 300 more; `companies-surface` (310 characters) 271px, roughly
+370 more; `ats-ingestion-feed-complete` (272 characters) 293px, roughly 390 more. Method:
+free space divided by the 21.5px line height gives spare lines, times each caption's
+measured characters-per-line, floored.
+
+**Cache bump `?v=18` -> `?v=19`.** `style.css` (this pass) changed since the last bump;
+re-derived at 23 references across 12 files, matching the prior count exactly (11 HTML
+files times two plus the one fetch call in `app.js`, token only, no logic change; same file
+set, same reference shape, no cache-bearing file added or removed).

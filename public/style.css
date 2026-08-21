@@ -1180,7 +1180,7 @@ a.entry--link {
     font-size: 0.72rem;
 }
 
-@media (min-width: 1120px) {
+@media (min-width: 1280px) {
     .entry__body .entry-shot {
         display: grid;
         grid-template-columns: minmax(0, 1fr) 320px;
