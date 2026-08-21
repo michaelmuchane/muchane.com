@@ -3092,3 +3092,50 @@ measured characters-per-line, floored.
 re-derived at 23 references across 12 files, matching the prior count exactly (11 HTML
 files times two plus the one fetch call in `app.js`, token only, no logic change; same file
 set, same reference shape, no cache-bearing file added or removed).
+
+## Head-of-document pass: OG tags, canonical, favicon, robots/sitemap, title commas, resume anchor removed
+
+**og:image deferred this pass.** Inspected all 8 `public/media/` figures against a
+center-crop from their native 2800x1750 (1.6:1) down to the OG standard 1200x630 (1.91:1,
+~142px lost off top and bottom). Every figure loses its title text in the crop, and three
+(companies-surface, jobs-triage, alignment-approval-gate) also lose functional UI chrome,
+specifically tab bars, footer status text, or the bottom action buttons. No figure survives
+the crop intact, so no `og:image`/`twitter:image` ships; `twitter:card` is `summary`.
+Revisit once a purpose-made 1200x630 asset exists.
+
+**Favicon is SVG-only; no `apple-touch-icon`.** `public/favicon.svg` (dark tile, accent
+border, monospace "M") satisfies `rel="icon"` in all current browsers with zero build step.
+An `apple-touch-icon` tag needs a PNG this repo has no way to author; rather than ship a tag
+pointing at an SVG iOS ignores, the tag is omitted entirely until a PNG can be produced.
+
+**Canonical/og:url/sitemap URLs are slash-less, home excepted.** `normalizePath()` in
+`public/app.js` (`p.replace(/\/+$/, '') || '/'`) strips every trailing slash except root,
+and boot-time `history.replaceState` rewrites the address bar to that form; all authored
+`href`s are already slash-less. A trailing-slash canonical on any non-root page would point
+at a URL the page immediately rewrites away from, so canonical, `og:url`, and every sitemap
+`<loc>` use the slash-less path (`https://muchane.com/workday`, etc.); home is the one
+exception, at `https://muchane.com/`, matching `normalizePath`'s root case.
+
+**`og:type` is `website` on every page.** Nothing on the site is an `article` in the OG
+profile sense; no per-page variation.
+
+**Titles switched from dash-separated to comma-separated.** Seven `<title>` values used a
+dash to join section name, parent section, and site name; all seven are now comma-joined
+(e.g. `Section, Parent, Michael Muchane`), matching the four titles that were already in
+comma form. Total title-dash count across the 11 pages dropped from 11 to 0; no other
+element mentions a title's old separator, so no cross-reference needed rephrasing.
+
+**Resume anchor stripped from all 11 pages, not left hidden.** Audited every code path that
+could reveal the `header-resume` anchor before deciding: `app.js` and `starfield.js`
+contain zero references to `resume`/`header-resume`/`header__icon--resume`; the only
+`is-hidden` class write in `app.js` adds the class (an unrelated dormant figure
+placeholder), never removes it; no `removeAttribute('hidden')` or `.hidden = false` targets
+the anchor (`workChildren.hidden` toggles the separate drawer nav); no hash or URL-param
+branch touches the header. The element was unreachable without devtools, i.e. dead markup
+pointing at a 404 route (`/resume/` does not exist) visible in view-source. Removed rather
+than left in place; `style.css`'s `.header__icon--resume` rules and `--icon-resume-*`
+tokens are left untouched (out of scope, and touching them would force a cache bump).
+
+**No cache bump.** This pass touches only HTML plus three new served files
+(`favicon.svg`, `robots.txt`, `sitemap.xml`); `style.css` and `app.js` are both unmodified,
+confirmed by `git status` and a stable `?v=19` reference count of 23 before and after.
