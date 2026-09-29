@@ -2,6 +2,8 @@
 // app.js, no changes to routing/history/zoom. Renders behind all content on
 // every route via #starfield (position:fixed, z-index:0, pointer-events:none
 // — see style.css). Single file, no modules, no build step, no remote origin.
+// cursor-trail.js draws on this file's loop through window.starfieldLoop (see
+// LOOP CONTROL); the page never runs a second rAF loop.
 
 (function () {
     'use strict';
@@ -148,6 +150,7 @@
         t += dt;
 
         draw(t);
+        if (frameHook !== null) frameHook(now);
         rafId = requestAnimationFrame(frame);
     }
 
@@ -163,11 +166,21 @@
         rafId = null;
     }
 
+    /* SHARED LOOP - cursor-trail.js registers its per-frame draw here instead
+       of starting its own loop, so it inherits this loop's start/stop rules
+       (reduced motion, hidden tab). One hook, one loop. */
+    var frameHook = null;
+    window.starfieldLoop = {
+        onFrame: function (fn) { frameHook = fn; }
+    };
+
     function syncMotionMode() {
         if (REDUCED.matches) {
             stopLoop();
             mouse.x = mouse.y = target.x = target.y = 0;
             draw(t);
+        } else if (document.hidden) {
+            stopLoop();
         } else {
             startLoop();
         }
@@ -181,6 +194,7 @@
     }
 
     window.addEventListener('resize', resize);
+    document.addEventListener('visibilitychange', syncMotionMode);
 
     resize();
     syncMotionMode();

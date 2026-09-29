@@ -3,7 +3,8 @@
     "/muchane-cloud": {
       "grid": [
         "platform-overview",
-        "muchane-com"
+        "muchane-com",
+        "cursor-trail"
       ]
     },
     "/muchane-cloud/career-command-center": {
@@ -396,6 +397,22 @@
       ],
       "summary": "Every pipeline upserts a heartbeat row, surfaced as status lights in the app footer. Health at a glance instead of at failure.",
       "metric": "4 workflows",
+      "compact": true,
+      "sections": null,
+      "shots": []
+    },
+    "cursor-trail": {
+      "slug": "cursor-trail",
+      "page": "/muchane-cloud",
+      "title": "A tail for the cursor",
+      "date_display": "Week of Sep 28, 2026",
+      "week_start": "2026-09-28",
+      "date_verified": true,
+      "tags": [
+        "frontend"
+      ],
+      "summary": "A Canvas 2D comet tail follows the pointer on the starfield's own animation loop. Fixed 110px length, width from speed, absent under reduced motion and on touch.",
+      "metric": "110px, 0 dependencies",
       "compact": true,
       "sections": null,
       "shots": []
