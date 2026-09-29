@@ -1,10 +1,7 @@
 node_modules/
 .DS_Store
-test-results/
-playwright-report/
-.omp/
-PHASE-E-HANDOFF.md
-.artifacts/
-design-refs/
-muchane_changelog_copy*.md
-resume-source.pdf
+/.*/
+!/.github/
+/*-*/
+/*.md
+/*.pdf

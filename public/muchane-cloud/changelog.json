@@ -42,16 +42,15 @@
         "platform",
         "ai"
       ],
-      "summary": "~21 containers, one schema, human approval gates on everything that ships.",
-      "metric": "21 containers",
+      "summary": "One schema, human approval gates on everything that ships.",
+      "metric": "1 schema",
       "compact": false,
       "sections": {
         "sequencing": null,
         "problem": "Running real AI pipelines against personal data takes more than API keys. It needs a data layer, network isolation, and controls that survive automation running unattended.",
         "solution": "Self-hosted Supabase (Postgres, Kong, GoTrue, Realtime, Storage) as the single source of truth, with a multi-tenant schema from day one. UUID keys, user_id and RLS on every table. Two production applications sit on top, a job-search command center and a document-rendering microservice.",
         "implementation": [
-          "One heavily customized docker-compose runs the fleet on a 4 vCPU / 8GB VPS.",
-          "Cloudflare Tunnel and Access sit in front of admin surfaces. Services find each other through Docker-internal DNS.",
+          "One heavily customized docker-compose runs the fleet on a single VPS.",
           "No LLM touches anything mechanical. Sorting, staleness, search, and analytics are pure computation."
         ],
         "iteration": "Every later release in this changelog ran through the same gates. Written spec, plan review, my approval, measured verification, my push."
@@ -163,7 +162,7 @@
       "sections": {
         "sequencing": null,
         "problem": "Research, postings, applications, and comp data lived across tables with no single place to answer where I stand with a company, whether my intel is stale, or where applications die in the funnel.",
-        "solution": "One surface. Target cards in a carousel, tabbed detail pages, and an analytics tab computed entirely in SQL against the live schema. Staleness is measured rather than guessed, because a company_views table records every look, under RLS.",
+        "solution": "One surface. Target cards in a carousel, tabbed detail pages, and an analytics tab computed entirely in SQL against the live schema. Staleness is measured rather than guessed, because every look is recorded, under RLS.",
         "implementation": [
           "The funnel with time-in-stage, response rate, posting velocity, comp bands, and fit-dimension distribution are all pure SQL.",
           "The test suite grew past 800 vitest specs and 100 Playwright specs with zero failures.",
@@ -193,14 +192,14 @@
         "database"
       ],
       "summary": "One invariant governs closure. No feed may kill a posting unless it can prove it saw everything.",
-      "metric": "~1,900 postings / 4h",
+      "metric": null,
       "compact": false,
       "sections": {
         "sequencing": null,
         "problem": "Multi-ATS ingestion raises two hard problems. Dedup without fake placeholder keys, since Postgres treats NULL as unequal to NULL. And closure, because marking a posting dead requires knowing the feed you just read was complete. A partial feed treated as complete mass-closes live postings.",
         "solution": "Adapters per source feed a shared core, governed by one invariant. Any trigger path that is not a complete company feed must declare its feed incomplete, or the core will close everything it didn't see. Per-posting liveness checks lost on cost, since that approach spends a request per posting against rate-limited vendors.",
         "implementation": [
-          "Greenhouse runs every four hours and pulls roughly 1,900 postings per cycle with full content. Ashby follows ten minutes later, the retention sweep after that. The stagger keeps a 4-vCPU box out of contention.",
+          "Each source runs on its own staggered schedule and pulls full content, with the retention sweep last. The stagger keeps a small box out of contention.",
           "Sequential batch processing ahead of dedup checks prevents race-condition duplicates.",
           "A designed Lever adapter extends the invariant with a sentinel-probe completeness gate. The feed must prove it is complete before it may close anything."
         ],
@@ -231,8 +230,8 @@
       "compact": false,
       "sections": {
         "sequencing": null,
-        "problem": "The updated_at column on jobs rows churned every ingestion cycle even when nothing changed, which poisoned staleness logic and masked real updates. The jobs table's own triggers and write paths were clean.",
-        "solution": "Widen the search. Inventory triggers on every table that writes into the target, not just the target itself. The writer turned out to be a trigger on the job_locations junction table, touching the parent row on every location re-upsert. It was dropped, and every write path now diffs before writing.",
+        "problem": "The updated_at column on posting rows churned every ingestion cycle even when nothing changed, which poisoned staleness logic and masked real updates. The postings table's own triggers and write paths were clean.",
+        "solution": "Widen the search. Inventory triggers on every table that writes into the target, not just the target itself. The writer turned out to be a trigger on a junction table, touching the parent row on every location re-upsert. It was dropped, and every write path now diffs before writing.",
         "implementation": [
           "A second latent bug fell in the same pass. The update mapping had been NULL-writing two score columns on every cycle.",
           "Diff-before-write became the standard for every update path."
@@ -251,7 +250,7 @@
       "tags": [
         "database"
       ],
-      "summary": "A DB trigger writes every status transition to an append-only history table, so funnel analytics compute from real events rather than a mutable column.",
+      "summary": "A DB trigger records every status transition as an append-only event, so funnel analytics compute from real events rather than a mutable column.",
       "metric": null,
       "compact": true,
       "sections": null,
@@ -268,17 +267,17 @@
         "security",
         "database"
       ],
-      "summary": "App traffic rides Kong under JWT-enforced RLS while automation rides an isolated internal network. The tiers cannot reach each other.",
-      "metric": "5432 never public",
+      "summary": "App traffic enters through the API gateway under JWT-enforced RLS while the automation engine rides an internal bridge. The tiers cannot reach each other.",
+      "metric": "0 public DB ports",
       "compact": false,
       "sections": {
         "sequencing": null,
         "problem": "The automation engine needs upsert semantics the REST layer cannot express, multi-column conflict resolution on nullable keys, where Postgres treats NULL as unequal to NULL and matching fails outright. The naive fixes are all bad. Placeholder sentinels pollute the schema, and exposing Postgres to the app tier widens the attack surface.",
-        "solution": "Two physically separate data paths. Application traffic goes Nginx Proxy Manager to Kong to services under JWT-enforced Row Level Security, so apps see only their user's rows. System traffic runs n8n straight to Postgres over an internal Docker bridge the web-facing proxy has no route to. Routing automation through PostgREST lost because the API cannot express the writes. Sentinel values lost because they make the schema dishonest.",
+        "solution": "Two physically separate data paths. Application traffic goes through the web-facing proxy to the API gateway and on to services under JWT-enforced Row Level Security, so apps see only their user's rows. System traffic runs from the automation engine straight to Postgres over an internal bridge the web-facing proxy has no route to. Routing automation through the REST layer lost because the API cannot express the writes. Sentinel values lost because they make the schema dishonest.",
         "implementation": [
-          "Port 5432 is never exposed publicly, and system traffic never leaves the internal bridge.",
-          "Services are addressed by Docker-internal DNS, never by IP.",
-          "The convention is codified. Postgres nodes for writes, Supabase nodes for simple reads, sequential batches ahead of dedup checks.",
+          "The database port is never exposed publicly, and system traffic never leaves the internal bridge.",
+          "Services are addressed by name, never by IP.",
+          "The convention is codified. Direct database nodes for writes, API nodes for simple reads, sequential batches ahead of dedup checks.",
           "A compromised frontend cannot reach the database port. It sits on a different tier."
         ],
         "iteration": "Every later pipeline shipped without needing a new network path. The NULL lesson became a standing rule to check existence before upserting on nullable fields."
@@ -347,7 +346,7 @@
       "tags": [
         "security"
       ],
-      "summary": "The VPS coding agent runs as a dedicated no-sudo user with command blocks, a logged network wrapper, and session and incident logs. Autonomy inside enforced guardrails rather than trust.",
+      "summary": "The VPS coding agent runs inside enforced guardrails, with session and incident logs. Autonomy by design, not by trust.",
       "metric": null,
       "compact": true,
       "sections": null,
@@ -356,15 +355,15 @@
     "swap-provisioning": {
       "slug": "swap-provisioning",
       "page": "/muchane-cloud/self-hosted-infra",
-      "title": "Swap before the OOM killer wins",
+      "title": "Headroom before the OOM killer wins",
       "date_display": "Week of Aug 3, 2026",
       "week_start": "2026-08-03",
       "date_verified": true,
       "tags": [
         "ops"
       ],
-      "summary": "The VPS was running with zero swap and the OOM killer was firing immediately under pressure. 4GB provisioned, about 2GB in steady use.",
-      "metric": "0 OOM kills since Aug 2026",
+      "summary": "The OOM killer was firing immediately under pressure because the VPS had no memory headroom beyond physical memory; headroom was provisioned and no process has been killed since August 2026.",
+      "metric": null,
       "compact": true,
       "sections": null,
       "shots": []
@@ -395,7 +394,7 @@
       "tags": [
         "ops"
       ],
-      "summary": "Every pipeline upserts a heartbeat row to workflow_runs, surfaced as status lights in the app footer. Health at a glance instead of at failure.",
+      "summary": "Every pipeline upserts a heartbeat row, surfaced as status lights in the app footer. Health at a glance instead of at failure.",
       "metric": "4 workflows",
       "compact": true,
       "sections": null,

@@ -206,7 +206,7 @@
    renderTelemetry(TELEMETRY) call below — nothing else. */
 var TELEMETRY = {
     left: 'MUCHANE CLOUD',
-    metrics: '21 CONTAINERS \u00b7 47 COMMITS THIS MONTH \u00b7 LAST DEPLOY 6H AGO',
+    metrics: 'ONE SCHEMA \u00b7 47 COMMITS THIS MONTH \u00b7 LAST DEPLOY 6H AGO',
     right: 'AI PIPELINES',
 };
 
