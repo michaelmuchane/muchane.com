@@ -4,7 +4,7 @@
       "grid": [
         "platform-overview",
         "muchane-com",
-        "cursor-trail"
+        "comet-tail"
       ]
     },
     "/muchane-cloud/career-command-center": {
@@ -401,8 +401,8 @@
       "sections": null,
       "shots": []
     },
-    "cursor-trail": {
-      "slug": "cursor-trail",
+    "comet-tail": {
+      "slug": "comet-tail",
       "page": "/muchane-cloud",
       "title": "A tail for the cursor",
       "date_display": "Week of Sep 28, 2026",
